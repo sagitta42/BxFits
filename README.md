@@ -16,21 +16,19 @@ Instructions on how to perform MC fits on CNAF
 
 ### Species lists:
 
-**Multivariate** fit:
-```/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/fitter_TAUP/bin/*.icc```:
+#### Multivariate fit
+Folder: ```/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/fitter_TAUP/bin/```:
 
-HAVE to be in bin/ folder in spectralfit, read automatically by the fitter:
+Files that **HAVE** to be in ```bin/``` folder in spectralfit, read automatically by the fitter:
 
 ```
 multivariate_ps_species_list.icc
 multivariate_rdist_species_list.icc
 ```
 
-Input by hand when running the fitter (see the "How to run" section)
+Input when running the fitter (see the "How to run" section): ``` species_list_taup.icc```
 
-``` species_list_taup.icc --> input by hand ```
-
-**Energy only** fit:
+#### Energy only fit
 
 ```
 species_list_ene.icc --> pep free, CNO penalty
@@ -45,24 +43,27 @@ species_list_pepcno_fixed.icc --> pep & CNO fixed
 
 ### Fitoptions
 
-**Energy only** fit:
+#### Energy only fit
+
 Folder ```fitoptions``` included in this repo. Change the line that says:
 ```montecarlo_spectra_file = MCspectra_pp_FVpep_*_emin1_masked.root```
 to:
 ``` montecarlo_spectra_file = pdfs_TAUP2017/MCspectra_pp_FVpep_*_emin1_masked.root```
 where * = 2012, 2013 etc.
 
-**MV** fit:
+#### MV fit
 
 ```/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_cvs/offline/spectral-fitter/fitoptions_mv_201*.cfg```
 
 ## How to run
 
-Energy only fit:
+#### Energy only fit
 
 ```./spectralfit pathfolder/input_file.root pp/final_nhits_pp pathfolder1/fitoptions.cfg pathfolder2/species_list.icc```
 
-MV fit:
+#### MV fit
 
 ```./spectralfit pathfolder/input_file.root pp/final_nhits_pp_0 pathfolder1/fitoptions.cfg pathfolder2/species_list.icc```
+
+Use the ```species_taup.icc``` species list
 
