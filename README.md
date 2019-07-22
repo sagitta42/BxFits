@@ -80,3 +80,35 @@ Input when running the fitter (see the "How to run" section): ``` species_list_t
 species_list_ene.icc --> pep free, CNO penalty
 species_list_pepcno_fixed.icc --> pep & CNO fixed
 ```
+
+
+## Example
+
+1. Fitoptions files
+
+```
+mkdir fitoptions_mv
+cp /storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_cvs/offline/spectral-fitter/fitoptions_mv_201*.cfg fitoptions_mv/.
+```
+
+2. PDFs
+
+``` cp -r /storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/fitter_TAUP/pdfs_TAUP2017 .``` (13M)
+
+3. Edit ```fitoptions_mv/fitoptions_mv_2012.cfg```:
+
+Line 68:
+
+```  montecarlo_spectra_file = pdfs_TAUP2017/MCspectra_pp_FVpep_2012_emin1_masked.root ```
+
+4. Species list
+
+```
+cp /storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/fitter_TAUP/bin/multivariate* bin/.
+mkdir species_mv
+cp /storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/fitter_TAUP/bin/species_list_taup.icc species_mv/.
+```
+
+5. Run command
+
+```./spectralfit /storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_cvs/offline/spectral-fitter/pepmz/Period2012_FVpep_TFCMZ.root pp/final_nhits_pp fitoptions_mv/fitoptions_mv_2012.cfg species_mv/species_list_taup.icc```
