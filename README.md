@@ -46,9 +46,13 @@ species_list_pepcno_fixed.icc --> pep & CNO fixed
 #### Energy only fit
 
 Folder ```fitoptions``` included in this repo. Change the line that says:
+
 ```montecarlo_spectra_file = MCspectra_pp_FVpep_*_emin1_masked.root```
+
 to:
+
 ``` montecarlo_spectra_file = pdfs_TAUP2017/MCspectra_pp_FVpep_*_emin1_masked.root```
+
 where * = 2012, 2013 etc.
 
 #### MV fit
