@@ -16,7 +16,7 @@ Instructions on how to perform MC fits on CNAF
 
 #### Energy only fit
 
-```./spectralfit pathfolder/input_file.root[1] pp/final_nhits_pp pathfolder1/fitoptions.cfg[2] pathfolder2/species_list.icc[3]```
+```./spectralfit pathfolder/input_file.root```<sup>**[1]**</sup> ```pp/final_nhits_pp pathfolder1/fitoptions.cfg[2] pathfolder2/species_list.icc[3]```
 
 #### MV fit
 
