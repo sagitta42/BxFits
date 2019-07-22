@@ -119,6 +119,3 @@ cp /storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/
 
 Simone's results:
 https://borex.lngs.infn.it/docdb/0000/000013/002/MC_final_results_Phase2_v2.pdf
-
-Slide 49
-
