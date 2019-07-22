@@ -41,7 +41,7 @@ Year by year:
 
 #### Energy only fit
 
-Folder ```fitoptions``` included in this repo. Change the line that says:
+Folder [fitoptions](fitoptions) included in this repo. Change the line that says:
 
 ```montecarlo_spectra_file = MCspectra_pp_FVpep_*_emin1_masked.root```
 
@@ -119,3 +119,5 @@ cp /storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/
 
 Simone's results:
 https://borex.lngs.infn.it/docdb/0000/000013/002/MC_final_results_Phase2_v2.pdf
+
+[table](simone_results.png)
