@@ -118,6 +118,9 @@ cp /storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/
 ## Compare results
 
 Simone's results:
+
 https://borex.lngs.infn.it/docdb/0000/000013/002/MC_final_results_Phase2_v2.pdf
 
 [table](simone_results.png)
+
+CNO has to be fixed to 5.0 and pep to 2.8
