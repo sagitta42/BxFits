@@ -114,3 +114,11 @@ cp /storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/
 5. Run command
 
 ```./spectralfit /storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_cvs/offline/spectral-fitter/pepmz/Period2012_FVpep_TFCMZ.root pp/final_nhits_pp fitoptions_mv/fitoptions_mv_2012.cfg species_mv/species_list_taup.icc```
+
+## Compare results
+
+Simone's results:
+https://borex.lngs.infn.it/docdb/0000/000013/002/MC_final_results_Phase2_v2.pdf
+
+Slide 49
+
