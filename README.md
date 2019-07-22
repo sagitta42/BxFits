@@ -20,27 +20,39 @@ For MV fit:
 ```/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/fitter_TAUP/bin/*.icc```:
 
 ```
-multivariate_ps_species_list.icc
-multivariate_rdist_species_list.icc
-species_list_taup.icc
+multivariate_ps_species_list.icc --> HAS to be in bin/ folder in spectralfit
+multivariate_rdist_species_list.icc --> HAS to be in bin/ folder in spectralfit
+species_list_taup.icc --> input by hand
 ```
 
 For energy only fit:
-``` species_list_ene.icc ```
-
-
+```
+species_list_ene.icc --> pep free, CNO penalty
+species_list_pepcno_fixed.icc --> pep & CNO fixed
+```
 
 2) PDFs: ```/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/fitter_TAUP/pdfs_TAUP2017```
 3) Input files: ```/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/fitter_TAUP/PeriodAll_FVpep_TFCMZ.root```
 
-4) Fitoptions: included in this repo. Change the line with
+4) Fitoptions:
+
+Energy only: included in this repo. Change the line with
 ```montecarlo_spectra_file = MCspectra_pp_FVpep_*_emin1_masked.root```
 to
 ``` montecarlo_spectra_file = pdfs_TAUP2017/MCspectra_pp_FVpep_*_emin1_masked.root```
 where * = 2012, 2013 etc.
 
-Fitoptions in the folder are for only energy fit (not MV).
+MV fit:
+
+```/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_cvs/offline/spectral-fitter/fitoptions_mv_201*.cfg```
 
 ## How to run
 
+Energy only fit:
+
+```./spectralfit pathfolder/input_file.root pp/final_nhits_pp pathfolder1/fitoptions.cfg pathfolder2/species_list.icc```
+
+MV fit:
+
 ```./spectralfit pathfolder/input_file.root pp/final_nhits_pp_0 pathfolder1/fitoptions.cfg pathfolder2/species_list.icc```
+
