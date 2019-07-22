@@ -28,7 +28,12 @@ Use the ```species_taup.icc``` species list
 ## Files for the fitter
 
 ### [1] Input files
+
 ```/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/fitter_TAUP/PeriodAll_FVpep_TFCMZ.root```
+
+Year by year:
+
+``` /storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_cvs/offline/spectral-fitter/pepmz ```
 
 ### [2] Fitoptions
 
@@ -49,12 +54,16 @@ where * = 2012, 2013 etc.
 ```/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_cvs/offline/spectral-fitter/fitoptions_mv_201*.cfg```
 
 #### PDFs referenced in the cfg files
+
 ```/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/fitter_TAUP/pdfs_TAUP2017```
 
 ### [3] Species lists:
 
 #### Multivariate fit
-Folder: ```/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/fitter_TAUP/bin/```:
+
+Folder:
+
+```/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/fitter_TAUP/bin/```
 
 Files that **HAVE** to be in ```bin/``` folder in spectralfit, read automatically by the fitter:
 
