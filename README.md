@@ -6,8 +6,8 @@ Instructions on how to perform MC fits on CNAF
 1) ``` cvs co offline/spectral-fitter ```
 2) Change the following lines in ```lib/fitter.cc```
 ```
-2106   arglist[0] = 50000; //Max number of calls
-2107   arglist[1] = 0.001; // Tolerance (see MINUIT manual)
+2134   arglist[0] = 50000; //Max number of calls
+2135   arglist[1] = 0.001; // Tolerance (see MINUIT manual)
 ```
 
 3) make
