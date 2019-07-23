@@ -41,7 +41,13 @@ Year by year:
 
 #### Energy only fit
 
-Folder [fitoptions](fitoptions) included in this repo. Change the line that says:
+Folder [fitoptions](fitoptions) included in this repo.
+
+#### MV fit
+
+```/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_cvs/offline/spectral-fitter/fitoptions_mv_201*.cfg```
+
+Change the line that says:
 
 ```montecarlo_spectra_file = MCspectra_pp_FVpep_*_emin1_masked.root```
 
@@ -49,11 +55,7 @@ to:
 
 ``` montecarlo_spectra_file = pdfs_TAUP2017/MCspectra_pp_FVpep_*_emin1_masked.root```
 
-where * = 2012, 2013 etc.
-
-#### MV fit
-
-```/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_cvs/offline/spectral-fitter/fitoptions_mv_201*.cfg```
+where * = 2012, 2013 etc. or whatever path to PDFs you are using (folder below)
 
 #### PDFs referenced in the cfg files
 
