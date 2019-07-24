@@ -94,3 +94,18 @@ https://borex.lngs.infn.it/docdb/0000/000013/002/MC_final_results_Phase2_v2.pdf
 [table](simone_results.png)
 
 CNO has to be fixed to 5.0 and pep to 2.8
+
+
+# Python
+
+## Generate submission
+
+File: ```generator.py``` (from CNO generator)
+
+Example: ```python generator.py fit=mv CNO=fixed,lm,hm var=nhits,npmts```
+
+Loop over given options and create a CNAF submission file for each combination of the fit. Things that don't change: input file (PeriodAll), all other species. Uses ```creator.py``` and folder ```templates/```
+
+## Read outputs
+
+File: ```collect_species.py``` (from CNO reader)
