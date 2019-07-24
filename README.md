@@ -109,3 +109,9 @@ Loop over given options and create a CNAF submission file for each combination o
 ## Read outputs
 
 File: ```collect_species.py``` (from CNO reader)
+
+Creates a table from log files in a given folder collecting fit results on different years for given species. 
+
+File: ```table_simone.py```
+
+Make the table to have the same look as tables in Simone's slides: transpose current table (so that year is column and not row) and put the means and the errors in one column with +-
