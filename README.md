@@ -1,3 +1,7 @@
+## To do
+- [ ] ```complementary_histo_name = pp/final_nhits_pp_1``` has to change ```var```
+- [ ] ```fit_variable = npmts_dt1``` is wrong, has to be just ```npmts```
+
 # MCfits
 Instructions on how to perform MC fits on CNAF
 
