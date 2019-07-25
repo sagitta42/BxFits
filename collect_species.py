@@ -9,7 +9,7 @@ import os
 
 # species and neutrinos
 
-COLUMNS = ['Bi210', 'C11', 'C14', 'C14_pileup', 'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Kr85', 'Pb214', 'Po210', 'nu(Be7)', 'nu(pp)', 'Minimized Likelihood Value']
+COLUMNS = ['Bi210', 'C11', 'C14', 'C14_pileup', 'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Kr85', 'Pb214', 'Po210', 'nu(Be7)', 'nu(pp)', 'nu(CNO)', 'Minimized Likelihood Value']
 
 def strname(species):
     return ''.join(species.split(' '))
@@ -75,15 +75,14 @@ def parse_file(filename):
     ### set up table
 
     # table template
+    special_col = 'EneVar'
 	# columns: fit settings, species + errors (no error for the ones listed as ERRORLESS)
-    df = pd.DataFrame( columns = ['Year'] + [strname(x) for x in COLUMNS]  + [strname(x) + 'Error' for x in np.setdiff1d(COLUMNS,ERRORLESS)] )
-    # example: fit_2012.log 
-    # example fit_mv_CNOhm_nhits_57.err
-    # example fit_0.log
-    # fit_enePeriod2012_CNOfixed5_nhits.log
-    year = filename.split('Period')[1].split('_')[0]
-#    year = filename.split('/')[-1].split('_')[-1].split('.')[0]
-    df.at[0, 'Year'] = int(year)
+    df = pd.DataFrame( columns = [special_col] + [strname(x) for x in COLUMNS]  + [strname(x) + 'Error' for x in np.setdiff1d(COLUMNS,ERRORLESS)] )
+    # yearly fit: fit_enePeriod2012_CNOfixed5_nhits.log
+#    year = filename.split('Period')[1].split('_')[0]
+    # Simone MV for different CNO and ene variables: fit_mvPeriodall_CNOfixed_nhits.log
+    spec = 'n' + filename.split('n')[1].split('.')[0]
+    df.at[0, special_col] = spec
 
     ### read fit info
 
@@ -145,7 +144,7 @@ def parse_folder(foldername):
 
     # output file
     outname = foldername.split('/')[-1] + '_species.out'
-    df = df.sort_values('Year')
+#    df = df.sort_values('Year')
     df.to_csv(outname, index=False, sep = ' ')
     print('--> '+outname)
 

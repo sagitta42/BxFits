@@ -6,7 +6,8 @@ def table(tname):
 
     # values from fits collected using collect_species.py
     df = pd.read_csv(tname, sep = ' ')
-    df = df.set_index('Year')
+    spec_col = df.columns[0]
+    df = df.set_index(spec_col)
     # species
     species = [c for c in df.columns if not 'Error' in c]
     # new string column for each species
