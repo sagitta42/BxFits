@@ -1,20 +1,21 @@
 import os
-from math import ceil
 import numpy as np
-import random as rnd
-rnd.seed(1)
 
 class Submission():
-    def __init__(self, fit, CNO, var, penalty):
+    def __init__(self, fit, CNO, var, inputs, penalty):
         '''
+        fit (str): fit style (ene or mv)                   
         CNO (str): fit condition (fixed, lm, hm)
         var (str): energy variable (nhits, npmts, npmts_dt1, npmts_dt2)
+        inputs (list): min and max year for inputs ([int, int]) (PeriodAll if none)                   
         penalty (list): species to be constrained (pp/pep)
         '''
         
         self.fit = fit # energy only or full mv
         self.cno = CNO
         self.var = var # is a list always
+        self.inputs = inputs # 'all' or string for year 
+
 #        self.penalty = penalty # to be constrained
         
         ## corr. fitoptions and species lists filenames
@@ -25,12 +26,12 @@ class Submission():
         # if penalty is pp/pep, it's in fitoptions, but not species list
 #        pencfg = pen + penmet if self.penalty[0] == 'ppDpep' else ''
         pencfg = '' # no penalty options for now
-        self.cfgname = 'fitoptions/fitoptions_' + fit + '_' + var + pencfg + '.cfg'
+        self.cfgname = 'fitoptions/fitoptions_' + fit + '_' + inputs + '_' + var + pencfg + '.cfg'
 #        penicc = pen + penmet if self.penalty[0] != 'ppDpep' else ''
         penicc = '' # no penalty for now
-        self.iccname = 'species_list/species_' + CNO + penicc + '.icc'
-        
-        self.outfile = 'fit_' + fit + '_CNO'+ CNO + '_' + var
+        self.iccname = 'species_list/species_fit_' + fit + 'CNO_' + CNO + penicc + '.icc'
+        # log file name 
+        self.outfile = 'fit_' + fit + 'Period' + inputs + '_CNO'+ CNO + '_' + var
         
     
     def cfgfile(self):
@@ -60,6 +61,9 @@ class Submission():
         # line 36: multivariate or energy only fit
         cfglines[35] = 'c11_subtracted = ' + bl + end
 
+        # line 68: PDF path
+        cfglines[67] = 'montecarlo_spectra_file = pdfs_TAUP2017/MCspectra_pp_FVpep_' + self.inputs + '_emin1_masked.root'
+
         # line 91: ps: only in mv
         cfglines[90] = 'multivariate_ps_fit = ' + bl + end
 
@@ -71,6 +75,10 @@ class Submission():
 
         # line 102: compl. fit variable
         cfglines[101] = 'complementary_histo_name = pp/final_' + self.var + '_pp_1'
+
+        # line 127 and 128: pileup constraint
+        cfglines[126] = 'pileup_penalty_mean = ' + str(PUPPEN[self.inputs][0])
+        cfglines[127] = 'pileup_penalty_sigma = ' + str(PUPPEN[self.inputs][1])
 
         # line 103: dark noise: only in analytical fit, not MC fit
 #        cfglines[102] = 'dark_noise_window = win' + self.var[-1] + '\n'
@@ -84,7 +92,6 @@ class Submission():
 
         
         ## save file
-        print cfglines[2]
         cfglines = [ln + '\n' for ln in cfglines]
         outfile = open(self.cfgname, 'w')
         outfile.writelines(cfglines)
@@ -101,7 +108,10 @@ class Submission():
             return
             
         ## otherwise generate from a template
-        icclines = open('templates/species_list_taup.icc').readlines()
+        icclines = open('templates/species_list_' + self.fit + '.icc').readlines()
+
+        # line 23 pep: fixed if ene (Simone yearly, is not a must!)
+        if self.fit == 'ene': icclines[22] = '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.8,   "fixed", 2.8,  10. },\n'
 
         # line 24: cno fixed or free; or constrained to lm/hm
         icclines[23] = CNOICC[self.cno]
@@ -130,7 +140,8 @@ class Submission():
         name of the submission file is outfolder_submission.sh, where outfolder is the folder for the output log files
         '''
 
-        inputfile = '/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/fitter_TAUP/PeriodAll_FVpep_TFCMZ.root'
+        pr = 'All' if self.inputs == 'all' else self.inputs
+        inputfile = '/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/fitter_TAUP/Period' + pr + '_FVpep_TFCMZ.root'
 
         out = open(outfolder + '_submission.sh', 'a') # append
 
@@ -152,6 +163,7 @@ def make_executable(path):
 
 CNOICC = {
     'fixed': '   { "nu(CNO)",      -1,   kCyan,   kSolid,  2,    0.,   "fixed", 0.,  50. },\n',
+    'fixed5': '   { "nu(CNO)",      -1,   kCyan,   kSolid,  2,    5.,   "fixed", 5.,  50. },\n',
 
     'free': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    5.36,   "free", 0.,  50. },\n',
     'hm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    4.92,   "penalty", 4.92,  0.56 },\n',
@@ -170,3 +182,12 @@ ICC = {
 RND = {'Bi210': [10,2], 'C14': [3456000, 172800]}
 
 PPPEP = {'hm': [47.76, 0.84], 'lm': [47.5, 0.8]}
+
+## pileup penalty
+PUPPEN = {'all': [2.1, 0.04],
+        '2012': [2.6, 0.03],
+        '2013': [2.2, 0.03],
+        '2014': [2.0, 0.03],
+        '2015': [3.2, 0.03],
+        '2016': [1.4, 0.03],
+}

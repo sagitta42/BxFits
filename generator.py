@@ -1,39 +1,22 @@
-from math import ceil
-
-#----------------------------------------------------------
-
-## ENTER YOUR CHOICES HERE
-
-# total number of fits
-NFITS_min = 0 # including
-NFITS_max = 1100 # not including
-# number of fits per one submission file
-NBATCH = 100
-# path to the input root files
-INPUT = '/p/project/cjikp20/jikp2001/BxFitterData/final_senp3_full' # full exposure
-#INPUT = '/p/project/cjikp20/jikp2001/BxFitterData/final_senp3_half' # half exposure
-#INPUT = '/p/project/cjikp20/jikp2001/BxFitterData/senst'
-
-#----------------------------------------------------------
-
 import sys
 from creator import * 
 
 #----------------------------------------------------------
 
-def generator(outfolder, fit, CNO, var, penalty):
+def generator(outfolder, fit, CNO, var, inputs, penalty):
     '''
     0) outfolder: output folder for log and err files        
     1) fit: type of fit (ene, mv)            
     2) CNO: fit condition (fixed, lm, hm)
     3) var: energy variable (nhits, npmts, npmts_dt1, npmts_dt2)
-    4) penalty: species to put penalty on (e.g. Bi210) (optional)
+    4) inputs: period to fit (all, YYYY)
+    5) penalty: species to put penalty on (e.g. Bi210) (optional) --> not implemented yet
     '''
 
     ## ---------------------------------
     ## technical checks
 
-    CNOoptions = ['fixed','lm', 'hm']
+    CNOoptions = ['fixed','lm', 'hm', 'fixed5']
     if not CNO in CNOoptions:
         print '\nOptions for CNO:', ', '.join(CNOoptions) + '\n'
         return
@@ -47,6 +30,11 @@ def generator(outfolder, fit, CNO, var, penalty):
     if not var in varoptions:
         print '\nOptions for energy variable:', ', '.join(fitoptions) + '\n'
         return
+
+    inputoptions = ['all'] + [str(y) for y in range(2012,2018)]        
+    if not inputs in inputoptions:
+        print '\nOptions for inputs:', ', '.join(fitoptions) + '\n'
+        return
     
     for pen in penalty:
         if not ((pen in ICC) or (pen == 'pp/pep') or penalty == 'none'):
@@ -57,7 +45,7 @@ def generator(outfolder, fit, CNO, var, penalty):
     ## ---------------------------------
 
     ## init
-    s = Submission(fit, CNO, var, penalty)
+    s = Submission(fit, CNO, var, inputs, penalty)
     
     print # readability
     print '#######################################'
@@ -95,11 +83,12 @@ def main():
         print
         print 'Examples:'
         print 'python generator.py CNO=fixed fit=mv var=npmts,nhits'
+        print 'python generator.py fit=ene inputs=2012,2017 var=nhits'
         print
         sys.exit(1)
 
     ## options
-    user = ['CNO', 'var', 'fit', 'penalty']
+    user = ['CNO', 'var', 'fit', 'inputs', 'penalty'] # penalty not implemented yet
     opts = {}
     for opt in user:
         opts[opt] = 'none'
@@ -112,6 +101,7 @@ def main():
 
     ## folder for given configuration (for submission files and output log file folder)
     outfolder = 'res_fit_' + opts['fit']
+    if not opts['inputs'] == 'none': outfolder += '_' + '-'.join(opts['inputs']) # year by year
 
     if os.path.exists(outfolder):
         print 'Folder', outfolder, 'already exists!!'
@@ -119,13 +109,21 @@ def main():
         return
     else:
         os.mkdir(outfolder)
+
+    ## input two years means range between those years
+    if opts['inputs'][0][0] == '2':
+        opts['inputs'] = [str(y) for y in range(int(opts['inputs'][0]), int(opts['inputs'][1]) + 1)]
+    ## no input by default means PeriodAll
+    if opts['inputs'] == 'none':
+        opts['inputs'] = ['all']           
     
     ## loop over variables and CNO and create a fit for each
     for CNO in opts['CNO']:
         for var in opts['var']:
-            params = [outfolder, opts['fit'], CNO, var, opts['penalty']]
-            print params
-            generator(*params)
+            for inp in opts['inputs']:
+                params = [outfolder, opts['fit'], CNO, var, str(inp), opts['penalty']]
+                print params
+                generator(*params)
 
 
 if __name__ == '__main__':
