@@ -87,9 +87,12 @@ species_list_pepcno_fixed.icc --> pep & CNO fixed
 
 ## Compare results
 
-Simone's results:
+Simone's results on MV for PeriodAll:
 
 https://borex.lngs.infn.it/docdb/0000/000013/002/MC_final_results_Phase2_v2.pdf
+
+Simone's results year by year (probably energy only): slide 49
+
 
 [table](simone_results.png)
 
