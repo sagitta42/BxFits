@@ -76,7 +76,7 @@ def parse_file(filename):
 
     # table template
 	# columns: fit settings, species + errors (no error for the ones listed as ERRORLESS)
-    df = pd.DataFrame( columns = ['Year'] + cols  + [strname(x) + 'Error' for x in np.setdiff1d(COLUMNS,ERRORLESS)] )
+    df = pd.DataFrame( columns = ['Year'] + COLUMNS  + [strname(x) + 'Error' for x in np.setdiff1d(COLUMNS,ERRORLESS)] )
     # example: fit_2012.log 
     year = filename.split('/')[-1][4:8]
     df.at[0, 'Year'] = int(year)
