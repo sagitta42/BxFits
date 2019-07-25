@@ -9,7 +9,10 @@ import os
 
 # species and neutrinos
 
-PARSER = ['Bi210', 'C11', 'C14', 'C14_pileup', 'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Kr85', 'Pb214', 'Po210', 'nu(Be7)', 'nu(pp)']
+COLUMNS = ['Bi210', 'C11', 'C14', 'C14_pileup', 'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Kr85', 'Pb214', 'Po210', 'nu(Be7)', 'nu(pp)', 'Minimized Likelihood Value']
+
+def strname(species):
+    return ''.join(species.split(' '))
 
 #PARSER = {
 #'Bi210': 'Bi210',
@@ -49,7 +52,8 @@ PARSER = ['Bi210', 'C11', 'C14', 'C14_pileup', 'Ext_Bi214', 'Ext_K40', 'Ext_Tl20
 #}
 
 # parameters that don't have the concept of error
-ERRORLESS = ['chiSquare', 'chiSquare/Ndof', 'p-value', 'MLV', 'LikelihoodP-value']
+ERRORLESS = ['Minimized Likelihood Value']
+#ERRORLESS = ['chiSquare', 'chiSquare/Ndof', 'p-value', 'MLV', 'LikelihoodP-value']
 
 # alpha and beta resolution
 #for i in range(6):
@@ -71,10 +75,8 @@ def parse_file(filename):
     ### set up table
 
     # table template
-    cols = PARSER
-    cols.sort()
 	# columns: fit settings, species + errors (no error for the ones listed as ERRORLESS)
-    df = pd.DataFrame( columns = ['Year'] + cols  + [x + 'Error' for x in np.setdiff1d(cols,ERRORLESS)] )
+    df = pd.DataFrame( columns = ['Year'] + cols  + [strname(x) + 'Error' for x in np.setdiff1d(COLUMNS,ERRORLESS)] )
     # example: fit_2012.log 
     year = filename.split('/')[-1][4:8]
     df.at[0, 'Year'] = int(year)
@@ -97,9 +99,9 @@ def parse_file(filename):
         # print info
         species = info[0].split('Component')[-1].strip()
         # stuff that we don't need e.g. number of bins used --> ignore and move to the next line
-        if not species in PARSER: continue
+        if not species in COLUMNS: continue
         val = info[1].strip().split(' ')[0].strip()
-        df[species] = val
+        df[strname(species)] = val
 		
         if not species in ERRORLESS:
             if 'Fixed' in lines[i] or 'Possibly railed' in lines[i] or 'Railed' in lines[i]:
