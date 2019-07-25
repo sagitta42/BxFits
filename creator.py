@@ -49,8 +49,8 @@ class Submission():
         end = ''
 #        end = '\n'
         
-        # line 3: fit variable --> always npmts? not npmts_dt1 or dt2?
-        cfglines[2] = 'fit_variable = ' + self.var + end
+        # line 3: fit variable --> in case of npmts_dtX is just npmts
+        cfglines[2] = 'fit_variable = ' + self.var.split('_')[0] + end
         
         # line 11: fit variable MC
         cfglines[10] = 'fit_variable_MC = ' + self.var + end
@@ -68,6 +68,9 @@ class Submission():
 
         # line 101: complem.: only in mv
         cfglines[100] = 'complementary_histo_fit = ' + bl + end
+
+        # line 102: compl. fit variable
+        cfglines[101] = 'complementary_histo_name = pp/final_' + self.var + '_pp_1'
 
         # line 103: dark noise: only in analytical fit, not MC fit
 #        cfglines[102] = 'dark_noise_window = win' + self.var[-1] + '\n'
