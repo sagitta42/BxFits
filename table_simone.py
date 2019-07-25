@@ -12,7 +12,7 @@ def table(tname):
     # new string column for each species
     for sp in species:
         print '...', sp
-        df[sp] = df[sp].map(str) + '+-' + df[sp + 'Error'].map(str)
+        df[sp] = df[sp] if 'Likelihood' in species else df[sp].map(str) + '+-' + df[sp + 'Error'].map(str)
 
     # transpose to have Simone look
     df = df[species].transpose(copy=True)
