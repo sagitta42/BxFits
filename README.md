@@ -1,8 +1,6 @@
 # MCfits
 Instructions on how to perform MC fits on CNAF
 
-Example for MV fit for 2012 in the bottom
-
 ## Set up fitter
 
 1) ``` cvs co offline/spectral-fitter ```
@@ -12,9 +10,24 @@ Example for MV fit for 2012 in the bottom
 2135   arglist[1] = 0.001; // Tolerance (see MINUIT manual)
 ```
 
-3) make
+3) ```make```
+4)
+```
+cp MCfits/setup_taup.sh .
+chmod +x setup_taup.sh
+./setup_taup.sh
+```
+(will create local paths to PDFs, inputs, and set up the generator)
 
-## How to run
+
+## Generate submission
+
+Example: ```python generator.py fit=mv CNO=fixed,lm,hm var=nhits,npmts```
+
+Loop over given options and create a CNAF submission file for each combination of the fit. Creates a folder for future output log files and a ```.sh``` file for ```nohup bxsubmitter```. Uses ```creator.py``` and folder ```templates/```
+
+
+## Details on how the fitter is run
 
 #### Energy only fit
 
@@ -99,15 +112,6 @@ Simone's results year by year (probably energy only): slide 49
 CNO has to be fixed to 5.0 and pep to 2.8
 
 
-# Python
-
-## Generate submission
-
-File: ```generator.py``` (from CNO generator)
-
-Example: ```python generator.py fit=mv CNO=fixed,lm,hm var=nhits,npmts```
-
-Loop over given options and create a CNAF submission file for each combination of the fit. Things that don't change: input file (PeriodAll), all other species. Uses ```creator.py``` and folder ```templates/```
 
 ## Read outputs
 
