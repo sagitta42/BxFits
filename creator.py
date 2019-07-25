@@ -141,7 +141,7 @@ class Submission():
         '''
 
         pr = 'All' if self.inputs == 'all' else self.inputs
-        inputfile = '/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/fitter_TAUP/Period' + pr + '_FVpep_TFCMZ.root'
+        inputfile = 'input_files/Period' + pr + '_FVpep_TFCMZ.root'
 
         out = open(outfolder + '_submission.sh', 'a') # append
 

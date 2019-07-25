@@ -83,7 +83,7 @@ def main():
         print
         print 'Examples:'
         print 'python generator.py CNO=fixed fit=mv var=npmts,nhits'
-        print 'python generator.py fit=ene inputs=2012,2017 var=nhits'
+        print 'python generator.py fit=ene inputs=2012,2016 var=nhits CNO=fixed5'
         print
         sys.exit(1)
 
