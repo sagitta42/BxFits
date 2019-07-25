@@ -1,10 +1,10 @@
+import sys
 import pandas as pd
 
-def table():
+def table(tname):
     ''' format the look like in Simone's table, value pm error '''
 
     # values from fits collected using collect_species.py
-    tname = 'fits_2012-2016_species.out'
     df = pd.read_csv(tname, sep = ' ')
     df = df.set_index('Year')
     # species
@@ -21,4 +21,4 @@ def table():
     print 'DONE'
 
 
-table()    
+table(sys.argv[1])
