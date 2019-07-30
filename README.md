@@ -10,14 +10,20 @@ Instructions on how to perform MC fits on CNAF
 2135   arglist[1] = 0.001; // Tolerance (see MINUIT manual)
 ```
 
-3) ```make```
-4)
+3)
 ```
 cp MCfits/setup_taup.sh .
 chmod +x setup_taup.sh
 ./setup_taup.sh
 ```
 (will create local paths to PDFs, inputs, and set up the generator)
+
+    
+4) ```make```
+
+Important to do ```make``` after ```./setup_taup.sh```, so that the fitter gets recompiled with the new MV species lists
+
+(or do ```make clean``` and ```make``` just to be safe)
 
 
 ## Generate submission
