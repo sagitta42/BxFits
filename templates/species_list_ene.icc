@@ -1,0 +1,57 @@
+/* List of species to be included in the fit
+ * After modifying this file, you DO NOT need to re-compile the fitter.
+ *
+ * Options for "Fixed?": "fixed", "free" and "penalty". 
+ * If you choose "penalty", the species will be left free with initial guess "Guess". 
+ * The penalty factor will be computed in the minimization step, 
+ * with central value given by "Min" and standard deviation given by "Max" 
+ * "Param" is an input parameter to the spectrum (default -1).
+ */
+
+// Set initial conditions and bounds for the fit
+//   Name            Param Color    Style    Thick Guess   Fixed?   Min  Max	
+// { "C14",          -1,   kViolet, kSolid,  2,    4.0e+6, "free",  0.,  6.0e+6 },
+  // { "C14",          -1,   kViolet, kSolid,  2,    3.456e+6, "penalty", 3.456e+6, 8.64e+4 },
+   { "C14",          -1,   kViolet, kSolid,  2,    3456000, "penalty", 3499200, 43200 },
+// { "synthpup",     -1,   kViolet, kDashed, 2,    200.,   "free",  0.,  450. },
+   { "C14_pileup", -1,   kViolet, kDashed, 2,     4.0e+6, "free",  0.,  6.0e+6 },
+
+   { "nu(pp)",       -1,   kCyan,   kSolid,  2,    133.,   "free",  0.,  300. },
+   { "nu(Be7)",      -1,   kRed,    kSolid,  2,    48.5,    "free",  20,  70 },
+// { "nu(Be7_NSI_eR)",0,   kRed,    kSolid,  2,    48.,    "free",  0.,  100. },
+// { "nu(Be7+munu)",  0,   kRed,    kSolid,  2,    0.,     "free",  0.,  100. },
+   { "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.74,   "fixed", 0.,  10. },
+   { "nu(CNO)",      -1,   kCyan,   kSolid,  2,    4.92,   "fixed", 4.92,  0.56 },
+   //{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    5.36,   "free", 0.,  50. },
+   { "nu(B8)",       -1,   kCyan,   kSolid,  2,    0.46,   "fixed", 0.,  10. },
+
+   { "Po210",        -1,   kOrange, kSolid,  2,    300.,   "free",  0.01,3000. },
+//   { "Po210_2",        -1,   kOrange, kSolid,  2,    300.,   "free",  0.01,3000. },
+   { "Bi210",        -1,   kSpring, kSolid,  2,    20.,    "free",  0.,  100. },
+  { "Kr85",         -1,   kBlue,   kSolid,  2,    5.,     "free",  0.,  30. },
+   //{ "Kr85",         -1,   kBlue,   kSolid,  2,    0,     "penalty",  0,  6 },
+   //{ "Kr85",         -1,   kBlue,   kSolid,  2,    1,     "penalty",  -999,  110 },
+   { "C11",          -1,   kMagenta,kSolid,  2,    28.,    "free",  0.,  100. },
+  // { "C11_2",        -1,   kMagenta,kSolid,  2,    50.,    "free",  0.,  200. },
+ //  { "C10",          -1,   kGreen,  kSolid,  2,    0.05,   "free",  0.,  2. },
+  // { "C10_2",        -1,   kGreen,  kSolid,  2,    1.1,    "free",  0.,  10. },
+   //{ "He6",          -1,   kRed,    kSolid,  2,    0.4,    "free",  0.,  5. },
+  // { "He6_2",        -1,   kRed,    kSolid,  2,    0.4,    "free",  0.,  20. },
+// { "Pa234m",       -1,   kRed,    kSolid,  2,    0.5,    "free",  0.,  10. },
+// { "B12",          -1,   kBlue,   kSolid,  2,    0.,     "free",  0.,  100. },
+// { "K40",          -1,   kYellow, kSolid,  2,    1.,     "free",  0.,  10. },
+// { "n",            -1,   kBlack,  kDotted, 2,    2.,     "free",  0.,  20. },
+   { "Pb214",        -1,   kGray,   kSolid,  2,    1.5,    "free",  0.,  10. },
+// { "Po218",        -1,   kGray,   kSolid,  2,    1.5,    "free",  0.,  10. },
+// { "Rn222",        -1,   kGray,   kSolid,  2,    1.5,    "free",  0.,  10. },
+// { "Be7_cosmo",    -1,   kGreen,  kSolid,  2,    0.349,  "free",  0.,  5. },
+   { "Ext_Tl208",    -1,   kAzure,  kSolid,  2,    1.9,    "free",  0.,  10. },
+   { "Ext_Bi214",    -1,   kAzure,  kSolid,  2,    0.5,    "free",  0.,  10. },
+   { "Ext_K40",      -1,   kAzure,  kSolid,  2,    0.15,   "free",  0.,  10. },
+// { "mono",         500,  kAzure,  kDashed, 2,    1.,     "fixed", 0.,  10. },
+// { "expo",         -1,   kAzure,  kDashed, 2,    1.,     "fixed", 0.,  10. },
+// { "flat",         -1,   kAzure,  kDashed, 2,    1.,     "fixed", 0.,  10. },
+// { "La138",        -1,   kGray,   kSolid,  2,    1.,     "fixed", 0.,  10. },
+// { "Rb87",         -1,   kViolet, kSolid,  2,    10.,    "fixed", 0.,  100. },
+// { "U238_chain_alphas",  -1, kGray, kSolid, 2,   2.,     "free",  0.,  10. },
+// { "Th232_chain_alphas", -1, kGray, kSolid, 2,   1.,     "free",  0.,  9. },
