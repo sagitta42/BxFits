@@ -2,12 +2,13 @@ import os
 import numpy as np
 
 class Submission():
-    def __init__(self, fit, CNO, var, inputs, penalty):
+    def __init__(self, fit, CNO, var, inputs, pdfs, penalty):
         '''
         fit (str): fit style (ene or mv)                   
         CNO (str): fit condition (fixed, lm, hm)
         var (str): energy variable (nhits, npmts, npmts_dt1, npmts_dt2)
         inputs (list): min and max year for inputs ([int, int]) (PeriodAll if none)                   
+        pdfs (str): folder to look for PDFs                       
         penalty (list): species to be constrained (pp/pep)
         '''
         
@@ -15,6 +16,7 @@ class Submission():
         self.cno = CNO
         self.var = var # is a list always
         self.inputs = inputs # 'all' or string for year 
+        self.pdfs = pdfs
 
 #        self.penalty = penalty # to be constrained
         
@@ -26,12 +28,12 @@ class Submission():
         # if penalty is pp/pep, it's in fitoptions, but not species list
 #        pencfg = pen + penmet if self.penalty[0] == 'ppDpep' else ''
         pencfg = '' # no penalty options for now
-        self.cfgname = 'fitoptions/fitoptions_' + fit + '_' + inputs + '_' + var + pencfg + '.cfg'
+        self.cfgname = 'fitoptions/fitoptions_' + fit + '-' + inputs + '-' + self.pdfs + '-' + var + pencfg + '.cfg'
 #        penicc = pen + penmet if self.penalty[0] != 'ppDpep' else ''
         penicc = '' # no penalty for now
-        self.iccname = 'species_list/species_fit_' + fit + 'CNO_' + CNO + penicc + '.icc'
+        self.iccname = 'species_list/species-fit-' + fit + 'CNO-' + CNO + penicc + '.icc'
         # log file name 
-        self.outfile = 'fit_' + fit + 'Period' + inputs + '_CNO'+ CNO + '_' + var
+        self.outfile = 'fit-' + fit + 'Period' + inputs + '-CNO'+ CNO + '-' + var
         
     
     def cfgfile(self):
@@ -62,7 +64,9 @@ class Submission():
         cfglines[35] = 'c11_subtracted = ' + bl + end
 
         # line 68: PDF path
-        cfglines[67] = 'montecarlo_spectra_file = pdfs_TAUP2017/MCspectra_pp_FVpep_' + self.inputs + '_emin1_masked.root'
+#        pdffolder = 'pdfs_TAUP2017'
+#        pdffolder = 'pdfs_years_simone'
+        cfglines[67] = 'montecarlo_spectra_file = ' + self.pdfs + '/MCspectra_pp_FVpep_' + self.inputs + '_emin1_masked.root'
 
         # line 91: ps: only in mv
         cfglines[90] = 'multivariate_ps_fit = ' + bl + end

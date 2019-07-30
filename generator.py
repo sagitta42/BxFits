@@ -3,14 +3,15 @@ from creator import *
 
 #----------------------------------------------------------
 
-def generator(outfolder, fit, CNO, var, inputs, penalty):
+def generator(outfolder, fit, CNO, var, inputs, pdfs, penalty):
     '''
-    0) outfolder: output folder for log and err files        
-    1) fit: type of fit (ene, mv)            
-    2) CNO: fit condition (fixed, lm, hm)
-    3) var: energy variable (nhits, npmts, npmts_dt1, npmts_dt2)
-    4) inputs: period to fit (all, YYYY)
-    5) penalty: species to put penalty on (e.g. Bi210) (optional) --> not implemented yet
+    outfolder: output folder for log and err files        
+    fit: type of fit (ene, mv)            
+    CNO: fit condition (fixed, lm, hm)
+    var: energy variable (nhits, npmts, npmts_dt1, npmts_dt2)
+    inputs: period to fit (all, YYYY)
+    pdfs: folder where PDFs are to be found            
+    penalty: species to put penalty on (e.g. Bi210) (optional) --> not implemented yet
     '''
 
     ## ---------------------------------
@@ -45,7 +46,7 @@ def generator(outfolder, fit, CNO, var, inputs, penalty):
     ## ---------------------------------
 
     ## init
-    s = Submission(fit, CNO, var, inputs, penalty)
+    s = Submission(fit, CNO, var, inputs, pdfs, penalty)
     
     print # readability
     print '#######################################'
@@ -79,16 +80,17 @@ def generator(outfolder, fit, CNO, var, inputs, penalty):
 def main():
     userinput = sys.argv[1:]
     
-    if not len(userinput) in [3,4]:
+    if not len(userinput) in range(3,6):
         print
         print 'Examples:'
         print 'python generator.py CNO=fixed fit=mv var=npmts,nhits'
         print 'python generator.py fit=ene inputs=2012,2016 var=nhits CNO=fixed5'
+        print 'python generator.py fit=ene var=nhits CNO=fixed5 inputs=2012,2016 pdfs=pdfs_TAUP2017'
         print
         sys.exit(1)
 
     ## options
-    user = ['CNO', 'var', 'fit', 'inputs', 'penalty'] # penalty not implemented yet
+    user = ['CNO', 'var', 'fit', 'inputs', 'pdfs','penalty'] # penalty not implemented yet
     opts = {}
     for opt in user:
         opts[opt] = 'none'
@@ -96,13 +98,20 @@ def main():
     for opt in user:
         for inp in sys.argv:
             if opt in inp:
-                opts[opt] = inp.split('=')[1] if opt == 'fit' else inp.split('=')[1].split(',') # penalty can be a list; var is a list to loop on
+                opts[opt] = inp.split('=')[1] if opt in ['fit','pdfs'] else inp.split('=')[1].split(',') # penalty can be a list; var is a list to loop on
 
+    ## default for PDFs is TAUP
+    if opts['pdfs'] == 'none': opts['pdfs'] = 'pdfs_TAUP2017'        
 
     ## folder for given configuration (for submission files and output log file folder)
-    outfolder = 'res_fit_' + opts['fit']
-    if not opts['inputs'] == 'none': outfolder += '_' + '-'.join(opts['inputs']) # year by year
-
+    outfolder = 'res-fit-' + opts['fit']
+    if opts['inputs'] == 'none':
+        outfolder += '-PeriodAll-'
+    else:
+        outfolder += '-' + '_'.join(opts['inputs']) # year by year
+    
+    outfolder += '-' + opts['pdfs']
+        
     if os.path.exists(outfolder):
         print 'Folder', outfolder, 'already exists!!'
         print '#######################################'
@@ -116,13 +125,14 @@ def main():
     ## no input by default means PeriodAll
     if opts['inputs'] == 'none':
         opts['inputs'] = ['all']           
+
     
     ## loop over variables and CNO and create a fit for each
     for CNO in opts['CNO']:
         for var in opts['var']:
             for inp in opts['inputs']:
-                params = [outfolder, opts['fit'], CNO, var, str(inp), opts['penalty']]
-                print params
+                params = [outfolder, opts['fit'], CNO, var, str(inp), opts['pdfs'], opts['penalty']]
+#                print params
                 generator(*params)
 
 

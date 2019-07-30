@@ -70,18 +70,19 @@ ERRORLESS = ['Minimized Likelihood Value']
 ### ---------------- parsing ---------------- ###
 ### ----------------------------------------- ###
 
+special_col = 'Year'
 
 def parse_file(filename):
     ### set up table
 
     # table template
-    special_col = 'EneVar'
+#    special_col = 'EneVar'
 	# columns: fit settings, species + errors (no error for the ones listed as ERRORLESS)
     df = pd.DataFrame( columns = [special_col] + [strname(x) for x in COLUMNS]  + [strname(x) + 'Error' for x in np.setdiff1d(COLUMNS,ERRORLESS)] )
     # yearly fit: fit_enePeriod2012_CNOfixed5_nhits.log
-#    year = filename.split('Period')[1].split('_')[0]
+    spec = filename.split('Period')[1].split('_')[0]
     # Simone MV for different CNO and ene variables: fit_mvPeriodall_CNOfixed_nhits.log
-    spec = 'n' + filename.split('n')[1].split('.')[0]
+#    spec = 'n' + filename.split('n')[1].split('.')[0]
     df.at[0, special_col] = spec
 
     ### read fit info
@@ -144,7 +145,7 @@ def parse_folder(foldername):
 
     # output file
     outname = foldername.split('/')[-1] + '_species.out'
-#    df = df.sort_values('Year')
+    df = df.sort_values(special_col)
     df.to_csv(outname, index=False, sep = ' ')
     print('--> '+outname)
 
