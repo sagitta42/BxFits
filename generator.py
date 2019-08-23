@@ -3,50 +3,40 @@ from creator import *
 
 #----------------------------------------------------------
 
-def generator(outfolder, fit, CNO, var, inputs, pdfs, penalty):
+def generator(params):
     '''
-    outfolder: output folder for log and err files        
-    fit: type of fit (ene, mv)            
+    params is a dictionary containing the following keys:
+
     CNO: fit condition (fixed, lm, hm)
     var: energy variable (nhits, npmts, npmts_dt1, npmts_dt2)
+    fit: type of fit (ene, mv)            
     inputs: period to fit (all, YYYY)
+    
+    outfolder: output folder for log and err files        
     pdfs: folder where PDFs are to be found            
     penalty: species to put penalty on (e.g. Bi210) (optional) --> not implemented yet
     '''
 
     ## ---------------------------------
-    ## technical checks
 
-    CNOoptions = ['fixed','lm', 'hm', 'fixed5']
-    if not CNO in CNOoptions:
-        print '\nOptions for CNO:', ', '.join(CNOoptions) + '\n'
-        return
+    # available values for each parameter
+    options = {'CNO': ['fixed','lm', 'hm', 'fixed5'],
+               'var': ['nhits', 'npmts', 'npmts_dt1', 'npmts_dt2'],
+               'fit': ['ene', 'mv'],
+               'inputs': ['all'] + [str(y) for y in range(2012,2018)],
+               'penalty': ICC.keys() + ['pp/pep', 'none']
+    }
 
-    varoptions = ['nhits', 'npmts', 'npmts_dt1', 'npmts_dt2']        
-    if not var in varoptions:
-        print '\nOptions for energy variable:', ', '.join(varoptions) + '\n'
-        return
+    # check each parameter given by user
+    for par in options:
+        if not params[par] in options[par]:
+            print '\nOptions for', par, ':', ', '.join(options[par]) + '\n'
+            sys.exit(1)
     
-    fitoptions = ['ene', 'mv']        
-    if not var in varoptions:
-        print '\nOptions for energy variable:', ', '.join(fitoptions) + '\n'
-        return
-
-    inputoptions = ['all'] + [str(y) for y in range(2012,2018)]        
-    if not inputs in inputoptions:
-        print '\nOptions for inputs:', ', '.join(fitoptions) + '\n'
-        return
-    
-    for pen in penalty:
-        if not ((pen in ICC) or (pen == 'pp/pep') or penalty == 'none'):
-            print '\nOptions for penalty:', ','.join(ICC.keys())
-            return
-
-
     ## ---------------------------------
 
     ## init
-    s = Submission(fit, CNO, var, inputs, pdfs, penalty)
+    s = Submission(params['fit'], params['CNO'], params['var'], params['inputs'], params['pdfs'], params['penalty'])
     
     print # readability
     print '#######################################'
@@ -54,7 +44,7 @@ def generator(outfolder, fit, CNO, var, inputs, pdfs, penalty):
     
     
     # submission file for CNAF
-    s.subfile(outfolder)
+    s.subfile(params['outfolder'])
     
     print # readability
     
@@ -100,12 +90,17 @@ def main():
             if opt in inp:
                 opts[opt] = inp.split('=')[1] if opt in ['fit','pdfs'] else inp.split('=')[1].split(',') # penalty can be a list; var is a list to loop on
 
-    ## default for PDFs is TAUP
-    if opts['pdfs'] == 'none': opts['pdfs'] = 'pdfs_TAUP2017'        
+    ## defaults
+    defaults = {'pdfs': 'pdfs_TAUP2017',
+                'inputs': ['all']
+    }
+
+    for par in defaults:
+        if opts[par] == 'none': opts[par] = defaults[par]
 
     ## folder for given configuration (for submission files and output log file folder)
     outfolder = 'res-fit-' + opts['fit']
-    if opts['inputs'] == 'none':
+    if opts['inputs'] == 'all':
         outfolder += '-PeriodAll-'
     else:
         outfolder += '-' + '_'.join(opts['inputs']) # year by year
@@ -122,18 +117,13 @@ def main():
     ## input two years means range between those years
     if opts['inputs'][0][0] == '2':
         opts['inputs'] = [str(y) for y in range(int(opts['inputs'][0]), int(opts['inputs'][1]) + 1)]
-    ## no input by default means PeriodAll
-    if opts['inputs'] == 'none':
-        opts['inputs'] = ['all']           
-
     
     ## loop over variables and CNO and create a fit for each
     for CNO in opts['CNO']:
         for var in opts['var']:
             for inp in opts['inputs']:
-                params = [outfolder, opts['fit'], CNO, var, str(inp), opts['pdfs'], opts['penalty']]
-#                print params
-                generator(*params)
+                params = {'outfolder': outfolder, 'fit': opts['fit'], 'CNO': CNO, 'var': var, 'inputs': str(inp), 'pdfs': opts['pdfs'], 'penalty': opts['penalty']}
+                generator(params)
 
 
 if __name__ == '__main__':

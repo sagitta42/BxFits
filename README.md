@@ -3,6 +3,8 @@ Instructions on how to perform MC fits on CNAF
 
 ## Set up fitter
 
+### CPU fitter
+
 1) ``` cvs co offline/spectral-fitter ```
 2) Change the following lines in ```lib/fitter.cc```
 ```
@@ -24,6 +26,18 @@ chmod +x setup_taup.sh
 Important to do ```make``` after ```./setup_taup.sh```, so that the fitter gets recompiled with the new MV species lists
 
 (or do ```make clean``` and ```make``` just to be safe)
+
+### GPU fitter
+
+1) Follow the instructions in https://github.com/DingXuefeng/bx-GooStats
+
+2) In ```src//MultiVariateInputManager.cc```:
+
+In function ```MultiVariateInputManager::load_classifications_User()``` and ```MultiVariateInputManager::load_classifications_Rdist()```, add the line:
+
+```multivariate_species_list[ "MCpup" ] =      0;```
+
+
 
 
 ## Generate submission
