@@ -2,13 +2,14 @@ import os
 import numpy as np
 
 class Submission():
-    def __init__(self, fit, CNO, var, inputs, pdfs, penalty):
+    def __init__(self, fit, CNO, var, inputs, pdfs, fittype, penalty):
         '''
         fit (str): fit style (ene or mv)                   
         CNO (str): fit condition (fixed, lm, hm)
         var (str): energy variable (nhits, npmts, npmts_dt1, npmts_dt2)
         inputs (list): min and max year for inputs ([int, int]) (PeriodAll if none)                   
         pdfs (str): folder to look for PDFs                       
+        fittype: cpu or gpu
         penalty (list): species to be constrained (pp/pep)
         '''
         
@@ -17,6 +18,7 @@ class Submission():
         self.var = var # is a list always
         self.inputs = inputs # 'all' or string for year 
         self.pdfs = pdfs
+        self.fittype = fittype
 
 #        self.penalty = penalty # to be constrained
         
@@ -28,7 +30,7 @@ class Submission():
         # if penalty is pp/pep, it's in fitoptions, but not species list
 #        pencfg = pen + penmet if self.penalty[0] == 'ppDpep' else ''
         pencfg = '' # no penalty options for now
-        self.cfgname = 'fitoptions/fitoptions_' + fit + '-' + inputs + '-' + self.pdfs + '-' + var + pencfg + '.cfg'
+        self.cfgname = 'fitoptions/fitoptions_' + fit + '-' + inputs + '-' + self.pdfs + '-' + var + pencfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
 #        penicc = pen + penmet if self.penalty[0] != 'ppDpep' else ''
         penicc = '' # no penalty for now
         self.iccname = 'species_list/species-fit-' + fit + 'CNO-' + CNO + penicc + '.icc'
@@ -49,40 +51,42 @@ class Submission():
         cfglines = open('templates/fitoptions_MCfit.cfg').readlines()
         cfglines = [ln.rstrip('\r\n') for ln in cfglines]
 
-        end = ''
-#        end = '\n'
-        
         # line 3: fit variable --> in case of npmts_dtX is just npmts
-        cfglines[2] = 'fit_variable = ' + self.var.split('_')[0] + end
+        cfglines[2] = 'fit_variable = ' + self.var.split('_')[0]
         
         # line 11: fit variable MC
-        cfglines[10] = 'fit_variable_MC = ' + self.var + end
+        cfglines[10] = 'fit_variable_MC = ' + self.var
 
         bl = 'true' if self.fit == 'mv' else 'false'
         
         # line 36: multivariate or energy only fit
-        cfglines[35] = 'c11_subtracted = ' + bl + end
+        cfglines[35] = 'c11_subtracted = ' + bl
 
         # line 68: PDF path
-#        pdffolder = 'pdfs_TAUP2017'
-#        pdffolder = 'pdfs_years_simone'
         cfglines[67] = 'montecarlo_spectra_file = ' + self.pdfs + '/MCspectra_pp_FVpep_' + self.inputs + '_emin1_masked.root'
 
         # line 91: ps: only in mv
-        cfglines[90] = 'multivariate_ps_fit = ' + bl + end
+        cfglines[90] = 'multivariate_ps_fit = ' + bl
 
         # line 96: rdist: only in mv
-        cfglines[95] = 'multivariate_rdist_fit = ' + bl + end
+        cfglines[95] = 'multivariate_rdist_fit = ' + bl
 
         # line 101: complem.: only in mv
-        cfglines[100] = 'complementary_histo_fit = ' + bl + end
+        cfglines[100] = 'complementary_histo_fit = ' + bl
 
         # line 102: compl. fit variable
         cfglines[101] = 'complementary_histo_name = pp/final_' + self.var + '_pp_1'
 
-        # line 127 and 128: pileup constraint
-        cfglines[126] = 'pileup_penalty_mean = ' + str(PUPPEN[self.inputs][0])
-        cfglines[127] = 'pileup_penalty_sigma = ' + str(PUPPEN[self.inputs][1])
+        # line 127 and 128: pileup constraint in CPU fit
+        if self.fittype == 'cpu':
+            # in CPU fit, the constraint is in fitoptions
+            cfglines[126] = 'pileup_penalty_mean = ' + str(PUPPEN[self.inputs][0])
+            cfglines[127] = 'pileup_penalty_sigma = ' + str(PUPPEN[self.inputs][1])
+        
+        # question: should the pileup_penalty* lines in fitoptions be removed for the GPU fit? or will they be ignored?
+        
+        # in GPU fit, pileup penalty is in species list
+
 
         # line 103: dark noise: only in analytical fit, not MC fit
 #        cfglines[102] = 'dark_noise_window = win' + self.var[-1] + '\n'
@@ -114,11 +118,18 @@ class Submission():
         ## otherwise generate from a template
         icclines = open('templates/species_list_' + self.fit + '.icc').readlines()
 
-        # line 23 pep: fixed if ene (Simone yearly, is not a must!)
-        if self.fit == 'ene': icclines[22] = '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.8,   "fixed", 2.8,  10. },\n'
+        # line 18: pile up species in GPU fitter
+        if self.fittype == 'gpu':
+            icclines[17] = '{ "MCpup", -1,   kViolet, kDashed, 2,     ' + str(PUPPEN[self.inputs][0]) + ', "penalty",  ' + str(PUPPEN[self.inputs][0]) + ',  ' + str(PUPPEN[self.inputs][1]) + ' }'
+
+        # line 23 pep: fixed if ene Simone yearly fits, in principle is not a must
+        if self.fit == 'ene' and self.inputs[0] == '2':
+            icclines[22] = '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.8,   "fixed", 2.8,  10. },\n'
 
         # line 24: cno fixed or free; or constrained to lm/hm
         icclines[23] = CNOICC[self.cno]
+
+
 
 #        # extra: free (default) or penalty
 #        if self.penalty != 'none':
