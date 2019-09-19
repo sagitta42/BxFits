@@ -10,8 +10,8 @@ options = {
     'fit': ['ene', 'mv'],
     'inputs': ['all'] + [str(y) for y in range(2012,2018)],
     'penalty': ICC.keys() + ['pp/pep', 'none'], # penalty not implemented yet
-    'fittype': ['cpu', 'gpu']
-     
+    'ftype': ['cpu', 'gpu'],
+    'save': ['true', 'false']
 }
     
 ## defaults
@@ -19,11 +19,13 @@ defaults = {
     'pdfs': 'pdfs_TAUP2017',
     'inputs': ['all'], # has to be a list
     'var': 'nhits',
-    'fittype': 'cpu'
+    'ftype': 'cpu',
+    'save': 'false',
+    'emin': '85',
 }
     
 ## options for user
-user = options.keys() + ['pdfs'] # pdfs is a path to a folder, has no fixed options
+user = options.keys() + ['pdfs', 'emin'] # pdfs is a path to a folder, has no fixed options
 
 #----------------------------------------------------------
 
@@ -35,11 +37,14 @@ def generator(params):
     var: energy variable (nhits, npmts, npmts_dt1, npmts_dt2)
     fit: type of fit (ene, mv)            
     inputs: period to fit (all, YYYY)
+    emin: min energy of the fit (integer but actually string)
     
     outfolder: output folder for log and err files        
     pdfs: folder where PDFs are to be found            
     penalty: species to put penalty on (e.g. Bi210) (optional) --> not implemented yet
-    fittype: cpu or gpu
+    ftype: cpu or gpu
+
+    save: save fit results or not (true or false)
     '''
 
     ## ---------------------------------
@@ -54,7 +59,7 @@ def generator(params):
     ## ---------------------------------
 
     ## init
-    s = Submission(params['fit'], params['CNO'], params['var'], params['inputs'], params['pdfs'], params['fittype'], params['penalty'])
+    s = Submission(params)
     
     print # readability
     print '#######################################'
@@ -62,7 +67,7 @@ def generator(params):
     
     
     # submission file for CNAF
-    s.subfile(params['outfolder'])
+    s.subfile()#params['outfolder'])
     
     print # readability
     
@@ -101,7 +106,7 @@ def main():
     for opt in user:
         for inp in sys.argv:
             if opt in inp:
-                opts[opt] = inp.split('=')[1] if opt in ['fit', 'pdfs', 'fittype'] else inp.split('=')[1].split(',') # penalty can be a list; var is a list to loop on
+                opts[opt] = inp.split('=')[1] if opt in ['fit', 'pdfs', 'ftype', 'emin', 'save'] else inp.split('=')[1].split(',') # penalty can be a list; var is a list to loop on
 
 
     # assign defaults if nothing given
@@ -116,6 +121,7 @@ def main():
         outfolder += '-' + '_'.join(opts['inputs']) # year by year
     
     outfolder += '-' + opts['pdfs']
+    outfolder += '-emin' + opts['emin']
 
     # note: fittype (cpu or gpu) is not in the name because one can't do both in one folder :) so no threat of overlapping results folder
         
@@ -129,12 +135,21 @@ def main():
     ## input two years means range between those years
     if opts['inputs'][0][0] == '2':
         opts['inputs'] = [str(y) for y in range(int(opts['inputs'][0]), int(opts['inputs'][1]) + 1)]
-    
+   
+    print opts
+
     ## loop over variables and CNO and create a fit for each
+    params = opts.copy()        
+    params['outfolder'] = outfolder
+
     for CNO in opts['CNO']:
         for var in opts['var']:
             for inp in opts['inputs']:
-                params = {'outfolder': outfolder, 'fit': opts['fit'], 'CNO': CNO, 'var': var, 'inputs': str(inp), 'pdfs': opts['pdfs'], 'penalty': opts['penalty'], 'fittype': opts['fittype']} # something smarter can be done here
+                params['CNO'] = CNO
+                params['var'] = var
+                params['inputs'] = inp
+#                params = {'outfolder': outfolder, 'fit': opts['fit'], 'CNO': CNO, 'var': var, 'inputs': str(inp), 'pdfs': opts['pdfs'], 'penalty': opts['penalty'], 'fittype': opts['fittype']} # something smarter can be done here
+                print params
                 generator(params)
 
 

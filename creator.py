@@ -2,23 +2,29 @@ import os
 import numpy as np
 
 class Submission():
-    def __init__(self, fit, CNO, var, inputs, pdfs, fittype, penalty):
+    def __init__(self, params):
         '''
+        params: dictionary with different parameters from user input
+
         fit (str): fit style (ene or mv)                   
         CNO (str): fit condition (fixed, lm, hm)
         var (str): energy variable (nhits, npmts, npmts_dt1, npmts_dt2)
+        emin (int): min energy of the fit
         inputs (list): min and max year for inputs ([int, int]) (PeriodAll if none)                   
         pdfs (str): folder to look for PDFs                       
-        fittype: cpu or gpu
+        ftype: cpu or gpu
         penalty (list): species to be constrained (pp/pep)
         '''
         
-        self.fit = fit # energy only or full mv
-        self.cno = CNO
-        self.var = var # is a list always
-        self.inputs = inputs # 'all' or string for year 
-        self.pdfs = pdfs
-        self.fittype = fittype
+        self.fit = params['fit'] # energy only or full mv
+        self.cno = params['CNO']
+        self.var = params['var'] # is a list always
+        self.inputs = params['inputs'] # 'all' or string for year 
+        self.pdfs = params['pdfs']
+        self.fittype = params['ftype']
+        self.emin = params['emin']
+        self.save = params['save']
+        self.outfolder = params['outfolder']
 
 #        self.penalty = penalty # to be constrained
         
@@ -30,12 +36,12 @@ class Submission():
         # if penalty is pp/pep, it's in fitoptions, but not species list
 #        pencfg = pen + penmet if self.penalty[0] == 'ppDpep' else ''
         pencfg = '' # no penalty options for now
-        self.cfgname = 'fitoptions/fitoptions_' + fit + '-' + inputs + '-' + self.pdfs + '-' + var + pencfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
+        self.cfgname = 'fitoptions/fitoptions_' + self.fit + '-' + self.inputs + '-' + self.pdfs + '-' + self.var + '-emin' + self.emin + pencfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
 #        penicc = pen + penmet if self.penalty[0] != 'ppDpep' else ''
         penicc = '' # no penalty for now
-        self.iccname = 'species_list/species-fit-' + fit + 'CNO-' + CNO + penicc + '.icc'
+        self.iccname = 'species_list/species-fit-' + self.fit + 'CNO-' + self.cno + penicc + '.icc'
         # log file name 
-        self.outfile = 'fit-' + fit + 'Period' + inputs + '-CNO'+ CNO + '-' + var
+        self.outfile = 'fit-' + self.fit + 'Period' + self.inputs + '-CNO'+ self.cno + '-' + self.var
         
     
     def cfgfile(self):
@@ -64,6 +70,18 @@ class Submission():
 
         # line 68: PDF path
         cfglines[67] = 'montecarlo_spectra_file = ' + self.pdfs + '/MCspectra_pp_FVpep_' + self.inputs + '_emin1_masked.root'
+
+        # line 82: minimum energy
+        cfglines[81] = 'minimum_energy = ' + self.emin
+
+        # line 88: save fit result or not
+        cfglines[87] = 'save_fit_results = ' + self.save
+
+        if self.save == 'true':
+            # line 89: fit results output filename
+            cfglines[88] = 'fit_results_output = ' + self.outfolder + '/' + 'fit_results.root'
+            # line 90: plot filename
+            cfglines[89] = 'plot_filename = ' + self.outfolder + '/' + 'plot.root'
 
         # line 91: ps: only in mv
         cfglines[90] = 'multivariate_ps_fit = ' + bl
@@ -150,7 +168,7 @@ class Submission():
 
 
 
-    def subfile(self, outfolder):
+    def subfile(self):#, outfolder):
         ''' Create CNAF submission file if does not exist; if yes, append
         name of the submission file is outfolder_submission.sh, where outfolder is the folder for the output log files
         '''
@@ -158,13 +176,13 @@ class Submission():
         pr = 'All' if self.inputs == 'all' else self.inputs
         inputfile = 'input_files/Period' + pr + '_FVpep_TFCMZ.root'
 
-        out = open(outfolder + '_submission.sh', 'a') # append
+        out = open(self.outfolder + '_submission.sh', 'a') # append
 
         extra = '_0' if self.fit == 'mv' else ''
 
         print >> out, 'bsub -q borexino_physics',\
-            '-e', outfolder + '/' + self.outfile + '.err',\
-            '-o', outfolder + '/' + self.outfile + '.log',\
+            '-e', self.outfolder + '/' + self.outfile + '.err',\
+            '-o', self.outfolder + '/' + self.outfile + '.log',\
             './spectralfit', inputfile, 'pp/final_' + self.var + '_pp' + extra,\
             self.cfgname, self.iccname
 
