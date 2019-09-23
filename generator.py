@@ -133,7 +133,7 @@ def main():
         os.mkdir(outfolder)
 
     ## input two years means range between those years
-    if opts['inputs'][0][0] == '2':
+    if (len(opts['inputs'])) >= 2 and (opts['inputs'][0][0] == '2'):
         opts['inputs'] = [str(y) for y in range(int(opts['inputs'][0]), int(opts['inputs'][1]) + 1)]
    
     print opts
