@@ -18,7 +18,7 @@ options = {
 defaults = {
     'pdfs': 'pdfs_TAUP2017',
     'inputs': ['all'], # has to be a list
-    'var': 'nhits',
+    'var': ['nhits'],
     'ftype': 'cpu',
     'save': 'false',
     'emin': '85',
