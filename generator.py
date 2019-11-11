@@ -5,12 +5,13 @@ from creator import *
     
 # available values for each parameter
 options = {
-    'CNO': ['fixed','lm', 'hm', 'fixed5'],
+    'CNO': ['fixed','lm', 'hm', 'fixed5', 'free'],
     'var': ['nhits', 'npmts', 'npmts_dt1', 'npmts_dt2'],
     'fit': ['ene', 'mv'],
-    'inputs': ['all'] + [str(y) for y in range(2012,2018)],
-    'penalty': ICC.keys() + ['pp/pep', 'none'], # penalty not implemented yet
-    'ftype': ['cpu', 'gpu'],
+    'inputs': ['all', 'Phase3'] + [str(y) for y in range(2012,2018)],
+    'penalty': ICC.keys() + ['pp/pep', 'none'],
+    'met': ['hm', 'lm', 'none'], # metallicity for the pep constraint
+    'ftype': ['cpu', 'gpu', 'cno'],
     'save': ['true', 'false']
 }
     
@@ -52,7 +53,15 @@ def generator(params):
 
     # check each parameter given by user
     for par in options:
-        if not params[par] in options[par]:
+        # penalty is a list
+        if par == 'penalty':
+            flag = True # by default, we think it's an available option
+            for parsp in params[par]:
+                if not parsp in options[par]: flag = False # set to False if not available
+        else:
+            flag = params[par] in options[par]
+
+        if not flag:
             print '\nOptions for', par, ':', ', '.join(options[par]) + '\n'
             sys.exit(1)
     
@@ -106,7 +115,7 @@ def main():
     for opt in user:
         for inp in sys.argv:
             if opt in inp:
-                opts[opt] = inp.split('=')[1] if opt in ['fit', 'pdfs', 'ftype', 'emin', 'save'] else inp.split('=')[1].split(',') # penalty can be a list; var is a list to loop on
+                opts[opt] = inp.split('=')[1] if opt in ['fit', 'pdfs', 'ftype', 'emin', 'save', 'met'] else inp.split('=')[1].split(',') # penalty can be a list; var is a list to loop on
 
 
     # assign defaults if nothing given

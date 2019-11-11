@@ -1,0 +1,4 @@
+specist list for mv fit has 3 extra species not used in ene fit
+species list for ene only fit has CNO and pep fixed to reproduce Simone results, in principle this is not a necessary thing in ene fit
+species list marked "cno" is for the CNO analysis used with the gpu fit. Pp, pileup and C14 are commented out because we use a higher energy range (above 140). Pb214 is commented out because not implemented in the GPU fit
+
