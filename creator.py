@@ -168,8 +168,8 @@ class Submission():
             return
             
         ## otherwise generate from a template
-        extra = '_cno' if self.fitcno else '' # for cno configuration fits
-        icclines = open('MCfits/templates/species_list_' + self.fit + extra + '.icc').readlines()
+#        extra = '_cno' if self.fitcno else '' # for cno configuration fits
+        icclines = open('MCfits/templates/species_list.icc').readlines()
 
         # line 18: pile up species in GPU fitter
         # not used now in the CNO config
@@ -183,6 +183,25 @@ class Submission():
         # line 24: cno fixed or free; or constrained to lm/hm
         icclines[23] = CNOICC[self.cno]
 
+        # line 44: Pb214
+        if self.fittype == 'gpu':
+            # comment out because not implemented in the GPU fitter
+            icclines[43] = '//' + icclines[43]
+
+        # CNO configuration species
+        if self.fitcno:
+            # C14 (l 15), pileup (l 17) and pp (l 19) are out
+            for i in [14, 16, 18]:
+                icclines[i] = '//' + icclines[i]
+
+            # line 50: Ext_K40
+            # free normally, fixed in the CNO configuration
+            icclines[49] = '{ "Ext_K40",      -1,   kAzure,  kSolid,  2,    0.15,   "fixed",  0.,  10. },\n'
+
+        # energy only fit: Po210_2 (l 29), C11_2 (l 35), C10_2 (l 37) and He6_2 (l 39) have to go
+        if self.fit == 'ene':
+            for i in [28, 34, 36, 38]:
+                icclines[i] = '//' + icclines[i]
 
         # set penalties if given
         if self.penalty != ['none']:
