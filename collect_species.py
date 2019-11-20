@@ -9,7 +9,9 @@ import os
 
 # species and neutrinos
 
-COLUMNS = ['Bi210', 'C11', 'C14', 'C14_pileup', 'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Kr85', 'Pb214', 'Po210', 'nu(Be7)', 'nu(pp)', 'nu(CNO)', 'Minimized Likelihood Value']
+# CNO config fit GPU
+COLUMNS = ['Bi210', 'C11', 'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Kr85', 'Po210', 'nu(Be7)', 'nu(CNO)', 'nu(pep)']
+#COLUMNS = ['Bi210', 'C11', 'C14', 'C14_pileup', 'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Kr85', 'Pb214', 'Po210', 'nu(Be7)', 'nu(pp)', 'nu(CNO)', 'Minimized Likelihood Value']
 
 def strname(species):
     return ''.join(species.split(' '))

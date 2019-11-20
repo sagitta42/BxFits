@@ -68,6 +68,9 @@ class Submission():
         # line 11: fit variable MC
         cfglines[10] = 'fit_variable_MC = ' + self.var
 
+        # line 12: MC ext bkg
+        cfglines[11] = 'MC_ext_bkg = true' # Davide check
+
         bl = 'true' if self.fit == 'mv' else 'false'
         
         # line 36: multivariate or energy only fit
@@ -243,7 +246,8 @@ CNOICC = {
 
 # penalty: line number is line - 1 (i.e. line 1 is 0)
 ICC = {
-    'Bi210': [29, '{ "Bi210",        -1,   kSpring, kSolid,  2,    11.84,    "penalty",  11.84,  1.59 },\n'],
+#    'Bi210': [29, '{ "Bi210",        -1,   kSpring, kSolid,  2,    11.84,    "penalty",  11.84,  1.4 },\n'],
+    'Bi210': [29, '{ "Bi210",        -1,   kSpring, kSolid,  2,    11.84,    "penalty",  11.84,  1.59 },\n'], # addition for systematics
 #    'Bi210': [27, '{ "Bi210",        -1,   kSpring, kSolid,  2,    17.5,    "penalty",  17.5,  2.0 },\n'],
 #    'C14': [13, '{ "C14",          -1,   kViolet, kSolid,  2,    3.456e+6, "penalty", 3.456e+6, 17.28e+4 },\n'],
 #    'Kr85': [29, '{ "Kr85",         -1,   kBlue,   kSolid,  2,    6.8,     "penalty", -999.,  110. }\n'],
