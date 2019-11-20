@@ -11,7 +11,8 @@ import os
 
 # COLUMNS = ['C14']
 COLUMNS = ['nu(Be7)', 'nu(pep)', 'Bi210', 'C11', 'Kr85', 'Po210',\
-    'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Po210shift', 'C11shift', 'chi2/ndof', 'C11_2']
+    'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Po210shift', 'C11shift', 'chi2/ndof',\
+    'C11_2', 'Po210_2']
 # COLUMNS = ['C14', 'chi2/ndof', 'LY', 'pp']
 # COLUMNS = ['Bi210', 'C11', 'C14', 'C14_pileup', 'Ext_Bi214', Ext_K40', 'Ext_Tl208', 'Kr85', 'Pb214', 'Po210', 'nu(Be7)', 'nu(pp)', 'nu(CNO)', 'Minimized Likelihood Value']
 
@@ -36,7 +37,8 @@ PARSER = {
 
  'chi^2/N-DOF': 'chi2/ndof',
 
- '^{11}C 2': 'C11_2'
+ '^{11}C 2': 'C11_2',
+ '^{210}Po 2': 'Po210_2'
 
  # '^{14}C': 'C14',
  # 'beta ly': 'LY',
