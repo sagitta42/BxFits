@@ -1,0 +1,594 @@
+[GPUManager]() registered
+regV registering [npe] as [0x27b3180]
+regV registering [npe_short] as [0x27b32b0]
+regV registering [Po218:peak] as [6002]
+regV registering [Rn222:peak] as [5490]
+regV registering [Po210:peak] as [5305]
+Loaded path: </p/project/cjikp20/jikp2013/bx-GooStats-dingxf_dev/bx-GooStats/data>
+RawSpectrumProvider::registerSpecies Register [nu(pep)]
+RawSpectrumProvider::registerSpecies Register [nu(Be7)_sunT]
+RawSpectrumProvider::registerSpecies Register [nu(Be7)_nosunT]
+RawSpectrumProvider::registerSpecies Register [nu(CNO)]
+RawSpectrumProvider::registerSpecies Register [nu(pp)_oleg]
+RawSpectrumProvider::registerSpecies Register [nu(pp)_aldo]
+RawSpectrumProvider::registerSpecies Register [nu(pp)]
+RawSpectrumProvider::registerSpecies Register [nu(B8)]
+RawSpectrumProvider::registerSpecies Register [C14_universal]
+Warning: c14_shape_factor is taken as 1.24
+RawSpectrumProvider::registerSpecies Register [C14]
+RawSpectrumProvider::registerSpecies Register [C11]
+RawSpectrumProvider::registerSpecies Register [C10]
+RawSpectrumProvider::registerSpecies Register [Kr85]
+RawSpectrumProvider::registerSpecies Register [B12]
+RawSpectrumProvider::registerSpecies Register [He6]
+RawSpectrumProvider::registerSpecies Register [Pa234m]
+RawSpectrumProvider::registerSpecies Register [K40]
+RawSpectrumProvider::registerSpecies Register [La138]
+RawSpectrumProvider::registerSpecies Register [Bi210_mach4]
+RawSpectrumProvider::registerSpecies Register [Bi210_oleg]
+RawSpectrumProvider::registerSpecies Register [Bi210_aldo]
+RawSpectrumProvider::registerSpecies Register [Bi210_daniel]
+RawSpectrumProvider::registerSpecies Register [Bi210_flothmann]
+RawSpectrumProvider::registerSpecies Register [Bi210_grau]
+RawSpectrumProvider::registerSpecies Register [Pb214_KM]
+RawSpectrumProvider::registerSpecies Register [Pb214_aldo_1]
+RawSpectrumProvider::registerSpecies Register [Pb214_aldo_2]
+RawSpectrumProvider::registerSpecies Register [Pb214_aldo_3]
+RawSpectrumProvider::registerSpecies Register [Pb214_aldo_4]
+RawSpectrumProvider::registerSpecies Register [Pb214_aldo_5]
+RawSpectrumProvider::registerSpecies Register [Pb214_aldo_6]
+RawSpectrumProvider::registerSpecies Register [Pb214_aldo_7]
+RawSpectrumProvider::registerSpecies Register [Ext_Tl208]
+RawSpectrumProvider::registerSpecies Register [Ext_Bi214]
+RawSpectrumProvider::registerSpecies Register [Ext_K40]
+RawSpectrumProvider::registerSpecies Register [U238_chain]
+RawSpectrumProvider::registerSpecies Register [Th232_chain]
+RawSpectrumProvider::registerSpecies Register [C14_pileup]
+[InputManager]() registered
+[PrepareData]() registered
+[SimpleFit]() registered
+[CNOTest]() registered
+[HMLMTest]() registered
+[ScanPar]() registered
+[CorrelationManager]() registered
+[ContourManager]() registered
+[OutputManager]() registered
+Checking GPU [0]/[1]
+Running on [Tesla K80] with compute capability of 3.7
+Warning: BatchOutputManager not set, default are used.
+LOG: Getting data from file input_files/PeriodPhase3_FVpep_TFCMI_c19.root
+Searching final_nhits_pp in pp
+LOG: fitting histogram final_nhits_pp
+WARNING: chain_counts_cum not TH1D, trying other TH1
+WARNING: No chain_counts_cum in input directory, trying in the main directory of the file
+chain_counts_cum: mean 23.0749
+[default] adopt [global] as its parent.
+Inserting period [default,input_files/PeriodPhase3_FVpep_TFCMI_c19.root,pp/final_nhits_pp,fitoptions/fitoptions_ene-Phase3-pdfs_new-nhits-emin140.cfg,species_list/species-fit-eneCNO-hm.icc]
+ARG[1] <icc> = [species_list/species-fit-eneCNO-hm.icc]
+InputManager::registerConfigset(default)
+Loading from <fitoptions/fitoptions_ene-Phase3-pdfs_new-nhits-emin140.cfg>
+h_n_used_pmts: mean 1260.22
+h_n_used_pmts_weighted: mean 1264.82
+option <n_used_charge_histo_name> not set, default value [h_n_used_charge] used
+h_n_used_charge: mean 1256.15
+option <n_used_charge_po210_histo_name> not set, default value [h_n_used_charge_weighted] used
+h_n_used_charge_weighted: mean 1260.75
+feq_inv: mean 1.59049
+Mask [mask_2] from [h_n_used_pmts] Mean <999.503> RMS <576.892>
+Mask [mask_3] from [h_n_used_pmts_weighted] Mean <999.503> RMS <576.893>
+*********Dump options parsed*********************************
+MC_ext_bkg => <true>
+alpha_response_function => <scaled_poisson>
+alpha_subtracted => <false>
+apply_radiochemical_constraints => <false>
+applying_mask => <true>
+beta_response_function => <scaled_poisson>
+bi210_spectrum => <aldo>
+c11_quenching_fixed => <false>
+c11_subtracted => <false>
+complementary_histo_fit => <false>
+complementary_histo_name => <pp/final_nhits_pp_1>
+convolve_dark_noise => <false>
+dark_noise_window => <win1>
+fit_results_output => <fit_results.root>
+fit_variable => <nhits>
+fit_variable_MC => <nhits>
+geometric_correction_on => <false>
+icc => <species_list/species-fit-eneCNO-hm.icc>
+ly_fixed => <false>
+meantime_cut => <no>
+minimization_method => <likelihood>
+minimization_routine => <minuit>
+montecarlo_interpolation => <off>
+montecarlo_spectra_file => <pdfs_new/MCspectra_FVpep_Period_Phase3_unmasked.root>
+multivariate_ps_fit => <false>
+multivariate_rdist_fit => <false>
+n_used_pmts_histo_name => <h_n_used_pmts>
+n_used_pmts_po210_histo_name => <h_n_used_pmts_weighted>
+n_used_pmts_po210_tfc0_histo_name => <h_n_used_pmts_weighted0>
+n_used_pmts_po210_tfc1_histo_name => <h_n_used_pmts_weighted1>
+n_used_pmts_tfc0_histo_name => <h_n_used_pmts0>
+n_used_pmts_tfc1_histo_name => <h_n_used_pmts1>
+neutrino_magnetic_moment => <no>
+no_lead_cut => <no>
+norm_variable => <true>
+npe_offset_fixed => <true>
+pb214_spectrum => <aldo>
+pileup_eff_ly_fixed => <true>
+plot_filename => <plot.root>
+po210_quenching_fixed => <false>
+quenching_parameterization => <echidna>
+save_fit_results => <false>
+scale_poisson => <true>
+show_only_c14_c14 => <false>
+spectra_pdfs => <montecarlo>
+synthpup_file => <P91011_Synthetic_Spectra.root>
+synthpup_hist => <h_synth_spec_5_dt1>
+use_alpha_response_function => <false>
+use_remaining_pb214 => <false>
+weighted_response => <false>
+alpha_resolution_0_guess => float: [1.2]
+alpha_resolution_0_max => float: [20]
+alpha_resolution_0_min => float: [0]
+alpha_resolution_1_guess => float: [0]
+alpha_resolution_1_max => float: [0]
+alpha_resolution_1_min => float: [0]
+alpha_resolution_2_guess => float: [0]
+alpha_resolution_2_max => float: [0]
+alpha_resolution_2_min => float: [0]
+beta_resolution_0_guess => float: [3]
+beta_resolution_0_max => float: [20]
+beta_resolution_0_min => float: [0]
+beta_resolution_1_guess => float: [3]
+beta_resolution_1_max => float: [20]
+beta_resolution_1_min => float: [0]
+beta_resolution_2_guess => float: [7]
+beta_resolution_2_max => float: [7]
+beta_resolution_2_min => float: [7]
+beta_resolution_3_guess => float: [2]
+beta_resolution_3_max => float: [10]
+beta_resolution_3_min => float: [0]
+beta_resolution_4_guess => float: [0]
+beta_resolution_4_max => float: [0]
+beta_resolution_4_min => float: [0]
+beta_resolution_5_guess => float: [0]
+beta_resolution_5_max => float: [0]
+beta_resolution_5_min => float: [0]
+c11_quenching => float: [0.8828]
+c14_shape_factor => float: [1.24]
+c14_threshold => float: [100]
+dark_noise_threshold => float: [100]
+ext_bckgd_eff_ly => float: [1.0228]
+fCher => float: [2]
+fit_verbosity => float: [0]
+geometric_correction => float: [0.112]
+histogram_binwidth => float: [1]
+kb => float: [0.0109]
+ly_guess => float: [0.49]
+maximum_energy => float: [950]
+meantime_cut_correction_c1 => float: [0.974]
+meantime_cut_correction_c2 => float: [-0.00211]
+minimum_energy => float: [140]
+multivariate_ps_fit_bins => float: [1]
+multivariate_ps_fit_max => float: [650]
+multivariate_ps_fit_min => float: [400]
+multivariate_ps_fit_smooth => float: [0]
+multivariate_rdist_fit_bins => float: [16]
+multivariate_rdist_fit_max => float: [900]
+multivariate_rdist_fit_min => float: [500]
+multivariate_rdist_fit_smooth => float: [0]
+npe_offset => float: [0]
+number_of_bins_for_weighted_response => float: [10]
+pileup_eff_ly => float: [0.935]
+po210_quenching => float: [0.07879]
+poisson_factor => float: [15]
+poisson_threshold => float: [100]
+ser_under_threshold => float: [0.12]
+sys_errors_scale => float: [0]
+unequalization_factor => float: [1]
+*************************************************************
+Inserting Constant name [compute_likelihood_p_value] value [0]
+regV registering [compute_likelihood_p_value] as [0]
+Inserting [C11_qch] to [global]
+Inserting [Po210_qch] to [default]
+Inserting [extly_qch] to [global]
+Linking [Ext_Tl208_qch] with [extly_qch] in [global]
+Linking [Ext_Bi214_qch] with [extly_qch] in [global]
+Linking [Ext_K40_qch] with [extly_qch] in [global]
+Inserting [Po218_qch] to [global]
+Inserting [Rn222_qch] to [global]
+Inserting [C10_qch] to [global]
+Bad programming style of using const_cast!!!
+regV registering [NL] as [0x7ffcc3802510]
+Inserting [beta_ly] to [default]
+810
+Inserting [beta_resolution_0] to [global]
+Inserting [beta_resolution_1] to [global]
+Inserting [beta_resolution_2] to [global]
+Inserting [beta_resolution_3] to [global]
+Inserting [beta_resolution_4] to [global]
+Inserting [beta_resolution_5] to [global]
+Inserting [alpha_resolution_0] to [default]
+Inserting [alpha_resolution_1] to [default]
+Inserting [alpha_resolution_2] to [default]
+Inserting [alpha_resolution_3] to [default]
+Inserting [alpha_resolution_4] to [default]
+Inserting [alpha_resolution_5] to [default]
+Inserting [mlp_correction_0] to [default]
+Inserting [mlp_correction_1] to [default]
+Inserting [mlp_correction_2] to [default]
+Inserting [mlp_correction_3] to [default]
+Integral: 11.6405, sum = 1.17605e+06, endpoint = 671.809
+Integral: 76.3209, sum = 1.81556e+07, endpoint = 264.064
+RawSpectrumProvider::registerSpecies Register [nu(Be7+munu)]
+RawSpectrumProvider::registerSpecies Register [nu(pp+munu)]
+RawSpectrumProvider::registerSpecies Register [Bi210]
+RawSpectrumProvider::registerSpecies Register [nu(Be7)]
+feq: 1.58703 feq_po: 1.58125
+Inserting [default] to default feq: 1.58703 0
+Inserting [Po210] to default feq: 1.58125 0
+Dumping pre-created rates:
+INFO: loading species from file species_list/species-fit-eneCNO-hm.icc
+Inserting [Bi210] to [default]
+Inserting [C11] to [default]
+Inserting [Ext_Bi214] to [global]
+Inserting [Ext_K40] to [global]
+Inserting [Ext_Tl208] to [global]
+Inserting [Kr85] to [default]
+Inserting [Po210] to [default]
+Inserting [nu(B8)] to [default]
+Inserting [nu(Be7)] to [global]
+Inserting [nu(CNO)] to [global]
+Inserting [nu(pep)] to [global]
+ [global] : (C10_qch, global.C10_qch) 
+ [global] : (C11_qch, global.C11_qch) 
+ [global] : (Ext_Bi214, global.Ext_Bi214) 
+ [global] : (Ext_Bi214_qch, global.extly_qch) 
+ [global] : (Ext_K40, global.Ext_K40) 
+ [global] : (Ext_K40_qch, global.extly_qch) 
+ [global] : (Ext_Tl208, global.Ext_Tl208) 
+ [global] : (Ext_Tl208_qch, global.extly_qch) 
+ [global] : (Po218_qch, global.Po218_qch) 
+ [global] : (Rn222_qch, global.Rn222_qch) 
+ [global] : (beta_resolution_0, global.beta_resolution_0) 
+ [global] : (beta_resolution_1, global.beta_resolution_1) 
+ [global] : (beta_resolution_2, global.beta_resolution_2) 
+ [global] : (beta_resolution_3, global.beta_resolution_3) 
+ [global] : (beta_resolution_4, global.beta_resolution_4) 
+ [global] : (beta_resolution_5, global.beta_resolution_5) 
+ [global] : (extly_qch, global.extly_qch) 
+ [global] : (nu(Be7), global.nu(Be7)) 
+ [global] : (nu(CNO), global.nu(CNO)) 
+ [global] : (nu(pep), global.nu(pep)) 
+default>-- [default] : (Bi210, default.Bi210) 
+default>-- [default] : (C11, default.C11) 
+default>-- [default] : (Kr85, default.Kr85) 
+default>-- [default] : (Po210, default.Po210) 
+default>-- [default] : (Po210_qch, default.Po210_qch) 
+default>-- [default] : (alpha_resolution_0, default.alpha_resolution_0) 
+default>-- [default] : (alpha_resolution_1, default.alpha_resolution_1) 
+default>-- [default] : (alpha_resolution_2, default.alpha_resolution_2) 
+default>-- [default] : (alpha_resolution_3, default.alpha_resolution_3) 
+default>-- [default] : (alpha_resolution_4, default.alpha_resolution_4) 
+default>-- [default] : (alpha_resolution_5, default.alpha_resolution_5) 
+default>-- [default] : (beta_ly, default.beta_ly) 
+default>-- [default] : (mlp_correction_0, default.mlp_correction_0) 
+default>-- [default] : (mlp_correction_1, default.mlp_correction_1) 
+default>-- [default] : (mlp_correction_2, default.mlp_correction_2) 
+default>-- [default] : (mlp_correction_3, default.mlp_correction_3) 
+default>-- [default] : (nu(B8), default.nu(B8)) 
+InputManager::registerDataset(default.Major)
+Inserting period full [default.Major]
+If you would like to fit enhanced spectrum only, change the code here
+Livetime: 905.536 days
+computing mass from input_files/PeriodPhase3_FVpep_TFCMI_c19.root
+Mass: 71.3 tons
+Inserting [default.Major] exposure : [64564.7 (day x tons)]
+Inserting type [remaining_pb214] name [default] value [0.00348052]
+Remaining Pb214 [default] : 0.00348052 cpd/100 tons
+WARNING: the spectrum of [Major] had not Sumw2 set. Setting it now.
+Inserting [default.Major] data set
+INFO: loading species from file species_list/species-fit-eneCNO-hm.icc
+Loading [Bi210] from [pdfs_new/MCspectra_FVpep_Period_Phase3_unmasked.root/bi210_nhits]
+bad programing style, const_cast!!
+creating MC species [Bi210] in [default]
+Warning: quenching [Bi210_qch] not found in [default].
+[Bi210] loaded for [default]
+Inserting species (Bi210)[Bi210] to [default.Major] 
+Inserting species (Bi210)[Bi210] to [default.TFCtagged] 
+Loading [C11] from [pdfs_new/MCspectra_FVpep_Period_Phase3_unmasked.root/c11_nhits]
+bad programing style, const_cast!!
+creating MC species [C11] in [default]
+[C11] loaded for [default]
+Inserting species (C11)[C11] to [default.Major] 
+Inserting species (C11)[C11] to [default.TFCtagged] 
+Loading [Ext_Bi214] from [pdfs_new/MCspectra_FVpep_Period_Phase3_unmasked.root/ext_bi214_nhits]
+bad programing style, const_cast!!
+creating MC species [Ext_Bi214] in [default]
+[Ext_Bi214] loaded for [default]
+Inserting species (Ext_Bi214)[Ext_Bi214] to [default.Major] 
+Inserting species (Ext_Bi214)[Ext_Bi214] to [default.TFCtagged] 
+Loading [Ext_K40] from [pdfs_new/MCspectra_FVpep_Period_Phase3_unmasked.root/ext_k40_nhits]
+bad programing style, const_cast!!
+creating MC species [Ext_K40] in [default]
+[Ext_K40] loaded for [default]
+Inserting species (Ext_K40)[Ext_K40] to [default.Major] 
+Inserting species (Ext_K40)[Ext_K40] to [default.TFCtagged] 
+Loading [Ext_Tl208] from [pdfs_new/MCspectra_FVpep_Period_Phase3_unmasked.root/ext_tl208_nhits]
+bad programing style, const_cast!!
+creating MC species [Ext_Tl208] in [default]
+[Ext_Tl208] loaded for [default]
+Inserting species (Ext_Tl208)[Ext_Tl208] to [default.Major] 
+Inserting species (Ext_Tl208)[Ext_Tl208] to [default.TFCtagged] 
+Loading [Kr85] from [pdfs_new/MCspectra_FVpep_Period_Phase3_unmasked.root/kr85_nhits]
+bad programing style, const_cast!!
+creating MC species [Kr85] in [default]
+Warning: quenching [Kr85_qch] not found in [default].
+[Kr85] loaded for [default]
+Inserting species (Kr85)[Kr85] to [default.Major] 
+Inserting species (Kr85)[Kr85] to [default.TFCtagged] 
+Loading [Po210] from [pdfs_new/MCspectra_FVpep_Period_Phase3_unmasked.root/po210_nhits]
+bad programing style, const_cast!!
+creating MC species [Po210] in [default]
+[Po210] loaded for [default]
+Inserting species (Po210)[Po210] to [default.Major] 
+Inserting species (Po210)[Po210] to [default.TFCtagged] 
+Loading [nu(B8)] from [pdfs_new/MCspectra_FVpep_Period_Phase3_unmasked.root/b8_nhits]
+bad programing style, const_cast!!
+creating MC species [nu(B8)] in [default]
+Warning: quenching [nu(B8)_qch] not found in [default].
+[nu(B8)] loaded for [default]
+Inserting species (nu(B8))[nu(B8)] to [default.Major] 
+Inserting species (nu(B8))[nu(B8)] to [default.TFCtagged] 
+Loading [nu(Be7)] from [pdfs_new/MCspectra_FVpep_Period_Phase3_unmasked.root/be7_nhits]
+bad programing style, const_cast!!
+creating MC species [nu(Be7)] in [default]
+Warning: quenching [nu(Be7)_qch] not found in [default].
+[nu(Be7)] loaded for [default]
+Inserting species (nu(Be7))[nu(Be7)] to [default.Major] 
+Inserting species (nu(Be7))[nu(Be7)] to [default.TFCtagged] 
+Loading [nu(CNO)] from [pdfs_new/MCspectra_FVpep_Period_Phase3_unmasked.root/cno_nhits]
+bad programing style, const_cast!!
+creating MC species [nu(CNO)] in [default]
+Warning: quenching [nu(CNO)_qch] not found in [default].
+[nu(CNO)] loaded for [default]
+Inserting species (nu(CNO))[nu(CNO)] to [default.Major] 
+Inserting species (nu(CNO))[nu(CNO)] to [default.TFCtagged] 
+Loading [nu(pep)] from [pdfs_new/MCspectra_FVpep_Period_Phase3_unmasked.root/pep_nhits]
+bad programing style, const_cast!!
+creating MC species [nu(pep)] in [default]
+Warning: quenching [nu(pep)_qch] not found in [default].
+[nu(pep)] loaded for [default]
+Inserting species (nu(pep))[nu(pep)] to [default.Major] 
+Inserting species (nu(pep))[nu(pep)] to [default.TFCtagged] 
+Inserting [default.Major] species vector
+searching for [Bi210_sys]..
+searching for [C11_sys]..
+searching for [Ext_Bi214_sys]..
+searching for [Ext_K40_sys]..
+searching for [Ext_Tl208_sys]..
+searching for [Kr85_sys]..
+searching for [Po210_sys]..
+searching for [nu(B8)_sys]..
+searching for [nu(Be7)_sys]..
+searching for [nu(CNO)_sys]..
+searching for [nu(pep)_sys]..
+setting quenching of [Po210] to [0.07879]
+Pb214 not implemented in bx-GooStats, it's ignored
+setting quenching of [C11] to [0.8828]
+INFO: 210Po PMTs used: 2000,0
+RawSpectrumProvider::registerSpecies Register [default.Major]
+type: [default.Major][0][1]
+You have chosen SeparateSumPdfFactory<DnType<NoDn> MLPType<no> MaskType<Mask> DnAfterMask <no>>
+SumPdf::registerFunc register [Bi210] as [0]
+SumPdf::registerFunc register [C11] as [1]
+SumPdf::registerFunc register [Ext_Bi214] as [2]
+SumPdf::registerFunc register [Ext_K40] as [3]
+SumPdf::registerFunc register [Ext_Tl208] as [4]
+SumPdf::registerFunc register [Kr85] as [5]
+SumPdf::registerFunc register [Po210] as [6]
+SumPdf::registerFunc register [nu(B8)] as [7]
+SumPdf::registerFunc register [nu(Be7)] as [8]
+SumPdf::registerFunc register [nu(CNO)] as [9]
+SumPdf::registerFunc register [nu(pep)] as [10]
+SumPdf::registerFunc register [Bi210] as [11]
+SumPdf::registerFunc register [C11] as [12]
+SumPdf::registerFunc register [Ext_Bi214] as [13]
+SumPdf::registerFunc register [Ext_K40] as [14]
+SumPdf::registerFunc register [Ext_Tl208] as [15]
+SumPdf::registerFunc register [Kr85] as [16]
+SumPdf::registerFunc register [Po210] as [17]
+SumPdf::registerFunc register [nu(B8)] as [18]
+SumPdf::registerFunc register [nu(Be7)] as [19]
+SumPdf::registerFunc register [nu(CNO)] as [20]
+SumPdf::registerFunc register [nu(pep)] as [21]
+Inserting [default.Major] sum pdf
+Inserting (Datasets:default.Major)<default.Major>
+Debug: LL size 1
+ PARAMETER DEFINITIONS:
+    NO.   NAME         VALUE      STEP SIZE      LIMITS
+     1 default.Bi210   2.00000e+01  1.00000e+00    0.00000e+00  1.00000e+02
+     2 default.C11   2.80000e+01  1.00000e+00    0.00000e+00  1.00000e+02
+     3 global.Ext_Bi214   5.00000e-01  1.00000e-01    0.00000e+00  1.00000e+01
+     4 global.Ext_K40   1.50000e-01  1.00000e-01    0.00000e+00  1.00000e+01
+ **********
+ **    1 **FIX           4
+ **********
+ PARAMETER DEFINITIONS:
+    NO.   NAME         VALUE      STEP SIZE      LIMITS
+     5 global.Ext_Tl208   1.90000e+00  1.00000e-01    0.00000e+00  1.00000e+01
+     6 default.Kr85   5.00000e+00  3.00000e-01    0.00000e+00  3.00000e+01
+     7 default.Po210   3.00000e+02  2.99999e+01    1.00000e-02  3.00000e+03
+     8 default.nu(B8)   4.60000e-01  1.00000e-01    0.00000e+00  1.00000e+01
+ **********
+ **    2 **FIX           8
+ **********
+ PARAMETER DEFINITIONS:
+    NO.   NAME         VALUE      STEP SIZE      LIMITS
+     9 global.nu(Be7)   4.85000e+01  5.00000e-01    2.00000e+01  7.00000e+01
+    10 global.nu(CNO)   4.92000e+00  constant
+ **********
+ **    3 **FIX          10
+ **********
+ PARAMETER   10  IS CONSTANT.   IGNORED.
+ PARAMETER DEFINITIONS:
+    NO.   NAME         VALUE      STEP SIZE      LIMITS
+    11 global.nu(pep)   2.20000e+00  1.00000e-01    0.00000e+00  1.00000e+01
+ **********
+ **    4 **SET ERRDEF         0.5
+ **********
+ PARAMETER DEFINITIONS:
+    NO.   NAME         VALUE      STEP SIZE      LIMITS
+     1 default.Bi210   2.00000e+01  1.00000e+00    0.00000e+00  1.00000e+02
+     2 default.C11   2.80000e+01  1.00000e+00    0.00000e+00  1.00000e+02
+     3 global.Ext_Bi214   5.00000e-01  1.00000e-01    0.00000e+00  1.00000e+01
+     4 global.Ext_K40   1.50000e-01  1.00000e-01    0.00000e+00  1.00000e+01
+ **********
+ **    1 **FIX           4
+ **********
+ PARAMETER DEFINITIONS:
+    NO.   NAME         VALUE      STEP SIZE      LIMITS
+     5 global.Ext_Tl208   1.90000e+00  1.00000e-01    0.00000e+00  1.00000e+01
+     6 default.Kr85   5.00000e+00  3.00000e-01    0.00000e+00  3.00000e+01
+     7 default.Po210   3.00000e+02  2.99999e+01    1.00000e-02  3.00000e+03
+     8 default.nu(B8)   4.60000e-01  1.00000e-01    0.00000e+00  1.00000e+01
+ **********
+ **    2 **FIX           8
+ **********
+ PARAMETER DEFINITIONS:
+    NO.   NAME         VALUE      STEP SIZE      LIMITS
+     9 global.nu(Be7)   4.85000e+01  5.00000e-01    2.00000e+01  7.00000e+01
+    10 global.nu(CNO)   4.92000e+00  constant
+ **********
+ **    3 **FIX          10
+ **********
+ PARAMETER   10  IS CONSTANT.   IGNORED.
+ PARAMETER DEFINITIONS:
+    NO.   NAME         VALUE      STEP SIZE      LIMITS
+    11 global.nu(pep)   2.20000e+00  1.00000e-01    0.00000e+00  1.00000e+01
+ **********
+ **    4 **SET ERRDEF         0.5
+ **********
+ **********
+ **    5 **MINIMIZE       2e+04
+ **********
+ FIRST CALL TO USER FUNCTION AT NEW START POINT, WITH IFLAG=4.
+ START MIGRAD MINIMIZATION.  STRATEGY  1.  CONVERGENCE WHEN EDM .LT. 5.00e-05
+ FCN=82914.2 FROM MIGRAD    STATUS=INITIATE       53 CALLS          54 TOTAL
+                     EDM= unknown      STRATEGY= 1      NO ERROR MATRIX       
+  EXT PARAMETER               CURRENT GUESS       STEP         FIRST   
+  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
+   1  default.Bi210   2.00000e+01   1.00000e+00   0.00000e+00   5.11315e+03
+   2  default.C11   2.80000e+01   1.00000e+00   0.00000e+00   9.56504e+02
+   3  global.Ext_Bi214   9.99269e+00   1.00000e-01   2.63649e+00  -6.15971e+00
+   4  global.Ext_K40   1.50000e-01     fixed    
+   5  global.Ext_Tl208   1.90000e+00   1.00000e-01   0.00000e+00  -6.34917e+02
+   6  default.Kr85   5.00000e+00   3.00000e-01   0.00000e+00   1.58864e+03
+   7  default.Po210   3.00000e+02   2.99999e+01   0.00000e+00   3.94256e+05
+   8  default.nu(B8)   4.60000e-01     fixed    
+   9  global.nu(Be7)   4.85000e+01   5.00000e-01   0.00000e+00   3.77266e+03
+  10  global.nu(CNO)   4.92000e+00   constant   
+  11  global.nu(pep)   2.20000e+00   1.00000e-01   0.00000e+00   5.01475e+02
+                               ERR DEF= 0.5
+ MIGRAD MINIMIZATION HAS CONVERGED.
+ MIGRAD WILL VERIFY CONVERGENCE AND ERROR MATRIX.
+ COVARIANCE MATRIX CALCULATED SUCCESSFULLY
+ FCN=2633.7 FROM MIGRAD    STATUS=CONVERGED     661 CALLS         662 TOTAL
+                     EDM=6.06963e-06    STRATEGY= 1      ERROR MATRIX ACCURATE 
+  EXT PARAMETER                                   STEP         FIRST   
+  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
+   1  default.Bi210   1.81676e+01   1.19458e+00   5.99715e-04  -6.65675e-02
+   2  default.C11   2.75960e+01   2.34803e-01   1.71968e-04  -3.57760e-02
+   3  global.Ext_Bi214   7.30749e+00   7.51986e-01   4.01170e-03  -1.00656e-02
+   4  global.Ext_K40   1.50000e-01     fixed    
+   5  global.Ext_Tl208   5.66048e+00   2.69435e-01   1.34974e-03   1.00903e-02
+   6  default.Kr85   1.14486e+01   2.03162e+00   2.13613e-03   1.75512e-02
+   7  default.Po210   5.07521e+01   5.05127e-01   3.24605e-05  -4.62688e-01
+   8  default.nu(B8)   4.60000e-01     fixed    
+   9  global.nu(Be7)   4.45064e+01   1.45148e+00   8.52381e-04  -4.91629e-02
+  10  global.nu(CNO)   4.92000e+00   constant   
+  11  global.nu(pep)   5.73917e-08   1.59923e-01   9.02129e-03** at limit **
+                               ERR DEF= 0.5
+ EXTERNAL ERROR MATRIX.    NDIM=  25    NPAR=  8    ERR DEF=0.5
+  1.427e+00 -2.968e-02 -4.304e-02  9.844e-03  4.208e-02 -1.742e-02 -1.057e+00 -2.941e-06 
+ -2.968e-02  5.513e-02 -6.263e-02  1.222e-02  1.064e-03  4.124e-04  2.446e-02 -2.506e-07 
+ -4.304e-02 -6.263e-02  5.710e-01 -1.449e-01 -2.147e-02 -1.760e-04  8.020e-03  1.538e-07 
+  9.844e-03  1.222e-02 -1.449e-01  7.267e-02  4.695e-03  7.184e-05 -2.338e-03 -2.839e-08 
+  4.208e-02  1.064e-03 -2.147e-02  4.695e-03  4.155e+00  6.221e-01  1.859e+00 -9.887e-07 
+ -1.742e-02  4.124e-04 -1.760e-04  7.184e-05  6.221e-01  2.552e-01  1.667e-01 -8.259e-09 
+ -1.057e+00  2.446e-02  8.020e-03 -2.338e-03  1.859e+00  1.667e-01  2.109e+00  7.960e-07 
+ -2.941e-06 -2.506e-07  1.538e-07 -2.839e-08 -9.887e-07 -8.259e-09  7.960e-07  3.691e-08 
+ PARAMETER  CORRELATION COEFFICIENTS  
+       NO.  GLOBAL      1      2      3      5      6      7      9     11
+        1  0.83776   1.000 -0.106 -0.048  0.031  0.017 -0.029 -0.609 -0.013
+        2  0.38293  -0.106  1.000 -0.353  0.193  0.002  0.003  0.072 -0.006
+        3  0.74636  -0.048 -0.353  1.000 -0.711 -0.014 -0.000  0.007  0.001
+        5  0.71399   0.031  0.193 -0.711  1.000  0.009  0.001 -0.006 -0.001
+        6  0.90235   0.017  0.002 -0.014  0.009  1.000  0.604  0.628 -0.003
+        7  0.71275  -0.029  0.003 -0.000  0.001  0.604  1.000  0.227 -0.000
+        9  0.91032  -0.609  0.072  0.007 -0.006  0.628  0.227  1.000  0.003
+       11  0.01687  -0.013 -0.006  0.001 -0.001 -0.003 -0.000  0.003  1.000
+ **********
+ **    6 **HESSE
+ **********
+ COVARIANCE MATRIX CALCULATED SUCCESSFULLY
+ FCN=2633.7 FROM HESSE     STATUS=OK             61 CALLS         723 TOTAL
+                     EDM=6.09437e-06    STRATEGY= 1      ERROR MATRIX ACCURATE 
+  EXT PARAMETER                                INTERNAL      INTERNAL  
+  NO.   NAME      VALUE            ERROR       STEP SIZE       VALUE   
+   1  default.Bi210   1.81676e+01   1.19491e+00   1.19943e-04  -6.90143e-01
+   2  default.C11   2.75960e+01   2.34896e-01   3.43936e-05  -4.64617e-01
+   3  global.Ext_Bi214   7.30749e+00   7.53750e-01   8.02340e-04   4.79683e-01
+   4  global.Ext_K40   1.50000e-01     fixed    
+   5  global.Ext_Tl208   5.66048e+00   2.70038e-01   2.69948e-04   1.32483e-01
+   6  default.Kr85   1.14486e+01   2.03309e+00   4.27226e-04  -2.90257e+00
+   7  default.Po210   5.07521e+01   5.05286e-01   6.49211e-06  -1.30995e+00
+   8  default.nu(B8)   4.60000e-01     fixed    
+   9  global.nu(Be7)   4.45064e+01   1.45291e+00   1.70476e-04  -1.25861e+01
+  10  global.nu(CNO)   4.92000e+00   constant   
+  11  global.nu(pep)   5.73917e-08   1.59929e-01   1.80426e-03  -1.57095e+00
+                                 WARNING -   - ABOVE PARAMETER IS AT LIMIT.
+                               ERR DEF= 0.5
+ EXTERNAL ERROR MATRIX.    NDIM=  25    NPAR=  8    ERR DEF=0.5
+  1.428e+00 -2.969e-02 -4.327e-02  9.926e-03  3.983e-02 -1.763e-02 -1.059e+00 -5.067e-07 
+ -2.969e-02  5.518e-02 -6.299e-02  1.234e-02  1.123e-03  4.174e-04  2.451e-02 -4.318e-08 
+ -4.327e-02 -6.299e-02  5.737e-01 -1.459e-01 -2.157e-02 -1.780e-04  8.075e-03  2.662e-08 
+  9.926e-03  1.234e-02 -1.459e-01  7.299e-02  4.731e-03  7.229e-05 -2.357e-03 -4.937e-09 
+  3.983e-02  1.123e-03 -2.157e-02  4.731e-03  4.161e+00  6.231e-01  1.864e+00 -1.701e-07 
+ -1.763e-02  4.174e-04 -1.780e-04  7.229e-05  6.231e-01  2.553e-01  1.674e-01 -1.439e-09 
+ -1.059e+00  2.451e-02  8.075e-03 -2.357e-03  1.864e+00  1.674e-01  2.113e+00  1.373e-07 
+ -5.067e-07 -4.318e-08  2.662e-08 -4.937e-09 -1.701e-07 -1.439e-09  1.373e-07  3.691e-08 
+ PARAMETER  CORRELATION COEFFICIENTS  
+       NO.  GLOBAL      1      2      3      5      6      7      9     11
+        1  0.83785   1.000 -0.106 -0.048  0.031  0.016 -0.029 -0.610 -0.002
+        2  0.38382  -0.106  1.000 -0.354  0.194  0.002  0.004  0.072 -0.001
+        3  0.74776  -0.048 -0.354  1.000 -0.713 -0.014 -0.000  0.007  0.000
+        5  0.71552   0.031  0.194 -0.713  1.000  0.009  0.001 -0.006 -0.000
+        6  0.90250   0.016  0.002 -0.014  0.009  1.000  0.605  0.629 -0.000
+        7  0.71297  -0.029  0.004 -0.000  0.001  0.605  1.000  0.228 -0.000
+        9  0.91050  -0.610  0.072  0.007 -0.006  0.629  0.228  1.000  0.000
+       11  0.00291  -0.002 -0.001  0.000 -0.000 -0.000 -0.000  0.000  1.000
+Wallclock time  : 0.25702 seconds.
+CPU time: 2.6e-05
+Total CPU time: 2.6e-05
+Processor time: 2.1e-05
+
+FIT PARAMETERS
+ ^{210}Bi = 18.2 #pm 1.2 
+ ^{11}C = 27.60 #pm 0.23 
+ Ext ^{214}Bi = 7.31 #pm 0.75 
+ Ext ^{40}K = 0.15  [Fixed]
+ Ext ^{208}Tl = 5.66 #pm 0.27 
+ ^{85}Kr = 11.4 #pm 2.0 
+ ^{210}Po = 50.75 #pm 0.51 
+ #nu(^{8}B) = 0.46  [Fixed]
+ #nu(^{7}Be) = 44.5 #pm 1.5 
+ #nu(CNO) = 4.92  [Fixed]
+ #nu(pep) = 0.00  [Railed]
+
+ chi^2                             = 1057.2
+ chi^2/N-DOF                       = 1.3215
+ p-value                           = 0.000
+ Minimized -2Ln(Likelihood)        = 5267.39
+ Likelihood p-value                = 0.010 ± 0.010
+SimplePlotManager::groupByName <default.Major> appedned to <default>
