@@ -5,7 +5,7 @@ import numpy as np
 from collect_species import *
 
 ## list of files
-folder = 'luca_cross_check'
+folder = 'luca_cross_check_ene'
 FILES = os.listdir(folder)
 
 
@@ -31,6 +31,7 @@ def table():
 
         df = pd.read_csv(folder + '/' + f, sep = ' ')
         df = df.drop('Period', axis=1) # all of these are Phase2
+        
         df['chi2/ndofError'] = np.NaN # NaN?
         df['C11avg'] = (df['C11'] + df['C11_2']) / 2
         df['C11avgError'] = df['C11avg'] * np.sqrt( (df['C11Error'] / df['C11'])**2 + (df['C11_2Error'] / df['C11_2'])**2 )
