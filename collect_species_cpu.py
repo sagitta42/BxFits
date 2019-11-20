@@ -9,45 +9,52 @@ import os
 
 # species and neutrinos
 
-# COLUMNS = ['C14']
-COLUMNS = ['nu(Be7)', 'nu(pep)', 'Bi210', 'C11', 'Kr85', 'Po210',\
-    'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Po210shift', 'C11shift', 'chi2/ndof', 'C11_2']
-# COLUMNS = ['C14', 'chi2/ndof', 'LY', 'pp']
-# COLUMNS = ['Bi210', 'C11', 'C14', 'C14_pileup', 'Ext_Bi214', Ext_K40', 'Ext_Tl208', 'Kr85', 'Pb214', 'Po210', 'nu(Be7)', 'nu(pp)', 'nu(CNO)', 'Minimized Likelihood Value']
+# CNO config fit GPU
+COLUMNS = ['Bi210', 'C11', 'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Kr85', 'Po210', 'nu(Be7)', 'nu(CNO)', 'nu(pep)']
+#COLUMNS = ['Bi210', 'C11', 'C14', 'C14_pileup', 'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Kr85', 'Pb214', 'Po210', 'nu(Be7)', 'nu(pp)', 'nu(CNO)', 'Minimized Likelihood Value']
 
 def strname(species):
     return ''.join(species.split(' '))
 
-PARSER = {
- '#nu(^{7}Be)': 'nu(Be7)',
- '#nu(pep)': 'nu(pep)',
+#PARSER = {
+#'Bi210': 'Bi210',
+#'C11': 'C11',
+#'14C': 'C14',
+#
+#'#nu(pp)': 'nu(pp)',
+#'#nu(^{7}Be)': 'nu(Be7)',
+#'#nu(pep)': 'nu(pep)',
+#'#nu(CNO)': 'nu(CNO)',
+#'#nu(^{8}B)': 'nu(B8)',
+#
+#'^{210}Po': 'Po210',
+#'^{210}Po_2': 'Po210_2',
+#'^{85}Kr': 'Kr85',
+#'^{11}C_2': 'C11_2',
+#'^{10}C_2': 'C10_2',
+#'^{6}He_2': 'He6_2',
+#
+#'Ext ^{208}Tl': 'Tl208',
+#'Ext ^{214}Bi': 'Bi214',
+#'Ext ^{40}K': 'K40',
+#
+#'Minimized Likelihood Value': 'MLV',
+#'chi^2/N-DOF': 'chiSquare/Ndof',
 
- '^{210}Bi': 'Bi210',
- '^{11}C': 'C11',
- '^{85}Kr': 'Kr85',
- '^{210}Po': 'Po210',
-
- 'Ext ^{214}Bi': 'Ext_Bi214',
- 'Ext ^{40}K': 'Ext_K40',
- 'Ext ^{208}Tl': 'Ext_Tl208',
-
- '^{11}MCshiftC': 'C11shift',
- '^{210}MCshiftPo': 'Po210shift',
-
- 'chi^2/N-DOF': 'chi2/ndof',
-
- '^{11}C 2': 'C11_2'
-
- # '^{14}C': 'C14',
- # 'beta ly': 'LY',
- # '#nu(pp)': 'pp',
-
-
-}
+#'Likelihood p-value': 'LikelihoodP-value'
+#'beta_ly': 'betaLY',
+#'fCher': 'fCher',
+#'pt': 'pt',
+#'gc': 'gc',
+#'^{11}C_qch': 'C11qch',
+#'^{210}Po_qch': 'Po210qch',
+#'C14_pileup': 'C14_pileup',
+#'chi^2': 'chiSquare',
+#'p-value': 'p-value',
+#}
 
 # parameters that don't have the concept of error
-ERRORLESS = ['chi2/ndof']
-# ERRORLESS = ['Minimized Likelihood Value']
+ERRORLESS = ['Minimized Likelihood Value']
 #ERRORLESS = ['chiSquare', 'chiSquare/Ndof', 'p-value', 'MLV', 'LikelihoodP-value']
 
 # alpha and beta resolution
@@ -66,7 +73,7 @@ ERRORLESS = ['chi2/ndof']
 ### ----------------------------------------- ###
 
 special_col = 'Period'
-# special_col = 'Year'
+#special_col = 'Year'
 
 def parse_file(filename):
     ### set up table
@@ -75,15 +82,11 @@ def parse_file(filename):
 #    special_col = 'EneVar'
 	# columns: fit settings, species + errors (no error for the ones listed as ERRORLESS)
     df = pd.DataFrame( columns = [special_col] + [strname(x) for x in COLUMNS]  + [strname(x) + 'Error' for x in np.setdiff1d(COLUMNS,ERRORLESS)] )
-
-    # oemer full comp names: nusol_cmpl_only_12_c19_log.log
-#    spec = '20' + filename.split('_c19')[0].split('_')[-1]
-    # oemer filenames: cl2_12_eo_mc_taup_40_80_c19_log.log
-    # oemer MC with LY free/fixed: cl2_12_eo_mc_40_90_c19_log
-    # spec = '20' + filename.split('/')[-1].split('_')[1]
-    # Luca cross check file: fit-mvPeriodPhase2-CNOhm-nhits.log
+    # yearly fit: fit_enePeriod2012_CNOfixed5_nhits.log
+    # gpu fit: fit-mvPeriodPhase2-CNOhm-nhits.log
     spec = filename.split('Period')[1].split('-')[0]
-
+    # Simone MV for different CNO and ene variables: fit_mvPeriodall_CNOfixed_nhits.log
+#    spec = 'n' + filename.split('n')[1].split('.')[0]
     df.at[0, special_col] = spec
 
     ### read fit info
@@ -96,34 +99,25 @@ def parse_file(filename):
     found = False
     while idx >= 0 and not found:
         idx -= 1
-        found = 'FIT PARAMETERS' in lines[idx]
-        # found = 'SPECTRAL FIT' in lines[idx]
+        found = 'SPECTRAL FIT' in lines[idx]
 
-    # print idx, 'line'
     # now, starting from this index, move down and collect data
     for i in range(idx+1, len(lines)):
-        info = lines[i].split('=')
-        # info = lines[i].split(':')[-1].split('=')
+        info = lines[i].split(':')[-1].split('=')
         # print info
-        species = info[0].strip()
-        # species = info[0].split('Component')[-1].strip()
-        # print species
+        species = info[0].split('Component')[-1].strip()
         # stuff that we don't need e.g. number of bins used --> ignore and move to the next line
-        if not species in PARSER: continue
-        if not PARSER[species] in COLUMNS: continue
-        # if not species in COLUMNS: continue
+        if not species in COLUMNS: continue
         val = info[1].strip().split(' ')[0].strip()
-        df[PARSER[species]] = val
-        # df[strname(species)] = val
-
-        if not PARSER[species] in ERRORLESS:
+        df[strname(species)] = val
+		
+        if not species in ERRORLESS:
             if 'Fixed' in lines[i] or 'Possibly railed' in lines[i] or 'Railed' in lines[i]:
                 err = 0
             else:
-                err = info[1].split('#pm')[1].strip().split(' ')[0].strip() # if '+/-' in lines[i] else 0
-                # err = info[1].split('+/-')[1].strip().split(' ')[0].strip() # if '+/-' in lines[i] else 0
-
-            df[PARSER[species] + 'Error'] = err
+                err = info[1].split('+/-')[1].strip().split(' ')[0].strip() # if '+/-' in lines[i] else 0
+            
+            df[species + 'Error'] = err
 
     # remove error for parameters that are not supposed to have it
 #	cols = df.columns
@@ -154,11 +148,9 @@ def parse_folder(foldername):
         count += 1
 
     # output file
-    outname = foldername + '_species.out'
-    # outname = foldername.split('/')[-1] + '_species.out'
+    outname = foldername.split('/')[-1] + '_species.out'
     df = df.sort_values(special_col)
     df.to_csv(outname, index=False, sep = ' ')
-    print df
     print('--> '+outname)
 
 
