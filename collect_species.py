@@ -72,7 +72,8 @@ ERRORLESS = ['Minimized Likelihood Value']
 ### ---------------- parsing ---------------- ###
 ### ----------------------------------------- ###
 
-special_col = 'Year'
+special_col = 'Period'
+#special_col = 'Year'
 
 def parse_file(filename):
     ### set up table
@@ -82,7 +83,8 @@ def parse_file(filename):
 	# columns: fit settings, species + errors (no error for the ones listed as ERRORLESS)
     df = pd.DataFrame( columns = [special_col] + [strname(x) for x in COLUMNS]  + [strname(x) + 'Error' for x in np.setdiff1d(COLUMNS,ERRORLESS)] )
     # yearly fit: fit_enePeriod2012_CNOfixed5_nhits.log
-    spec = filename.split('Period')[1].split('_')[0]
+    # gpu fit: fit-mvPeriodPhase2-CNOhm-nhits.log
+    spec = filename.split('Period')[1].split('-')[0]
     # Simone MV for different CNO and ene variables: fit_mvPeriodall_CNOfixed_nhits.log
 #    spec = 'n' + filename.split('n')[1].split('.')[0]
     df.at[0, special_col] = spec

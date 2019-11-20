@@ -14,6 +14,7 @@ class Submission():
         pdfs (str): folder to look for PDFs                       
         ftype: cpu or gpu
         penalty (list): species to be constrained (pp/pep)
+        shift (list): what shift to apply (Po and C11)                        
         '''
         
         self.fit = params['fit'] # energy only or full mv
@@ -32,16 +33,20 @@ class Submission():
 
         self.penalty = params['penalty'] # to be constrained (list)
         self.met = params['met']
+        self.shift = params['shift']
         
-        ## corr. fitoptions and species lists filenames
+        ## fitoptions filename
  #       if self.penalty[0] == 'pp/pep': self.penalty[0] = 'ppDpep'
-        pen = '' if self.penalty == 'none' else '_' + '-'.join(self.penalty) + '-penalty'
+        pen = '' if self.penalty == ['none'] else '_' + '-'.join(self.penalty) + '-penalty'
         penmet = '-' + self.met if 'pep' in ''.join(self.penalty) else '' # pep and pp/pep constraints depend on metallicity
 
         # if penalty is pp/pep, it's in fitoptions, but not species list
 #        pencfg = pen + penmet if self.penalty[0] == 'ppDpep' else ''
         pencfg = '' # no penalty options for pp/pep for now
-        self.cfgname = 'fitoptions/fitoptions_' + self.fit + '-' + self.inputs + '-' + self.pdfs + '-' + self.var + '-emin' + self.emin + pencfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
+        shiftcfg = '' if self.shift == ['none'] else '_' + '-'.join(self.shift) + '-shift'
+        self.cfgname = 'fitoptions/fitoptions_' + self.fit + '-' + self.inputs + '-' + self.pdfs + '-' + self.var + '-emin' + self.emin + pencfg + shiftcfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
+
+        ## species list filename
         penicc = pen + penmet if self.penalty[0] != 'ppDpep' else ''
 #        penicc = '' # no penalty for now
         self.iccname = 'species_list/species-fit-' + self.fit + 'CNO-' + self.cno + penicc + '.icc'
@@ -115,14 +120,16 @@ class Submission():
             # in CPU fit, the constraint is in fitoptions
             cfglines[126] = 'pileup_penalty_mean = ' + str(PUPPEN[self.inputs][0])
             cfglines[127] = 'pileup_penalty_sigma = ' + str(PUPPEN[self.inputs][1])
-        elif self.fittype == 'gpu':
+        elif self.fittype == 'gpu' and self.shift != ['none']:
             # add shift on Po210 and C11
-            extralines = ['freeMCshiftPo210 = true',\
-                         'freeMCscalePo210 = true',\
-                         'freeMCshiftC11 = true',\
-                         'freeMCscaleC11 = true']
+            for sh in self.shift:
+                cfglines.append('freeMCshift' + sh + ' = true')
+#            extralines = ['freeMCshiftPo210 = true',\
+#                         'freeMCscalePo210 = true',\
+#                         'freeMCshiftC11 = true',\
+#                         'freeMCscaleC11 = true']
 
-            cfglines += extralines                         
+#            cfglines += extralines                         
 
         if self.fitcno:
             # comment out pileup (lines 124 - 128)
@@ -178,7 +185,7 @@ class Submission():
 
 
         # set penalties if given
-        if self.penalty != 'none':
+        if self.penalty != ['none']:
             for pensp in self.penalty:
                 if pensp == 'ppDpep': continue
                 line_num, line = ICC[pensp]
@@ -236,12 +243,12 @@ def make_executable(path):
 
 
 CNOICC = {
-    'fixed': '   { "nu(CNO)",      -1,   kCyan,   kSolid,  2,    0.,   "fixed", 0.,  50. },\n',
-    'fixed5': '   { "nu(CNO)",      -1,   kCyan,   kSolid,  2,    5.,   "fixed", 5.,  50. },\n',
+#    'fixed': '   { "nu(CNO)",      -1,   kCyan,   kSolid,  2,    0.,   "fixed", 0.,  50. },\n',
+#    'fixed5': '   { "nu(CNO)",      -1,   kCyan,   kSolid,  2,    5.,   "fixed", 5.,  50. },\n',
 
     'free': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    5.36,   "free", 0.,  50. },\n',
-    'hm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    4.92,   "penalty", 4.92,  0.56 },\n',
-    'lm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    3.52,   "penalty", 3.52,  0.37 },\n'
+    'hm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    4.92,   "fixed", 4.92,  0.56 },\n',
+    'lm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    3.52,   "fixed", 3.52,  0.37 },\n'
 }
 
 # penalty: line number is line - 1 (i.e. line 1 is 0)
@@ -252,7 +259,8 @@ ICC = {
 #    'C14': [13, '{ "C14",          -1,   kViolet, kSolid,  2,    3.456e+6, "penalty", 3.456e+6, 17.28e+4 },\n'],
 #    'Kr85': [29, '{ "Kr85",         -1,   kBlue,   kSolid,  2,    6.8,     "penalty", -999.,  110. }\n'],
 #    'pp': [17, {'hz': '{ "nu(pp)",       -1,   kRed,   kSolid,  2,    131.1,   "penalty",  131.1., 1.4 },\n', 'lz': '{ "nu(pp)",       -1,   kRed,   kSolid,  2,    132.2,   "penalty",  132.2,  1.4 },\n'}],
-    'pep': [22, {'hm': '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.74,   "penalty", 2.74,  0.04 },\n', 'lm': '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.78,   "penalty", 2.78,  0.04 },\n'}]
+    'pep': [22, {'hm': '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.74,   "penalty", 2.74,  0.04 },\n', 'lm': '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.78,   "penalty", 2.78,  0.04 },\n'}],
+    'CNO': [23, {'hm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    4.92,   "penalty", 4.92,  0.56 },\n', 'lm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    3.52,   "penalty", 3.52,  0.37 },\n'}]
 }
 
 RND = {'Bi210': [10,2], 'C14': [3456000, 172800]}

@@ -92,7 +92,9 @@ where * = 2012, 2013 etc. or whatever path to PDFs you are using (folder below)
 
 #### PDFs referenced in the cfg files
 
-```/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/fitter_TAUP/pdfs_TAUP2017```
+TAUP: ```/storage/gpfs_data/borexino/users/penek/Simone_MC_31_Jan_2019/mc_fitter_taup/fitter_TAUP/pdfs_TAUP2017```
+
+new QE: ```/p/project/cjikp20/jikp2007/PDFs_to_test/```
 
 ### [3] Species lists:
 

@@ -8,9 +8,10 @@ options = {
     'CNO': ['fixed','lm', 'hm', 'fixed5', 'free'],
     'var': ['nhits', 'npmts', 'npmts_dt1', 'npmts_dt2'],
     'fit': ['ene', 'mv'],
-    'inputs': ['all', 'Phase3'] + [str(y) for y in range(2012,2018)],
+    'inputs': ['all', 'Phase2', 'Phase3'] + [str(y) for y in range(2012,2018)],
     'penalty': ICC.keys() + ['pp/pep', 'none'],
     'met': ['hm', 'lm', 'none'], # metallicity for the pep constraint
+    'shift': ['C11', 'Po210', 'none'],    
     'ftype': ['cpu', 'gpu', 'cno'],
     'save': ['true', 'false']
 }
@@ -44,6 +45,7 @@ def generator(params):
     pdfs: folder where PDFs are to be found            
     penalty: species to put penalty on (e.g. Bi210) (optional) --> not implemented yet
     ftype: cpu or gpu
+    shift: what species to have free MC shift for (Po210, C11)
 
     save: save fit results or not (true or false)
     '''
@@ -54,7 +56,7 @@ def generator(params):
     # check each parameter given by user
     for par in options:
         # penalty is a list
-        if par == 'penalty':
+        if par in ['penalty', 'shift']:
             flag = True # by default, we think it's an available option
             for parsp in params[par]:
                 if not parsp in options[par]: flag = False # set to False if not available
@@ -109,13 +111,17 @@ def main():
     # first assign none
     opts = {}
     for opt in user:
-        opts[opt] = 'none'
+        if opt in ['penalty', 'shift']:
+            # for options that can be a list, penalty and shift
+            opts[opt] = ['none']
+        else:
+            opts[opt] = 'none'
 
     # then read what user gave
     for opt in user:
         for inp in sys.argv:
             if opt in inp:
-                opts[opt] = inp.split('=')[1] if opt in ['fit', 'pdfs', 'ftype', 'emin', 'save', 'met'] else inp.split('=')[1].split(',') # penalty can be a list; var is a list to loop on
+                opts[opt] = inp.split('=')[1] if opt in ['fit', 'pdfs', 'ftype', 'emin', 'save', 'met'] else inp.split('=')[1].split(',') # penalty and shift can be a list; var is a list to loop on
 
 
     # assign defaults if nothing given
@@ -131,6 +137,10 @@ def main():
     
     outfolder += '-' + opts['pdfs']
     outfolder += '-emin' + opts['emin']
+    if opts['shift'] != ['none']:
+        outfolder += '-shift' + '_'.join(opts['shift'])
+    if opts['penalty'] != ['none']:
+        outfolder += '-penalty' + '_'.join(opts['penalty'])
 
     # note: fittype (cpu or gpu) is not in the name because one can't do both in one folder :) so no threat of overlapping results folder
         
