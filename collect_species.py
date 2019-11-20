@@ -74,7 +74,7 @@ def parse_file(filename):
     # table template
 #    special_col = 'EneVar'
 	# columns: fit settings, species + errors (no error for the ones listed as ERRORLESS)
-    df = pd.DataFrame( columns = [special_col] + [strname(x) for x in COLUMNS]  + [strname(x) + 'Error' for x in np.setdiff1d(COLUMNS,ERRORLESS)] )
+    df = pd.DataFrame( columns = [special_col] + [strname(x) for x in COLUMNS]  + [strname(x) + 'Error' for x in np.setdiff1d(COLUMNS,ERRORLESS)] + ['ExpSub', 'ExpTag'])
 
     # oemer full comp names: nusol_cmpl_only_12_c19_log.log
 #    spec = '20' + filename.split('_c19')[0].split('_')[-1]
@@ -90,6 +90,21 @@ def parse_file(filename):
 
     f = open(filename)
     lines = f.readlines()
+
+    # start from the beginning of the file, find exposure
+    found = False
+    idx = 0
+    while idx < len(lines) and not found:
+
+        if 'Inserting [default.Major] exposure' in lines[idx]:
+            df['ExpSub'] = lines[idx].split(':')[1].split('[')[1].split(' ')[0]
+
+        # tagged is after sub, so if found, exit
+        if 'Inserting [default.TFCtagged] exposure' in lines[idx]:
+            df['ExpTag'] = lines[idx].split(':')[1].split('[')[1].split(' ')[0]
+            found = True
+
+        idx+=1
 
     # start from the end of the file, find the line with FIT PARAMETERS
     idx = len(lines)
