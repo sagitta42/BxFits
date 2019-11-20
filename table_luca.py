@@ -79,12 +79,12 @@ def order(name):
     return 0
 
 folders = [
-'luca_cross_check_phase2_ene',
-'luca_cross_check_phase2_mv',
+# 'luca_cross_check_phase2_ene',
+# 'luca_cross_check_phase2_mv',
 'luca_cross_check_phase3_ene'
 ]
 # collect()
 for f in folders:
     print '~~~~~~~~~~~', f
-    # collect(f)
+    collect(f)
     table(f)

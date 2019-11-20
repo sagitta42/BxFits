@@ -134,8 +134,10 @@ def parse_file(filename):
         # df[strname(species)] = val
 
         if not PARSER[species] in ERRORLESS:
-            if 'Fixed' in lines[i] or 'Possibly railed' in lines[i] or 'Railed' in lines[i]:
-                err = 0
+            if 'Fixed' in lines[i]:
+                err = -1
+            elif 'Possibly railed' in lines[i] or 'Railed' in lines[i]:
+                err = -2
             else:
                 err = info[1].split('#pm')[1].strip().split(' ')[0].strip() # if '+/-' in lines[i] else 0
                 # err = info[1].split('+/-')[1].strip().split(' ')[0].strip() # if '+/-' in lines[i] else 0
