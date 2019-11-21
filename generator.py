@@ -129,7 +129,7 @@ def main():
         if opts[par] == 'none': opts[par] = defaults[par]
 
     ## folder for given configuration (for submission files and output log file folder)
-    outfolder = 'res-fit-' + opts['fit']
+    outfolder = 'res-fit-' + opts['ftype'] + '-' +  opts['fit']
     if opts['inputs'] == 'all':
         outfolder += '-PeriodAll-'
     else:

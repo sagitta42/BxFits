@@ -84,9 +84,10 @@ class Submission():
 
         # line 68: PDF path
         # e.g. MCspectra_FVpep_Period_2012_unmasked.root
-        mcname = {'cpu': 'MCspectra_pp_FVpep_' + self.inputs + '_emin1_masked.root',
-            'gpu': 'MCspectra_FVpep_Period_' + self.inputs + '_unmasked.root'} # on JURECA
-        cfglines[67] = 'montecarlo_spectra_file = ' + self.pdfs + '/' + mcname[self.fittype]
+        # TAUP and new PDFs have different format
+        mcname = 'MCspectra_pp_FVpep_' + self.inputs + '_emin1_masked.root' if 'TAUP' in self.pdfs else 'MCspectra_FVpep_Period_' + self.inputs + '_unmasked.root'
+            
+        cfglines[67] = 'montecarlo_spectra_file = ' + self.pdfs + '/' + mcname
 
         # line 80: remaining Pb214
         # Pb214 not implemented in the GPU fitter
