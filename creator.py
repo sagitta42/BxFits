@@ -24,6 +24,7 @@ class Submission():
         self.pdfs = params['pdfs']
         self.fittype = params['ftype'] # cpu or gpu; cno = gpu with cno config
         self.fitcno = False
+        ftyp = self.fittype # for filenames
         if self.fittype == 'cno':
             self.fitcno = True
             self.fittype = 'gpu'
@@ -44,12 +45,12 @@ class Submission():
 #        pencfg = pen + penmet if self.penalty[0] == 'ppDpep' else ''
         pencfg = '' # no penalty options for pp/pep for now
         shiftcfg = '' if self.shift == ['none'] else '_' + '-'.join(self.shift) + '-shift'
-        self.cfgname = 'fitoptions/fitoptions_' + self.fit + '-' + self.inputs + '-' + self.pdfs + '-' + self.var + '-emin' + self.emin + pencfg + shiftcfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
+        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + '-' + self.pdfs + '-' + self.var + '-emin' + self.emin + pencfg + shiftcfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
 
         ## species list filename
         penicc = pen + penmet if self.penalty[0] != 'ppDpep' else ''
 #        penicc = '' # no penalty for now
-        self.iccname = 'species_list/species-fit-' + self.fit + 'CNO-' + self.cno + penicc + '.icc'
+        self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + 'CNO-' + self.cno + penicc + '.icc'
         # log file name 
         self.outfile = 'fit-' + self.fit + 'Period' + self.inputs + '-CNO'+ self.cno + '-' + self.var
         
@@ -124,13 +125,7 @@ class Submission():
             # add shift on Po210 and C11
             for sh in self.shift:
                 cfglines.append('freeMCshift' + sh + ' = true')
-#            extralines = ['freeMCshiftPo210 = true',\
-#                         'freeMCscalePo210 = true',\
-#                         'freeMCshiftC11 = true',\
-#                         'freeMCscaleC11 = true']
-
-#            cfglines += extralines                         
-
+                
         if self.fitcno:
             # comment out pileup (lines 124 - 128)
             for l in range(123,128): cfglines[l] = '#' + cfglines[l]                                     
@@ -232,7 +227,10 @@ class Submission():
         # e.g. Period2012_FVpep_TFCMI_c19.root
         inputfile = 'input_files/Period' + pr + '_FVpep_TFC' + tfc + '.root'
 
-        out = open(self.outfolder + '_submission.sh', 'a') # append
+        outname = self.outfolder + '_submission.sh'
+        binbool = os.path.exists(outname)
+        out = open(outname, 'a') # append
+        # to print bin bash or not
 
         extra = '_0' if self.fit == 'mv' else ''
 
@@ -246,7 +244,7 @@ class Submission():
                 self.cfgname, self.iccname
 
         elif self.fittype == 'gpu':
-            print >> out, '#!/bin/bash'
+            if not binbool: print >> out, '#!/bin/bash'
             print >> out, './borexino', inputfile,\
                 'pp/final_' + self.var + '_pp' + extra,\
                 self.cfgname, self.iccname, '| tee', self.outfolder + '/' + self.outfile + '.log'

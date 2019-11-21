@@ -8,7 +8,7 @@ options = {
     'CNO': ['fixed','lm', 'hm', 'fixed5', 'free'],
     'var': ['nhits', 'npmts', 'npmts_dt1', 'npmts_dt2'],
     'fit': ['ene', 'mv'],
-    'inputs': ['all', 'Phase2', 'Phase3'] + [str(y) for y in range(2012,2018)],
+    'inputs': ['all', 'Phase2', 'Phase3'] + [str(y) for y in range(2012,2020)],
     'penalty': ICC.keys() + ['pp/pep', 'none'],
     'met': ['hm', 'lm', 'none'], # metallicity for the pep constraint
     'shift': ['C11', 'Po210', 'none'],    
