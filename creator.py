@@ -36,6 +36,7 @@ class Submission():
         self.fixed = params['fixed']
         self.met = params['met']
         self.shift = params['shift']
+        self.tfc = params['tfc']
         
         ## fitoptions filename
  #       if self.penalty[0] == 'pp/pep': self.penalty[0] = 'ppDpep'
@@ -46,7 +47,7 @@ class Submission():
 #        pencfg = pen + penmet if self.penalty[0] == 'ppDpep' else ''
         pencfg = '' # no penalty options for pp/pep for now
         shiftcfg = '' if self.shift == ['none'] else '_' + '-'.join(self.shift) + '-shift'
-        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + '-' + self.pdfs + '-' + self.var + '-emin' + self.emin + pencfg + shiftcfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
+        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs + '-' + self.var + '-emin' + self.emin + pencfg + shiftcfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
 
         ## species list filename
         penicc = pen + penmet if self.penalty[0] != 'ppDpep' else ''
@@ -54,7 +55,7 @@ class Submission():
         fixicc = '-'.join(self.fixed) + '-fixed' if self.fixed != ['none'] else ''
         self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + penicc + fixicc + '.icc'
         # log file name 
-        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs + '-' + 'Period' + self.inputs +  '-' + self.var + '-emin' + self.emin + penicc + '-' + fixicc + 'met_' + self.met + '-' + shiftcfg
+        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + '-emin' + self.emin + penicc + '-' + fixicc + 'met_' + self.met + shiftcfg
         
     
     def cfgfile(self):
@@ -122,8 +123,12 @@ class Submission():
         # line 127 and 128: pileup constraint in CPU fit
 #        if self.fittype == 'cpu':
         # in CPU fit, the constraint is in fitoptions
-        cfglines[126] = 'pileup_penalty_mean = ' + str(PUPPEN[self.inputs][0])
-        cfglines[127] = 'pileup_penalty_sigma = ' + str(PUPPEN[self.inputs][1])
+        if 'pileup' in self.penalty:
+            cfglines[126] = 'pileup_penalty_mean = ' + str(PUPPEN[self.inputs][0])
+            cfglines[127] = 'pileup_penalty_sigma = ' + str(PUPPEN[self.inputs][1])
+        else:
+            # no pileup at all (also in species list)
+            for l in range(123,128): cfglines[l] = '#' + cfglines[l]                                     
 
         if self.fittype == 'gpu' and self.shift != ['none']:
             # add shift on Po210 and C11
@@ -175,6 +180,10 @@ class Submission():
 #
 #            icclines[17] = '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.8,   "fixed", 2.8,  10. },\n'
 
+        # line 15: pileup
+        if not 'pileup' in self.penalty:
+            icclines[14] = comment(icclines[14])
+
         # line 31: Pb214
         if self.fittype == 'gpu':
             # comment out because not implemented in the GPU fitter
@@ -200,8 +209,8 @@ class Submission():
         # set penalties if given
         if self.penalty != ['none']:
             for pensp in self.penalty:
-                # pp/pep penalty is in cfg not icc
-                if pensp == 'ppDpep': continue
+                # pileup and pp/pep penalty is in cfg not icc
+                if pensp == 'pileup': continue
 
                 line_num, line = ICCpenalty[pensp]
                 # species for which penalty depends on metallicity
@@ -244,9 +253,9 @@ class Submission():
         '''
 
         pr = 'All' if self.inputs == 'all' else self.inputs
-        tfc = 'MI_c19' if self.fittype == 'gpu' else 'MZ' # files on Jureca are different
+        cy = '_c19' if self.fittype == 'gpu' else '' # files on Jureca are different
         # e.g. Period2012_FVpep_TFCMI_c19.root
-        inputfile = 'input_files/Period' + pr + '_FVpep_TFC' + tfc + '.root'
+        inputfile = 'input_files/Period' + pr + '_FVpep_TFC' + self.tfc + cy + '.root'
 
         outname = self.outfolder + '_submission.sh'
         binbool = os.path.exists(outname)
@@ -270,7 +279,10 @@ class Submission():
                 'pp/final_' + self.var + '_pp' + extra,\
                 self.cfgname, self.iccname, '| tee', self.outfolder + '/' + self.outfile + '.log'
             out.close()
-            make_executable(self.outfolder + '_submission.sh')
+            make_executable(outname)
+
+        print 'Fit:', outname
+        print 'Future log file:', self.outfile
 
 
 def make_executable(path):

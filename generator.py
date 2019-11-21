@@ -9,12 +9,13 @@ options = {
     'var': ['nhits', 'npmts', 'npmts_dt1', 'npmts_dt2'],
     'fit': ['ene', 'mv'],
     'inputs': ['Phase2', 'Phase3'] + [str(y) for y in range(2012,2020)],
-    'penalty': ICCpenalty.keys() + ['pp/pep', 'none'],
+    'penalty': ICCpenalty.keys() + ['pileup', 'none'],
     'fixed': ICCfixed.keys() + ['none'],
     'met': ['hm', 'lm', 'none'], # metallicity for the pep constraint
     'shift': ['C11', 'Po210', 'none'],    
     'ftype': ['cpu', 'gpu', 'cno'],
-    'save': ['true', 'false']
+    'save': ['true', 'false'],
+    'tfc': ['MI', 'MZ']
 }
     
 ## defaults
@@ -25,10 +26,11 @@ defaults = {
     'ftype': 'cpu',
     'save': 'false',
     'emin': '85',
+    'tfc': 'MI'
 }
     
 ## options for user
-user = options.keys() + ['pdfs', 'emin'] # pdfs is a path to a folder, has no fixed options
+user = options.keys() + ['pdfs', 'emin', 'outfolder'] # pdfs is a path to a folder, has no fixed options
 
 #----------------------------------------------------------
 
@@ -122,7 +124,7 @@ def main():
     for opt in user:
         for inp in sys.argv:
             if opt in inp:
-                opts[opt] = inp.split('=')[1] if opt in ['fit', 'pdfs', 'ftype', 'emin', 'save', 'met'] else inp.split('=')[1].split(',') # penalty, fixed and shift can be a list; var is a list to loop on
+                opts[opt] = inp.split('=')[1] if opt in ['fit', 'pdfs', 'ftype', 'emin', 'save', 'met', 'tfc', 'outfolder'] else inp.split('=')[1].split(',') # penalty, fixed and shift can be a list; var is a list to loop on
 
 
     # assign defaults if nothing given
@@ -130,28 +132,29 @@ def main():
         if opts[par] == 'none': opts[par] = defaults[par]
 
     ## folder for given configuration (for submission files and output log file folder)
-    outfolder = 'res-fit-' + opts['ftype'] + '-' +  opts['fit']
-    if opts['inputs'] == 'all':
-        outfolder += '-PeriodAll-'
-    else:
-        outfolder += '-' + '_'.join(opts['inputs']) # year by year
+    if opts['outfolder'] == 'none':
+        outfolder = 'res-fit-' + opts['ftype'] + '-' +  opts['fit']
+        if opts['inputs'] == 'all':
+            outfolder += '-PeriodAll-'
+        else:
+            outfolder += '-' + '_'.join(opts['inputs']) # year by year
     
-    outfolder += '-' + opts['pdfs']
-    outfolder += '-emin' + opts['emin']
+        outfolder += '-' + opts['pdfs']
+        outfolder += '-emin' + opts['emin']
 
-    ## list like options
-    for spop in ['shift','penalty','fixed']:
-        if opts[spop] != ['none']:
-            outfolder += '-' + spop + '_'.join(opts[spop])
-
-    # note: fittype (cpu or gpu) is not in the name because one can't do both in one folder :) so no threat of overlapping results folder
+        ## list like options
+        for spop in ['shift','penalty','fixed']:
+            if opts[spop] != ['none']:
+                outfolder += '-' + spop + '_'.join(opts[spop])
         
-    if os.path.exists(outfolder):
-        print 'Folder', outfolder, 'already exists!!'
-        print '#######################################'
-        return
-    else:
-        os.mkdir(outfolder)
+        opts['outfolder'] = outfolder
+
+        if os.path.exists(outfolder):
+            print 'Folder', outfolder, 'already exists!!'
+            print '#######################################'
+            return
+       
+    if not os.path.exists(opts['outfolder']): os.mkdir(opts['outfolder'])
 
     ## input two years means range between those years
     if (len(opts['inputs'])) >= 2 and (opts['inputs'][0][0] == '2'):
@@ -161,7 +164,7 @@ def main():
 
     ## loop over variables and CNO and create a fit for each
     params = opts.copy()        
-    params['outfolder'] = outfolder
+#    params['outfolder'] = outfolder
 
 #    for CNO in opts['CNO']:
     for var in opts['var']:
