@@ -31,8 +31,9 @@ def table(folder):
 
     dfmas = pd.DataFrame()
 
-    for ord in range(4):
-        f = dorder[ord]
+    for f in files:
+    # for ord in range(4):
+        # f = dorder[ord]
         print '~~~', f
 
         df = pd.read_csv(folder + '/' + f, sep = ' ')
@@ -81,7 +82,10 @@ def order(name):
 folders = [
 # 'luca_cross_check_phase2_ene',
 # 'luca_cross_check_phase2_mv',
-'luca_cross_check_phase3_ene'
+# 'luca_cross_check_phase3_ene'
+'c11_guess'
+# 'c11-22',
+# 'c11-28'
 ]
 # collect()
 for f in folders:

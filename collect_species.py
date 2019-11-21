@@ -84,7 +84,10 @@ def parse_file(filename):
     # oemer MC with LY free/fixed: cl2_12_eo_mc_40_90_c19_log
     # spec = '20' + filename.split('/')[-1].split('_')[1]
     # Luca cross check file: fit-mvPeriodPhase2-CNOhm-nhits.log
-    spec = filename.split('Period')[1].split('-')[0]
+    # spec = filename.split('Period')[1].split('-')[0]
+    # Luca c11 guess: data_Phase3_EO_22C11_TAUP_MI_Nov.log
+    spec = filename.split('_')[1]
+
 
     df.at[0, special_col] = spec
 
