@@ -135,9 +135,9 @@ class Submission():
             for sh in self.shift:
                 cfglines.append('freeMCshift' + sh + ' = true')
                 
-        if self.fitcno:
-            # comment out pileup (lines 124 - 128)
-            for l in range(123,128): cfglines[l] = '#' + cfglines[l]                                     
+#        if self.fitcno:
+#            # comment out pileup (lines 124 - 128)
+#            for l in range(123,128): cfglines[l] = '#' + cfglines[l]                                     
         
         # question: should the pileup_penalty* lines in fitoptions be removed for the GPU fit? or will they be ignored?
         
@@ -191,8 +191,8 @@ class Submission():
 
         # CNO configuration species
         if self.fitcno:
-            # C14 (l 13), pileup (l 15) and pp (l 16) are out
-            for i in [12, 14, 15]:
+            # C14 (l 13) and pp (l 16) are out (not pileup!)
+            for i in [12, 15]:
                 icclines[i] = comment(icclines[i])
 
             # Ext_K40 free normally, fixed in the CNO configuration
@@ -230,7 +230,7 @@ class Submission():
                 # get line from fixed dict
                 line = ICCfixed[fixsp]
                 # species for which penalty depends on metallicity
-                if pensp in ['pp','pep', 'CNO']:
+                if fixsp in ['pp','pep', 'CNO']:
                     icclines[line_num] = line[self.met]
                 # other species
                 else:
