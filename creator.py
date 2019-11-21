@@ -18,7 +18,7 @@ class Submission():
         '''
         
         self.fit = params['fit'] # energy only or full mv
-        self.cno = params['CNO']
+#        self.cno = params['CNO']
         self.var = params['var'] # is a list always
         self.inputs = params['inputs'] # 'all' or string for year 
         self.pdfs = params['pdfs']
@@ -33,6 +33,7 @@ class Submission():
         self.outfolder = params['outfolder']
 
         self.penalty = params['penalty'] # to be constrained (list)
+        self.fixed = params['fixed']
         self.met = params['met']
         self.shift = params['shift']
         
@@ -50,9 +51,10 @@ class Submission():
         ## species list filename
         penicc = pen + penmet if self.penalty[0] != 'ppDpep' else ''
 #        penicc = '' # no penalty for now
-        self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + 'CNO-' + self.cno + penicc + '.icc'
+        fixicc = '-'.join(self.fixed) + '-fixed' if self.fixed != ['none'] else ''
+        self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + penicc + fixicc + '.icc'
         # log file name 
-        self.outfile = 'fit-' + self.fit + 'Period' + self.inputs + '-CNO'+ self.cno + '-' + self.var
+        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs + '-' + 'Period' + self.inputs +  '-' + self.var + '-emin' + self.emin + penicc + '-' + fixicc + 'met_' + self.met + '-' + shiftcfg
         
     
     def cfgfile(self):
@@ -118,11 +120,12 @@ class Submission():
         cfglines[101] = 'complementary_histo_name = pp/final_' + self.var + '_pp_1'
 
         # line 127 and 128: pileup constraint in CPU fit
-        if self.fittype == 'cpu':
-            # in CPU fit, the constraint is in fitoptions
-            cfglines[126] = 'pileup_penalty_mean = ' + str(PUPPEN[self.inputs][0])
-            cfglines[127] = 'pileup_penalty_sigma = ' + str(PUPPEN[self.inputs][1])
-        elif self.fittype == 'gpu' and self.shift != ['none']:
+#        if self.fittype == 'cpu':
+        # in CPU fit, the constraint is in fitoptions
+        cfglines[126] = 'pileup_penalty_mean = ' + str(PUPPEN[self.inputs][0])
+        cfglines[127] = 'pileup_penalty_sigma = ' + str(PUPPEN[self.inputs][1])
+
+        if self.fittype == 'gpu' and self.shift != ['none']:
             # add shift on Po210 and C11
             for sh in self.shift:
                 cfglines.append('freeMCshift' + sh + ' = true')
@@ -167,48 +170,65 @@ class Submission():
 #        extra = '_cno' if self.fitcno else '' # for cno configuration fits
         icclines = open('MCfits/templates/species_list.icc').readlines()
 
-        # line 18: pile up species in GPU fitter
-        # not used now in the CNO config
-#        if self.fittype == 'gpu':
-#            icclines[17] = '{ "MCpup", -1,   kViolet, kDashed, 2,     ' + str(PUPPEN[self.inputs][0]) + ', "penalty",  ' + str(PUPPEN[self.inputs][0]) + ',  ' + str(PUPPEN[self.inputs][1]) + ' }'
+        # line 18 pep: fixed if ene Simone yearly fits, in principle is not a must
+#        if self.fittype == 'cpu' and self.fit == 'ene' and self.inputs[0] == '2':
+#
+#            icclines[17] = '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.8,   "fixed", 2.8,  10. },\n'
 
-        # line 23 pep: fixed if ene Simone yearly fits, in principle is not a must
-        if self.fittype == 'cpu' and self.fit == 'ene' and self.inputs[0] == '2':
-            icclines[22] = '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.8,   "fixed", 2.8,  10. },\n'
-
-        # line 24: cno fixed or free; or constrained to lm/hm
-        icclines[23] = CNOICC[self.cno]
-
-        # line 44: Pb214
+        # line 31: Pb214
         if self.fittype == 'gpu':
             # comment out because not implemented in the GPU fitter
-            icclines[43] = '//' + icclines[43]
+            icclines[30] = comment(icclines[30])
 
         # CNO configuration species
         if self.fitcno:
-            # C14 (l 15), pileup (l 17) and pp (l 19) are out
-            for i in [14, 16, 18]:
-                icclines[i] = '//' + icclines[i]
+            # C14 (l 13), pileup (l 15) and pp (l 16) are out
+            for i in [12, 14, 15]:
+                icclines[i] = comment(icclines[i])
 
-            # line 50: Ext_K40
-            # free normally, fixed in the CNO configuration
-            icclines[49] = '{ "Ext_K40",      -1,   kAzure,  kSolid,  2,    0.15,   "fixed",  0.,  10. },\n'
+            # Ext_K40 free normally, fixed in the CNO configuration
+            if self.fixed == ['none']:
+                self.fixed = ['Ext_K40']
+            else:
+                self.fixed.append('Ext_K40')
 
-        # energy only fit: Po210_2 (l 29), C11_2 (l 35), C10_2 (l 37) and He6_2 (l 39) have to go
+        # energy only fit: Po210_2 (l 22), C11_2 (l 26), C10_2 (l 28) and He6_2 (l 30) have to go
         if self.fit == 'ene':
-            for i in [28, 34, 36, 38]:
-                icclines[i] = '//' + icclines[i]
+            for i in [21, 25, 27, 29]:
+                icclines[i] = comment(icclines[i])
 
         # set penalties if given
         if self.penalty != ['none']:
             for pensp in self.penalty:
+                # pp/pep penalty is in cfg not icc
                 if pensp == 'ppDpep': continue
-                line_num, line = ICC[pensp]
-                if pensp in ['pp','pep']:
+
+                line_num, line = ICCpenalty[pensp]
+                # species for which penalty depends on metallicity
+                if pensp in ['pp','pep', 'CNO']:
                     icclines[line_num] = line[self.met]
+                # other species
                 else:
                     icclines[line_num] = line
-        
+
+                icclines[line_num] += ',\n'
+       
+        # set fixed if given
+        if self.fixed != ['none']:
+            for fixsp in self.fixed:
+                # get line number from penalty dict
+                line_num = ICCpenalty[fixsp][0]
+                # get line from fixed dict
+                line = ICCfixed[fixsp]
+                # species for which penalty depends on metallicity
+                if pensp in ['pp','pep', 'CNO']:
+                    icclines[line_num] = line[self.met]
+                # other species
+                else:
+                    icclines[line_num] = line
+
+                icclines[line_num] += ',\n'
+
         ## save file
         # one species list for all fits
         outfile = open(self.iccname, 'w')
@@ -260,37 +280,53 @@ def make_executable(path):
     os.chmod(path, mode)
 
 
-CNOICC = {
-#    'fixed': '   { "nu(CNO)",      -1,   kCyan,   kSolid,  2,    0.,   "fixed", 0.,  50. },\n',
-#    'fixed5': '   { "nu(CNO)",      -1,   kCyan,   kSolid,  2,    5.,   "fixed", 5.,  50. },\n',
-
-    'free': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    5.36,   "free", 0.,  50. },\n',
-    'hm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    4.92,   "fixed", 4.92,  0.56 },\n',
-    'lm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    3.52,   "fixed", 3.52,  0.37 },\n'
-}
 
 
-# penalty: line number is line - 1 (i.e. line 1 is 0)
-ICC = {
-#    'Bi210': [29, '{ "Bi210",        -1,   kSpring, kSolid,  2,    11.84,    "penalty",  11.84,  1.4 },\n'],
-    'Bi210': [29, '{ "Bi210",        -1,   kSpring, kSolid,  2,    11.84,    "penalty",  11.84,  1.59 },\n'], # addition for systematics
-#    'Bi210': [27, '{ "Bi210",        -1,   kSpring, kSolid,  2,    17.5,    "penalty",  17.5,  2.0 },\n'],
-#    'C14': [13, '{ "C14",          -1,   kViolet, kSolid,  2,    3.456e+6, "penalty", 3.456e+6, 17.28e+4 },\n'],
+# penalty: [line number, line]
+# penalty: {metallicity : [line number, line]}
+# line number is line - 1 (i.e. line 1 is 0)
+ICCpenalty = {
+    'Bi210': [22, '{ "Bi210",        -1,   kSpring, kSolid,  2,    11.84,    "penalty",  11.84,  1.59 }'], # addition for systematics
 #    'Kr85': [29, '{ "Kr85",         -1,   kBlue,   kSolid,  2,    6.8,     "penalty", -999.,  110. }\n'],
 #    'pp': [17, {'hz': '{ "nu(pp)",       -1,   kRed,   kSolid,  2,    131.1,   "penalty",  131.1., 1.4 },\n', 'lz': '{ "nu(pp)",       -1,   kRed,   kSolid,  2,    132.2,   "penalty",  132.2,  1.4 },\n'}],
-    'pep': [22, {'hm': '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.74,   "penalty", 2.74,  0.04 },\n', 'lm': '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.78,   "penalty", 2.78,  0.04 },\n'}],
-    'CNO': [23, {'hm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    4.92,   "penalty", 4.92,  0.56 },\n', 'lm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    3.52,   "penalty", 3.52,  0.37 },\n'}]
+    
+    'pep': [17,\
+    {'hm': '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.74,   "penalty", 2.74,  0.04 }',
+     'lm': '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.78,   "penalty", 2.78,  0.04 }'}],
+    
+    'CNO': [28,\
+    {'hm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    4.92,   "penalty", 4.92,  0.56 }',
+     'lm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    3.52,   "penalty", 3.52,  0.37 }'}],
+
+    'Ext_K40': [33]
+
 }
 
-RND = {'Bi210': [10,2], 'C14': [3456000, 172800]}
+ICCfixed = {
+#    'fixed': '   { "nu(CNO)",      -1,   kCyan,   kSolid,  2,    0.,   "fixed", 0.,  50. },\n',
+#    'fixed5': '   { "nu(CNO)",      -1,   kCyan,   kSolid,  2,    5.,   "fixed", 5.,  50. },\n',
+            
+    'Ext_K40':  '{ "Ext_K40",      -1,   kAzure,  kSolid,  2,    0.15,   "fixed",  0.,  10. }',
 
-PPPEP = {'hm': [47.76, 0.84], 'lm': [47.5, 0.8]}
+    'CNO': {'hm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    4.92,   "fixed", 4.92,  0.56 }',
+    'lm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    3.52,   "fixed", 3.52,  0.37 }'}
+}
+
+# what was this even?
+#RND = {'Bi210': [10,2], 'C14': [3456000, 172800]}
+
+#PPPEP = {'hm': [47.76, 0.84], 'lm': [47.5, 0.8]}
 
 ## pileup penalty
-PUPPEN = {'all': [2.1, 0.04],
+PUPPEN = {'Phase2': [2.1, 0.04],
         '2012': [2.6, 0.03],
         '2013': [2.2, 0.03],
         '2014': [2.0, 0.03],
         '2015': [3.2, 0.03],
-        '2016': [1.4, 0.03],
+        '2016': [1.4, 0.03]
 }
+
+
+# helper function
+def comment(line):
+    return '//' + line

@@ -5,11 +5,12 @@ from creator import *
     
 # available values for each parameter
 options = {
-    'CNO': ['fixed','lm', 'hm', 'fixed5', 'free'],
+#    'CNO': ['fixed','lm', 'hm', 'fixed5', 'free'],
     'var': ['nhits', 'npmts', 'npmts_dt1', 'npmts_dt2'],
     'fit': ['ene', 'mv'],
-    'inputs': ['all', 'Phase2', 'Phase3'] + [str(y) for y in range(2012,2020)],
-    'penalty': ICC.keys() + ['pp/pep', 'none'],
+    'inputs': ['Phase2', 'Phase3'] + [str(y) for y in range(2012,2020)],
+    'penalty': ICCpenalty.keys() + ['pp/pep', 'none'],
+    'fixed': ICCfixed.keys() + ['none'],
     'met': ['hm', 'lm', 'none'], # metallicity for the pep constraint
     'shift': ['C11', 'Po210', 'none'],    
     'ftype': ['cpu', 'gpu', 'cno'],
@@ -19,7 +20,7 @@ options = {
 ## defaults
 defaults = {
     'pdfs': 'pdfs_TAUP2017',
-    'inputs': ['all'], # has to be a list
+    'inputs': ['Phase2'], # has to be a list
     'var': ['nhits'],
     'ftype': 'cpu',
     'save': 'false',
@@ -56,7 +57,7 @@ def generator(params):
     # check each parameter given by user
     for par in options:
         # penalty is a list
-        if par in ['penalty', 'shift']:
+        if par in ['penalty', 'shift', 'fixed']:
             flag = True # by default, we think it's an available option
             for parsp in params[par]:
                 if not parsp in options[par]: flag = False # set to False if not available
@@ -111,7 +112,7 @@ def main():
     # first assign none
     opts = {}
     for opt in user:
-        if opt in ['penalty', 'shift']:
+        if opt in ['penalty', 'shift', 'fixed']:
             # for options that can be a list, penalty and shift
             opts[opt] = ['none']
         else:
@@ -121,7 +122,7 @@ def main():
     for opt in user:
         for inp in sys.argv:
             if opt in inp:
-                opts[opt] = inp.split('=')[1] if opt in ['fit', 'pdfs', 'ftype', 'emin', 'save', 'met'] else inp.split('=')[1].split(',') # penalty and shift can be a list; var is a list to loop on
+                opts[opt] = inp.split('=')[1] if opt in ['fit', 'pdfs', 'ftype', 'emin', 'save', 'met'] else inp.split('=')[1].split(',') # penalty, fixed and shift can be a list; var is a list to loop on
 
 
     # assign defaults if nothing given
@@ -137,10 +138,11 @@ def main():
     
     outfolder += '-' + opts['pdfs']
     outfolder += '-emin' + opts['emin']
-    if opts['shift'] != ['none']:
-        outfolder += '-shift' + '_'.join(opts['shift'])
-    if opts['penalty'] != ['none']:
-        outfolder += '-penalty' + '_'.join(opts['penalty'])
+
+    ## list like options
+    for spop in ['shift','penalty','fixed']:
+        if opts[spop] != ['none']:
+            outfolder += '-' + spop + '_'.join(opts[spop])
 
     # note: fittype (cpu or gpu) is not in the name because one can't do both in one folder :) so no threat of overlapping results folder
         
@@ -161,15 +163,15 @@ def main():
     params = opts.copy()        
     params['outfolder'] = outfolder
 
-    for CNO in opts['CNO']:
-        for var in opts['var']:
-            for inp in opts['inputs']:
-                params['CNO'] = CNO
-                params['var'] = var
-                params['inputs'] = inp
+#    for CNO in opts['CNO']:
+    for var in opts['var']:
+        for inp in opts['inputs']:
+#            params['CNO'] = CNO
+            params['var'] = var
+            params['inputs'] = inp
 #                params = {'outfolder': outfolder, 'fit': opts['fit'], 'CNO': CNO, 'var': var, 'inputs': str(inp), 'pdfs': opts['pdfs'], 'penalty': opts['penalty'], 'fittype': opts['fittype']} # something smarter can be done here
-                print params
-                generator(params)
+            print params
+            generator(params)
 
 
 def wrong_inputs():
