@@ -103,11 +103,6 @@ def generator(params):
     print
     
     
-    # submission file for CNAF
-    s.subfile()
-    
-    print # readability
-    
     ## corresponding cfg file
     fitfold = 'fitoptions'
     if not os.path.exists(fitfold):
@@ -121,6 +116,11 @@ def generator(params):
         os.mkdir(specfold)
 
     s.iccfile() # create species list if needed
+    
+    print # readability
+    
+    # submission file for CNAF
+    s.subfile()
 
     print #readability
     print '#######################################'

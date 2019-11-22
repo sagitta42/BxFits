@@ -283,7 +283,7 @@ class Submission():
             if not binbool: print >> out, '#!/bin/bash'
             print >> out, './borexino', inputfile,\
                 'pp/final_' + self.var + '_pp' + extra,\
-                self.cfgname, self.iccname, ' 2&>1 | tee', self.outfolder + '/' + self.outfile + '.log'
+                self.cfgname, self.iccname, ' | tee', self.outfolder + '/' + self.outfile + '.log'
             out.close()
             make_executable(outname)
 
