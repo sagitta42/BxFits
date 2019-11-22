@@ -56,6 +56,9 @@ def generator(params):
         
         penalty (list): list of species to be constrained in the fit
             Constraints are defined in the bottom in ICCpenalty
+            IMPORTANT! with the current implementation, if pileup is not given
+                        in this option, it means the fit is performed without
+                        pileup as species at all
 
         fixed (list): list of species to be fixed in the fit
             Values are defined in the bottom in ICCfixed

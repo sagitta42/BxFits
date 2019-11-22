@@ -260,7 +260,7 @@ class Submission():
         # files on Jureca are different
         cy = '_c19' if self.fittype == 'gpu' else '' 
         # e.g. Period2012_FVpep_TFCMI_c19.root
-        inputfile = 'input_files/Period' + pr + '_FVpep_TFC' + self.tfc + cy + '.root'
+        inputfile = 'input_files/Period' + self.inputs + '_FVpep_TFC' + self.tfc + cy + '.root'
 
         ## submission file
         outname = self.outfolder + '_submission.sh'
