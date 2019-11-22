@@ -10,26 +10,39 @@ class Submission():
             Setting 'cno' means GPU fitter with "CNO configuration"
             (no C14 and pp in the species). To remove pileup, simply do not put
             'penalty=pileup'
+
         fit ['ene'|'mv']: energy only or multivariate fit
+
         inputs (string): name of the period (e.g. Phase2) or a year (e.g. '2012')
             The inputs will be read from a folder 'input_files' (create a link in your folder)
-        tfc ['MZ'|'MI']: type of TFC                         
-        pdfs (string): path to MC PDFs
-        var ['nhits' | 'npmts_dt1' | 'npmts_dt2']: fit variable
-        emin (int): min energy of the fit
+
+        tfc ['MZ'|'MI']: type of TFC. Default: MI 
+
+        input_path (string): path to fitter inputs. Default: path to v3.1.0 inputs in JURECA
+
+        pdfs (string): path to MC PDFs. Default: MCfits/pdfs_TAUP2017 (included in the repo)
+
+        var ['nhits' | 'npmts_dt1' | 'npmts_dt2']: fit variable. Default: nhits
+
+        emin (int): min energy of the fit. Default: 92
         
         penalty (list): list of species to be constrained in the fit
             Constraints are defined in the bottom in ICCpenalty
+
         fixed (list): list of species to be fixed in the fit
             Values are defined in the bottom in ICCfixed
+
         met ['hm'|'lm']: metallicity
             Used with option penalty or fixed for species the value for which
             depends on metallicity                      
+
         shift (list): list of species to apply shift to (C11, Po210)
         
         save [True|False]: save the fit output in .root and .pdf                      
+
         outfolder (string): output folder for the log files
-            If not given, an output folder is created with a name based on the settings                                
+            If not given, an output folder is created with a name based on the settings
+            Default: false                            
         '''
         
         self.fittype = params['ftype'] 
@@ -43,6 +56,7 @@ class Submission():
         self.fit = params['fit'] 
         self.inputs = params['inputs'] 
         self.tfc = params['tfc']
+        self.input_path = params['input_path']
         self.pdfs = params['pdfs']
         self.var = params['var'] # is a list always
         self.emin = params['emin']
@@ -260,7 +274,7 @@ class Submission():
         # files on Jureca are different
         cy = '_c19' if self.fittype == 'gpu' else '' 
         # e.g. Period2012_FVpep_TFCMI_c19.root
-        inputfile = 'input_files/Period' + self.inputs + '_FVpep_TFC' + self.tfc + cy + '.root'
+        inputfile = self.input_path + '/Period' + self.inputs + '_FVpep_TFC' + self.tfc + cy + '.root'
 
         ## submission file
         outname = self.outfolder + '_submission.sh'

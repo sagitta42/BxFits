@@ -23,13 +23,14 @@ options = {
 defaults = {
     'tfc': 'MI',
     'var': ['nhits'],
-    'pdfs': 'pdfs_TAUP2017',
+    'pdfs': 'MCfits/pdfs_TAUP2017',
+    'input_path': '/p/project/cjikp20/jikp2007/fitter_input/v3.1.0/files',
     'emin': '92',
     'save': 'false',
 }
     
 ## total options = options + the ones that do not have fixed choices
-user = options.keys() + ['pdfs', 'emin', 'outfolder'] 
+user = options.keys() + ['pdfs', 'input_path', 'emin', 'outfolder'] 
 
 #----------------------------------------------------------
 
@@ -42,23 +43,22 @@ def generator(params):
 
         fit ['ene'|'mv']: energy only or multivariate fit
 
-        inputs (string): name of the period (e.g. Phase2) or a year (e.g. '2012')
-            The inputs will be read from a folder 'input_files' (create a link in your folder)
-            Giving "yyyy,YYYY" will create submissions for the range of years between yyyy and YYYY inclusive
+        inputs (list): names of the period (e.g. Phase2) or a year (e.g. '2012')
+             If multiple inputs are be given, e.g. ['Phase2', 'Phase3'], multiple
+                submissions will be generated.
+             In case years are given, a range of years between the given ones will be generated, e.g. ['2012','2016'] will create submissions for years 2012 to 2016 inclusive
 
-        tfc ['MZ'|'MI']: type of TFC                         
+        tfc ['MZ'|'MI']: type of TFC. Default: MI 
 
-        pdfs (string): path to MC PDFs
+        input_path (string): path to fitter inputs. Default: path to v3.1.0 inputs in JURECA
+        pdfs (string): path to MC PDFs. Default: MCfits/pdfs_TAUP2017 (included in the repo)
 
-        var ['nhits' | 'npmts_dt1' | 'npmts_dt2']: fit variable
+        var ['nhits' | 'npmts_dt1' | 'npmts_dt2']: fit variable. Default: nhits
 
-        emin (int): min energy of the fit
+        emin (int): min energy of the fit. Default: 92
         
         penalty (list): list of species to be constrained in the fit
             Constraints are defined in the bottom in ICCpenalty
-            IMPORTANT! with the current implementation, if pileup is not given
-                        in this option, it means the fit is performed without
-                        pileup as species at all
 
         fixed (list): list of species to be fixed in the fit
             Values are defined in the bottom in ICCfixed
@@ -72,7 +72,16 @@ def generator(params):
         save [True|False]: save the fit output in .root and .pdf                      
 
         outfolder (string): output folder for the log files
-            If not given, an output folder is created with a name based on the settings                                
+            If not given, an output folder is created with a name based on the settings
+            Default: false                            
+    
+  Examples:
+
+    python generator.py inputs=Phase2 ftype=cno fit=mv var=nhits emin=140 pdfs=pdfs_new shift=C11 penalty=pileup,CNO
+
+    python generator.py penalty=CNO,pileup inputs=Phase2 ftype=gpu fit=mv met=hm var=nhits pdfs=pdfs_TAUP2017 emin=92 tfc=MZ outfolder=livia_checks
+
+    python generator.py penalty=CNO,Ext_K40 inputs=Phase2 ftype=cno fit=mv met=hm var=nhits pdfs=pdfs_TAUP2017 emin=140 tfc=MI
 
     '''
 
@@ -147,8 +156,8 @@ def main():
     for opt in user:
         for inp in sys.argv:
             if opt in inp:
-                opts[opt] = inp.split('=')[1] if opt in ['fit', 'pdfs', 'ftype', 'emin', 'save', 'met', 'tfc', 'outfolder'] else inp.split('=')[1].split(',') # penalty, fixed and shift can be a list; var is a list to loop on
-
+                # penalty, fixed and shift can be a list; inputs is a list to loop on
+                opts[opt] = inp.split('=')[1].split(',') if opt in ['inputs', 'penalty', 'fixed', 'shift'] else inp.split('=')[1].split(',') 
 
     # assign defaults if nothing given
     for par in defaults:
@@ -203,11 +212,6 @@ def main():
 
 def wrong_inputs():
     '''A message to print if user input is wrong '''
-    print
-    print 'Examples:'
-    print 'python generator.py inputs=Phase2 ftype=cno fit=mv var=nhits emin=140 pdfs=pdfs_new shift=C11 penalty=pileup,CNO'
-    print 'python generator.py penalty=CNO,pileup inputs=Phase2 ftype=gpu fit=mv met=hm var=nhits pdfs=pdfs_TAUP2017 emin=92 tfc=MZ outfolder=livia_checks'
-    print 'python generator.py penalty=CNO,Ext_K40 inputs=Phase2 ftype=cno fit=mv met=hm var=nhits pdfs=pdfs_TAUP2017 emin=140 tfc=MI'
     print
     print generator.__doc__
     print 'Options:'
