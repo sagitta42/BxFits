@@ -68,7 +68,9 @@ def parse_file(filename):
     # -> special column will be 'Phase3'
     # spec = filename.split('_')[1]
     # fit-gpu-mv-pdfs_TAUP2017-PeriodPhase2MZ-nhits-emin92_CNO-pileup-penalty-met_hm
-    spec = filename.split('Period')[1].split('M')[0]
+    # spec = filename.split('Period')[1].split('M')[0]
+    # fit-mvPeriod2012-CNOhm-nhits.log
+    spec = filename.split('Period')[1].split('-')[0]
     df.at[0, special_col] = spec
 
     ### read fit info
