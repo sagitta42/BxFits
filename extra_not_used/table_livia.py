@@ -5,42 +5,41 @@ import sys
 
 from collect_species import *
 
+fxd = '-Ext_K40-fixed' if 'fixed' in sys.argv[1] else ''
 
+ORDER = [
+'fit-gpu-mv-pdfs_TAUP2017-PeriodPhase2MZ-nhits-emin92_CNO-pileup-penalty' + fxd + 'met_hm',
+'fit-gpu-mv-pdfs_TAUP2017-PeriodPhase2MI-nhits-emin92_CNO-pileup-penalty' + fxd + 'met_hm',
+'fit-cno-mv-pdfs_TAUP2017-PeriodPhase2MI-nhits-emin140_CNO-pileup-penalty' + fxd + 'met_hm',
+'fit-cno-mv-pdfs_TAUP2017-PeriodPhase2MI-nhits-emin140_CNO-penalty' + fxd + 'met_hm',
+'fit-cno-mv-pdfs_new-PeriodPhase2MI-nhits-emin140_CNO-penalty' + fxd + 'met_hm',
+'fit-cno-mv-pdfs_new-PeriodPhase3MI-nhits-emin140_CNO-penalty' + fxd + 'met_hm',
+]
 
-
-def collect(folder):
-    # folders
-    files = os.listdir(folder)
-    files = [f for f in files if not '.' in f]
-
-    for f in files:
-        print f
-        parse_folder(folder + '/' + f)
-
-
-
-def table(folder):
+def table_livia(folder):
     ''' make table like in Luca's slides '''
 
-    files = os.listdir(folder)
-    files = [f for f in files if '_species.out' in f]
-
-    ## order like in Luca's table
-    dorder = {}
-    for f in files: dorder[order(f)] = f
+    ## log files in the folder
+    # files = os.listdir(folder)
+    # files = [f for f in files if '.log' in f]
 
     dfmas = pd.DataFrame()
 
-    for f in files:
+    for f in ORDER:
+    # for f in files:
     # for ord in range(4):
         # f = dorder[ord]
         print '~~~', f
 
-        df = pd.read_csv(folder + '/' + f, sep = ' ')
+        df = parse_file(folder + '/' + f + '.log')
         df = df.drop('Period', axis=1) # all of these are Phase2
+        df = df.astype(float)
 
         df['chi2/ndofError'] = np.NaN # NaN?
         for sp in ['C11', 'Po210']:
+            # print df[[sp, sp+'Error', sp + '_2', sp + '_2Error', 'ExpTag', 'ExpSub']]
+            # print '$', df[sp].loc[0], '$', df['ExpSub'].loc[0], '$'
+            # print df[sp]*df['ExpSub']
             df[sp + 'avg'] = (df[sp]*df['ExpSub'] + df[sp + '_2']*df['ExpTag']) / (df['ExpSub'] + df['ExpTag'])
             df[sp + 'avgError'] = df[sp + 'avg'] * np.sqrt( (df[sp + 'Error'] / df[sp])**2 + (df[sp + '_2Error'] / df[sp + '_2'])**2 )
 
@@ -56,7 +55,7 @@ def table(folder):
 
         ## concat
         dff = pd.concat([dfcols, dferrs], axis=1)#, ignore_index=True)
-        print dff
+        # print dff
 
         ## concat to massive one
         dfmas = pd.concat([dfmas, dff], axis=1)
@@ -69,26 +68,28 @@ def table(folder):
     dfmas = dfmas.loc[COLUMNS]
 
     print dfmas
-    dfmas.to_csv(folder + '/' + folder + '.csv')
+    dfmas.to_csv(folder + '_livia.csv')
 
 
+table_livia(sys.argv[1])
 
-def order(name):
-    if 'C11_Po210' in name or 'Po210_C11' in name: return 3
-    if 'C11' in name: return 2
-    if 'Po210' in name: return 1
-    return 0
+#
+# def order(name):
+#     if 'C11_Po210' in name or 'Po210_C11' in name: return 3
+#     if 'C11' in name: return 2
+#     if 'Po210' in name: return 1
+#     return 0
 
 folders = [
 # 'luca_cross_check_phase2_ene',
 # 'luca_cross_check_phase2_mv',
 # 'luca_cross_check_phase3_ene'
-'c11_guess'
+# 'c11_guess'
 # 'c11-22',
 # 'c11-28'
 ]
 # collect()
-for f in folders:
-    print '~~~~~~~~~~~', f
-    collect(f)
-    table(f)
+# for f in folders:
+#     print '~~~~~~~~~~~', f
+#     collect(f)
+#     table(f)

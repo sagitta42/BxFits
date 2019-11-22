@@ -3,25 +3,35 @@ import numpy as np
 import sys
 import os
 
-### --------------------------------------- ###
-### ---------------- setup ---------------- ###
-### --------------------------------------- ###
+###### species to read from the fitter
 
-# species and neutrinos
-
-# COLUMNS = ['C14']
 COLUMNS = ['nu(Be7)', 'nu(pep)', 'Bi210', 'C11', 'Kr85', 'Po210',\
     'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Po210shift', 'C11shift', 'chi2/ndof',\
     'C11_2', 'Po210_2']
-# COLUMNS = ['C14', 'chi2/ndof', 'LY', 'pp']
-# COLUMNS = ['Bi210', 'C11', 'C14', 'C14_pileup', 'Ext_Bi214', Ext_K40', 'Ext_Tl208', 'Kr85', 'Pb214', 'Po210', 'nu(Be7)', 'nu(pp)', 'nu(CNO)', 'Minimized Likelihood Value']
 
-def strname(species):
-    return ''.join(species.split(' '))
+### --------------------------------------------------------- ###
+
+###### parameters that don't have the concept of error
+
+ERRORLESS = ['chi2/ndof']
+
+### --------------------------------------------------------- ###
+
+###### special column the value of which is not read from the log file
+###### but from the name of the log file
+
+special_col = 'Period'
+
+### --------------------------------------------------------- ###
+
+###### fitter format corresponding to our own column names
 
 PARSER = {
  '#nu(^{7}Be)': 'nu(Be7)',
  '#nu(pep)': 'nu(pep)',
+ '#nu(pp)': 'pp',
+
+  '^{14}C': 'C14',
 
  '^{210}Bi': 'Bi210',
  '^{11}C': 'C11',
@@ -39,56 +49,26 @@ PARSER = {
 
  '^{11}C 2': 'C11_2',
  '^{210}Po 2': 'Po210_2'
-
- # '^{14}C': 'C14',
- # 'beta ly': 'LY',
- # '#nu(pp)': 'pp',
-
-
 }
 
-# parameters that don't have the concept of error
-ERRORLESS = ['chi2/ndof']
-# ERRORLESS = ['Minimized Likelihood Value']
-#ERRORLESS = ['chiSquare', 'chiSquare/Ndof', 'p-value', 'MLV', 'LikelihoodP-value']
+### --------------------------------------------------------- ###
 
-# alpha and beta resolution
-#for i in range(6):
- #   PARSER['beta_resolution_' + str(i)] = 'betaRes' + str(i)
-  #  PARSER['alpha_resolution_' + str(i)] = 'alphaRes' + str(i)
-
-# echidna qc
-#for i in range(5):
-#    PARSER['echidna_^{' + str(i) + '}qc'] = 'echidnaQc' + str(i)
-
-
-
-### ----------------------------------------- ###
-### ---------------- parsing ---------------- ###
-### ----------------------------------------- ###
-
-special_col = 'Period'
-# special_col = 'Year'
 
 def parse_file(filename):
-    ### set up table
+    '''
+    Extract information from a single log file. Return the dataframe (table)
+    with the results (not saved as a file)
+    '''
 
     # table template
-#    special_col = 'EneVar'
 	# columns: fit settings, species + errors (no error for the ones listed as ERRORLESS)
-    df = pd.DataFrame( columns = [special_col] + [strname(x) for x in COLUMNS]  + [strname(x) + 'Error' for x in np.setdiff1d(COLUMNS,ERRORLESS)] + ['ExpSub', 'ExpTag'])
+    df = pd.DataFrame( columns = [special_col] + COLUMNS  + [x + 'Error' for x in np.setdiff1d(COLUMNS,ERRORLESS)] + ['ExpSub', 'ExpTag'])
 
-    # oemer full comp names: nusol_cmpl_only_12_c19_log.log
-#    spec = '20' + filename.split('_c19')[0].split('_')[-1]
-    # oemer filenames: cl2_12_eo_mc_taup_40_80_c19_log.log
-    # oemer MC with LY free/fixed: cl2_12_eo_mc_40_90_c19_log
-    # spec = '20' + filename.split('/')[-1].split('_')[1]
-    # Luca cross check file: fit-mvPeriodPhase2-CNOhm-nhits.log
-    # spec = filename.split('Period')[1].split('-')[0]
-    # Luca c11 guess: data_Phase3_EO_22C11_TAUP_MI_Nov.log
-    spec = filename.split('_')[1]
-
-
+    # Example of a filename: data_Phase3_EO_22C11_TAUP_MI_Nov.log
+    # -> special column will be 'Phase3'
+    # spec = filename.split('_')[1]
+    # fit-gpu-mv-pdfs_TAUP2017-PeriodPhase2MZ-nhits-emin92_CNO-pileup-penalty-met_hm
+    spec = filename.split('Period')[1].split('M')[0]
     df.at[0, special_col] = spec
 
     ### read fit info
@@ -102,11 +82,11 @@ def parse_file(filename):
     while idx < len(lines) and not found:
 
         if 'Inserting [default.Major] exposure' in lines[idx]:
-            df['ExpSub'] = lines[idx].split(':')[1].split('[')[1].split(' ')[0]
+            df['ExpSub'] = float(lines[idx].split(':')[1].split('[')[1].split(' ')[0])
 
         # tagged is after sub, so if found, exit
         if 'Inserting [default.TFCtagged] exposure' in lines[idx]:
-            df['ExpTag'] = lines[idx].split(':')[1].split('[')[1].split(' ')[0]
+            df['ExpTag'] = float(lines[idx].split(':')[1].split('[')[1].split(' ')[0])
             found = True
 
         idx+=1
@@ -117,53 +97,54 @@ def parse_file(filename):
     while idx >= 0 and not found:
         idx -= 1
         found = 'FIT PARAMETERS' in lines[idx]
-        # found = 'SPECTRAL FIT' in lines[idx]
 
-    # print idx, 'line'
     # now, starting from this index, move down and collect data
     for i in range(idx+1, len(lines)):
+        # split the line by equal sign; left is species, right is values
         info = lines[i].split('=')
-        # info = lines[i].split(':')[-1].split('=')
-        # print info
+        # name of the species in the fitter
         species = info[0].strip()
-        # species = info[0].split('Component')[-1].strip()
-        # print species
-        # stuff that we don't need e.g. number of bins used --> ignore and move to the next line
-        if not species in PARSER: continue
-        if not PARSER[species] in COLUMNS: continue
-        # if not species in COLUMNS: continue
-        val = info[1].strip().split(' ')[0].strip()
-        df[PARSER[species]] = val
-        # df[strname(species)] = val
 
+        # species that are not defined for us
+        if not species in PARSER: continue
+
+        # species that we don't need and other stuff -> ignore and move to the next line
+        if not PARSER[species] in COLUMNS: continue
+
+        # mean value of the fit
+        val = info[1].strip().split(' ')[0].strip()
+        df[PARSER[species]] = float(val)
+
+        ## assign error if it exists for given column
         if not PARSER[species] in ERRORLESS:
+            # assign special values for fixed and railed
             if 'Fixed' in lines[i]:
                 err = -1
             elif 'Possibly railed' in lines[i] or 'Railed' in lines[i]:
                 err = -2
             else:
+                # read the error for this species
                 err = info[1].split('#pm')[1].strip().split(' ')[0].strip() # if '+/-' in lines[i] else 0
-                # err = info[1].split('+/-')[1].strip().split(' ')[0].strip() # if '+/-' in lines[i] else 0
 
-            df[PARSER[species] + 'Error'] = err
-
-    # remove error for parameters that are not supposed to have it
-#	cols = df.columns
-#	for col in cols:
-#		if col in ERRORLESS:
-#			df = df.drop(col + 'Error', axis=1)
+            df[PARSER[species] + 'Error'] = float(err)
 
     return df
-    # outname = filename.split('.')[0] + '.out'
-    # df.to_csv(outname, sep = ' ', index=False)
+
+
 
 
 def parse_folder(foldername):
+    '''
+    Get information from every log file in a given folder and save to a
+    table called foldername_species.out
+    '''
     # list of files in this folder
     files = os.listdir(foldername)
     files = [f for f in files if 'log' in f]
+
     # empty table
     df = pd.DataFrame()
+
     # add info from each log file in the folder
     nfiles = len(files)
     count = 0
@@ -175,17 +156,25 @@ def parse_folder(foldername):
         df = pd.concat([df, parse_file(foldername + '/' + f)], ignore_index=True)
         count += 1
 
-    # output file
-    outname = foldername + '_species.out'
-    # outname = foldername.split('/')[-1] + '_species.out'
+    # sort by special column (often year)
     df = df.sort_values(special_col)
-    df.to_csv(outname, index=False, sep = ' ')
     print df
+
+    # save output file
+    outname = foldername + '_species.out'
+    df.to_csv(outname, index=False, sep = ' ')
     print('--> '+outname)
 
 
 
 if __name__ == '__main__':
+    # check if the species are all defined
+    for col in COLUMNS:
+        if not col in PARSER.values():
+            print 'Species', species, 'is not in PARSER (line 19)!'
+            sys.exit(1)
+
+    # user input
     fname = sys.argv[1]
     if fname[-1] == '/': fname = fname[:-1]
     parse_folder(fname)
