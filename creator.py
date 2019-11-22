@@ -6,61 +6,80 @@ class Submission():
         '''
         params: dictionary with different parameters from user input
 
-        fit (str): fit style (ene or mv)                   
-        CNO (str): fit condition (fixed, lm, hm)
-        var (str): energy variable (nhits, npmts, npmts_dt1, npmts_dt2)
+        ftype ['cpu'|'gpu'|'cno']: CPU or GPU fitter.
+            Setting 'cno' means GPU fitter with "CNO configuration"
+            (no C14 and pp in the species). To remove pileup, simply do not put
+            'penalty=pileup'
+        fit ['ene'|'mv']: energy only or multivariate fit
+        inputs (string): name of the period (e.g. Phase2) or a year (e.g. '2012')
+            The inputs will be read from a folder 'input_files' (create a link in your folder)
+        tfc ['MZ'|'MI']: type of TFC                         
+        pdfs (string): path to MC PDFs
+        var ['nhits' | 'npmts_dt1' | 'npmts_dt2']: fit variable
         emin (int): min energy of the fit
-        inputs (list): min and max year for inputs ([int, int]) (PeriodAll if none)                   
-        pdfs (str): folder to look for PDFs                       
-        ftype: cpu or gpu
-        penalty (list): species to be constrained (pp/pep)
-        shift (list): what shift to apply (Po and C11)                        
+        
+        penalty (list): list of species to be constrained in the fit
+            Constraints are defined in the bottom in ICCpenalty
+        fixed (list): list of species to be fixed in the fit
+            Values are defined in the bottom in ICCfixed
+        met ['hm'|'lm']: metallicity
+            Used with option penalty or fixed for species the value for which
+            depends on metallicity                      
+        shift (list): list of species to apply shift to (C11, Po210)
+        
+        save [True|False]: save the fit output in .root and .pdf                      
+        outfolder (string): output folder for the log files
+            If not given, an output folder is created with a name based on the settings                                
         '''
         
-        self.fit = params['fit'] # energy only or full mv
-#        self.cno = params['CNO']
-        self.var = params['var'] # is a list always
-        self.inputs = params['inputs'] # 'all' or string for year 
-        self.pdfs = params['pdfs']
-        self.fittype = params['ftype'] # cpu or gpu; cno = gpu with cno config
+        self.fittype = params['ftype'] 
         self.fitcno = False
         ftyp = self.fittype # for filenames
+        # fit type CNO is just a GPU fit with extra CNO settings
         if self.fittype == 'cno':
             self.fitcno = True
             self.fittype = 'gpu'
+        
+        self.fit = params['fit'] 
+        self.inputs = params['inputs'] 
+        self.tfc = params['tfc']
+        self.pdfs = params['pdfs']
+        self.var = params['var'] # is a list always
         self.emin = params['emin']
-        self.save = params['save']
-        self.outfolder = params['outfolder']
-
+        
         self.penalty = params['penalty'] # to be constrained (list)
         self.fixed = params['fixed']
         self.met = params['met']
         self.shift = params['shift']
-        self.tfc = params['tfc']
+
+        self.save = params['save']
+        self.outfolder = params['outfolder']
+
         
         ## fitoptions filename
- #       if self.penalty[0] == 'pp/pep': self.penalty[0] = 'ppDpep'
-        pen = '' if self.penalty == ['none'] else '_' + '-'.join(self.penalty) + '-penalty'
-        penmet = '-' + self.met if 'pep' in ''.join(self.penalty) else '' # pep and pp/pep constraints depend on metallicity
-
-        # if penalty is pp/pep, it's in fitoptions, but not species list
-#        pencfg = pen + penmet if self.penalty[0] == 'ppDpep' else ''
-        pencfg = '' # no penalty options for pp/pep for now
+        # pileup penalty changes cfg
+        pencfg = '-pileup' if 'pileup' in self.penalty else ''
+        # shift
         shiftcfg = '' if self.shift == ['none'] else '_' + '-'.join(self.shift) + '-shift'
         self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs + '-' + self.var + '-emin' + self.emin + pencfg + shiftcfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
 
         ## species list filename
-        penicc = pen + penmet if self.penalty[0] != 'ppDpep' else ''
-#        penicc = '' # no penalty for now
+        # penalty
+        penicc = '' if self.penalty == ['none'] else '_' + '-'.join(self.penalty) + '-penalty'
+        # in case penalty depends on metallicity
+        penmet = '-' + self.met if self.met != 'none' else '' 
         fixicc = '-'.join(self.fixed) + '-fixed' if self.fixed != ['none'] else ''
-        self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + penicc + fixicc + '.icc'
+        self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + penicc + penmet + fixicc + '.icc'
         # log file name 
         self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + '-emin' + self.emin + penicc + '-' + fixicc + 'met_' + self.met + shiftcfg
         
     
     def cfgfile(self):
-        ''' Create a fitoptions file corresponding to the given configuration (if needed) '''
-            ## name of the cfg file
+        '''
+        Create a fitoptions file corresponding to the given configuration (if needed)
+        '''
+        
+        ## name of the cfg file
         print 'Fitoptions:', self.cfgname
         
         ## if file already exists, do nothing
@@ -80,6 +99,7 @@ class Submission():
         # line 12: MC ext bkg
         cfglines[11] = 'MC_ext_bkg = true' # Davide check
 
+        # boolean for MV fit
         bl = 'true' if self.fit == 'mv' else 'false'
         
         # line 36: multivariate or energy only fit
@@ -104,9 +124,9 @@ class Submission():
 
         if self.save == 'true':
             # line 89: fit results output filename
-            cfglines[88] = 'fit_results_output = ' + self.outfolder + '/' + 'fit_results.root'
+            cfglines[88] = 'fit_results_output = ' + self.outfolder + '/' + 'fit_results_' + self.outfile + '.root'
             # line 90: plot filename
-            cfglines[89] = 'plot_filename = ' + self.outfolder + '/' + 'plot.root'
+            cfglines[89] = 'plot_filename = ' + self.outfolder + '/' + 'plot_' + self.outfile + '.root'
 
         # line 91: ps: only in mv
         cfglines[90] = 'multivariate_ps_fit = ' + bl
@@ -120,9 +140,7 @@ class Submission():
         # line 102: compl. fit variable
         cfglines[101] = 'complementary_histo_name = pp/final_' + self.var + '_pp_1'
 
-        # line 127 and 128: pileup constraint in CPU fit
-#        if self.fittype == 'cpu':
-        # in CPU fit, the constraint is in fitoptions
+        # line 127 and 128: pileup constraint (in species list is set to free, constraint is here)
         if 'pileup' in self.penalty:
             cfglines[126] = 'pileup_penalty_mean = ' + str(PUPPEN[self.inputs][0])
             cfglines[127] = 'pileup_penalty_sigma = ' + str(PUPPEN[self.inputs][1])
@@ -130,7 +148,7 @@ class Submission():
             # no pileup at all (also in species list)
             for l in range(123,128): cfglines[l] = '#' + cfglines[l]                                     
 
-        if self.fittype == 'gpu' and self.shift != ['none']:
+        if self.shift != ['none']:
             # add shift on Po210 and C11
             for sh in self.shift:
                 cfglines.append('freeMCshift' + sh + ' = true')
@@ -139,22 +157,16 @@ class Submission():
 #            # comment out pileup (lines 124 - 128)
 #            for l in range(123,128): cfglines[l] = '#' + cfglines[l]                                     
         
-        # question: should the pileup_penalty* lines in fitoptions be removed for the GPU fit? or will they be ignored?
-        
-        # in GPU fit, pileup penalty is in species list
-
-
         # line 103: dark noise: only in analytical fit, not MC fit
 #        cfglines[102] = 'dark_noise_window = win' + self.var[-1] + '\n'
 
         # line 112 pp/pep constraint
-#        if self.penalty[0] == 'ppDpep':
+#        if 'ppDpep' in self.penalty:
 #            cfglines[111] = 'apply_pp/pep_constrain = true\n'
 #            cfglines[112] = 'mean(Rpp/Rpep) = ' + str(PPPEP[self.metal][0]) + '\n'
 #            cfglines[113] = 'sigma(Rpp/Rpep) = ' + str(PPPEP[self.metal][1]) + '\n'
 
 
-        
         ## save file
         cfglines = [ln + '\n' for ln in cfglines]
         outfile = open(self.cfgname, 'w')
@@ -164,23 +176,20 @@ class Submission():
 
 
     def iccfile(self):
-        ''' Create a species list corresponding to the given configuration (if needed) '''
+        '''
+        Create a species list corresponding to the given configuration (if needed)
+        '''
+
         print 'Species list:', self.iccname
-        ## if file already exists, do nothing
-            
+
+        ## if file already exists, do nothing            
         if os.path.exists(self.iccname):
             return
             
         ## otherwise generate from a template
-#        extra = '_cno' if self.fitcno else '' # for cno configuration fits
         icclines = open('MCfits/templates/species_list.icc').readlines()
 
-        # line 18 pep: fixed if ene Simone yearly fits, in principle is not a must
-#        if self.fittype == 'cpu' and self.fit == 'ene' and self.inputs[0] == '2':
-#
-#            icclines[17] = '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.8,   "fixed", 2.8,  10. },\n'
-
-        # line 15: pileup
+        # line 15: pileup, comment out if we do not want to use pileup
         if not 'pileup' in self.penalty:
             icclines[14] = comment(icclines[14])
 
@@ -195,12 +204,6 @@ class Submission():
             for i in [12, 15]:
                 icclines[i] = comment(icclines[i])
 
-            # Ext_K40 free normally, fixed in the CNO configuration
-            if self.fixed == ['none']:
-                self.fixed = ['Ext_K40']
-            else:
-                self.fixed.append('Ext_K40')
-
         # energy only fit: Po210_2 (l 22), C11_2 (l 26), C10_2 (l 28) and He6_2 (l 30) have to go
         if self.fit == 'ene':
             for i in [21, 25, 27, 29]:
@@ -209,7 +212,7 @@ class Submission():
         # set penalties if given
         if self.penalty != ['none']:
             for pensp in self.penalty:
-                # pileup and pp/pep penalty is in cfg not icc
+                # pileup penalty is in cfg not icc
                 if pensp == 'pileup': continue
 
                 line_num, line = ICCpenalty[pensp]
@@ -247,20 +250,23 @@ class Submission():
 
 
 
-    def subfile(self):#, outfolder):
-        ''' Create CNAF submission file if does not exist; if yes, append
-        name of the submission file is outfolder_submission.sh, where outfolder is the folder for the output log files
+    def subfile(self):
+        '''
+        Create submission/exe .sh file if does not exist
+        If yes, append the fit to the existing one
         '''
 
-        pr = 'All' if self.inputs == 'all' else self.inputs
-        cy = '_c19' if self.fittype == 'gpu' else '' # files on Jureca are different
+        ## input file
+        # files on Jureca are different
+        cy = '_c19' if self.fittype == 'gpu' else '' 
         # e.g. Period2012_FVpep_TFCMI_c19.root
         inputfile = 'input_files/Period' + pr + '_FVpep_TFC' + self.tfc + cy + '.root'
 
+        ## submission file
         outname = self.outfolder + '_submission.sh'
+        # to print bin bash or not
         binbool = os.path.exists(outname)
         out = open(outname, 'a') # append
-        # to print bin bash or not
 
         extra = '_0' if self.fit == 'mv' else ''
 
@@ -277,7 +283,7 @@ class Submission():
             if not binbool: print >> out, '#!/bin/bash'
             print >> out, './borexino', inputfile,\
                 'pp/final_' + self.var + '_pp' + extra,\
-                self.cfgname, self.iccname, '| tee', self.outfolder + '/' + self.outfile + '.log'
+                self.cfgname, self.iccname, ' 2&>1 | tee', self.outfolder + '/' + self.outfile + '.log'
             out.close()
             make_executable(outname)
 
@@ -294,9 +300,10 @@ def make_executable(path):
 
 
 
-# penalty: [line number, line]
-# penalty: {metallicity : [line number, line]}
-# line number is line - 1 (i.e. line 1 is 0)
+# species: [line number, line] for normal species
+# species: {metallicity : [line number, line]} for the ones depending on metallicity
+# species : line number for the ones that only get fixed and never constrained        
+# line number is line - 1 (i.e. line 1 is 0)        
 ICCpenalty = {
     'Bi210': [22, '{ "Bi210",        -1,   kSpring, kSolid,  2,    11.84,    "penalty",  11.84,  1.59 }'], # addition for systematics
 #    'Kr85': [29, '{ "Kr85",         -1,   kBlue,   kSolid,  2,    6.8,     "penalty", -999.,  110. }\n'],
@@ -322,9 +329,10 @@ ICCfixed = {
 
     'CNO': {'hm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    4.92,   "fixed", 4.92,  0.56 }',
     'lm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    3.52,   "fixed", 3.52,  0.37 }'}
+#    'pep': '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.8,   "fixed", 2.8,  10. },'
 }
 
-# what was this even?
+# i forgot what this was
 #RND = {'Bi210': [10,2], 'C14': [3456000, 172800]}
 
 #PPPEP = {'hm': [47.76, 0.84], 'lm': [47.5, 0.8]}

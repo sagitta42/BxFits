@@ -5,52 +5,72 @@ from creator import *
     
 # available values for each parameter
 options = {
-#    'CNO': ['fixed','lm', 'hm', 'fixed5', 'free'],
-    'var': ['nhits', 'npmts', 'npmts_dt1', 'npmts_dt2'],
+    'ftype': ['cpu', 'gpu', 'cno'],
     'fit': ['ene', 'mv'],
     'inputs': ['Phase2', 'Phase3'] + [str(y) for y in range(2012,2020)],
+    'tfc': ['MI', 'MZ'],
+    'var': ['nhits', 'npmts', 'npmts_dt1', 'npmts_dt2'],
+
     'penalty': ICCpenalty.keys() + ['pileup', 'none'],
     'fixed': ICCfixed.keys() + ['none'],
     'met': ['hm', 'lm', 'none'], # metallicity for the pep constraint
     'shift': ['C11', 'Po210', 'none'],    
-    'ftype': ['cpu', 'gpu', 'cno'],
+
     'save': ['true', 'false'],
-    'tfc': ['MI', 'MZ']
 }
     
 ## defaults
 defaults = {
-    'pdfs': 'pdfs_TAUP2017',
-    'inputs': ['Phase2'], # has to be a list
+    'tfc': 'MI',
     'var': ['nhits'],
-    'ftype': 'cpu',
+    'pdfs': 'pdfs_TAUP2017',
+    'emin': '92',
     'save': 'false',
-    'emin': '85',
-    'tfc': 'MI'
 }
     
-## options for user
-user = options.keys() + ['pdfs', 'emin', 'outfolder'] # pdfs is a path to a folder, has no fixed options
+## total options = options + the ones that do not have fixed choices
+user = options.keys() + ['pdfs', 'emin', 'outfolder'] 
 
 #----------------------------------------------------------
 
 def generator(params):
     '''
-    params is a dictionary containing the following keys:
+        ftype ['cpu'|'gpu'|'cno']: CPU or GPU fitter.
+            Setting 'cno' means GPU fitter with "CNO configuration"
+            (no C14 and pp in the species). To remove pileup, simply do not put
+            'penalty=pileup'
 
-    CNO: fit condition (fixed, lm, hm)
-    var: energy variable (nhits, npmts, npmts_dt1, npmts_dt2)
-    fit: type of fit (ene, mv)            
-    inputs: period to fit (all, YYYY)
-    emin: min energy of the fit (integer but actually string)
-    
-    outfolder: output folder for log and err files        
-    pdfs: folder where PDFs are to be found            
-    penalty: species to put penalty on (e.g. Bi210) (optional) --> not implemented yet
-    ftype: cpu or gpu
-    shift: what species to have free MC shift for (Po210, C11)
+        fit ['ene'|'mv']: energy only or multivariate fit
 
-    save: save fit results or not (true or false)
+        inputs (string): name of the period (e.g. Phase2) or a year (e.g. '2012')
+            The inputs will be read from a folder 'input_files' (create a link in your folder)
+            Giving "yyyy,YYYY" will create submissions for the range of years between yyyy and YYYY inclusive
+
+        tfc ['MZ'|'MI']: type of TFC                         
+
+        pdfs (string): path to MC PDFs
+
+        var ['nhits' | 'npmts_dt1' | 'npmts_dt2']: fit variable
+
+        emin (int): min energy of the fit
+        
+        penalty (list): list of species to be constrained in the fit
+            Constraints are defined in the bottom in ICCpenalty
+
+        fixed (list): list of species to be fixed in the fit
+            Values are defined in the bottom in ICCfixed
+
+        met ['hm'|'lm']: metallicity
+            Used with option penalty or fixed for species the value for which
+            depends on metallicity                      
+
+        shift (list): list of species to apply shift to (C11, Po210)
+        
+        save [True|False]: save the fit output in .root and .pdf                      
+
+        outfolder (string): output folder for the log files
+            If not given, an output folder is created with a name based on the settings                                
+
     '''
 
     ## ---------------------------------
@@ -81,7 +101,7 @@ def generator(params):
     
     
     # submission file for CNAF
-    s.subfile()#params['outfolder'])
+    s.subfile()
     
     print # readability
     
@@ -134,10 +154,7 @@ def main():
     ## folder for given configuration (for submission files and output log file folder)
     if opts['outfolder'] == 'none':
         outfolder = 'res-fit-' + opts['ftype'] + '-' +  opts['fit']
-        if opts['inputs'] == 'all':
-            outfolder += '-PeriodAll-'
-        else:
-            outfolder += '-' + '_'.join(opts['inputs']) # year by year
+        outfolder += '-' + '_'.join(opts['inputs'])
     
         outfolder += '-' + opts['pdfs']
         outfolder += '-emin' + opts['emin']
@@ -159,44 +176,44 @@ def main():
     ## input two years means range between those years
     if (len(opts['inputs'])) >= 2 and (opts['inputs'][0][0] == '2'):
         opts['inputs'] = [str(y) for y in range(int(opts['inputs'][0]), int(opts['inputs'][1]) + 1)]
-   
+
+    print
+    print '~~ Your input:'
+    print
     print opts
 
-    ## loop over variables and CNO and create a fit for each
+    # the parameters are the same as the user gave, but some have to be looped on, and not be lists in the input e.g. fit variable
     params = opts.copy()        
-#    params['outfolder'] = outfolder
 
-#    for CNO in opts['CNO']:
+    ## loop over variables that have to be looped on 
     for var in opts['var']:
         for inp in opts['inputs']:
-#            params['CNO'] = CNO
             params['var'] = var
             params['inputs'] = inp
-#                params = {'outfolder': outfolder, 'fit': opts['fit'], 'CNO': CNO, 'var': var, 'inputs': str(inp), 'pdfs': opts['pdfs'], 'penalty': opts['penalty'], 'fittype': opts['fittype']} # something smarter can be done here
+            print
+            print '~~~ This submission:'
+            print
             print params
+            print
             generator(params)
 
 
 def wrong_inputs():
     '''A message to print if user input is wrong '''
     print
-    print 'Parameters:'
-    print ', '.join(user)
+    print 'Examples:'
+    print 'python generator.py inputs=Phase2 ftype=cno fit=mv var=nhits emin=140 pdfs=pdfs_new shift=C11 penalty=pileup,CNO'
+    print 'python generator.py penalty=CNO,pileup inputs=Phase2 ftype=gpu fit=mv met=hm var=nhits pdfs=pdfs_TAUP2017 emin=92 tfc=MZ outfolder=livia_checks'
+    print 'python generator.py penalty=CNO,Ext_K40 inputs=Phase2 ftype=cno fit=mv met=hm var=nhits pdfs=pdfs_TAUP2017 emin=140 tfc=MI'
     print
+    print generator.__doc__
     print 'Options:'
     for op in options:
         print '\t', op, ':', ', '.join(options[op])
-    print 'For inputs, it\'s either "all" or "yyyy,YYYY" (range of years between yyyy and YYYY inclusive)'
-    print 'Note: if fit=ene is used and inputs are years, pep is fixed to 2.8 (Simone yearly fits). Remove from code if not needed now'
     print
     print 'Defaults:'
     for df in defaults:
         print '\t', df, ':', defaults[df]
-    print
-    print 'Examples:'
-    print 'python generator.py CNO=fixed fit=mv var=npmts,nhits'
-    print 'python generator.py fit=ene inputs=2012,2016 var=nhits CNO=fixed5'
-    print 'python generator.py fit=ene var=nhits CNO=fixed5 inputs=2012,2016 pdfs=pdfs_TAUP2017'
     print
     sys.exit(1)
 
