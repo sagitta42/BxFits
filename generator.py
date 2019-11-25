@@ -22,18 +22,33 @@ options = {
 ## defaults
 defaults = {
     'tfc': 'MI',
-    'var': ['nhits'],
+    'var': 'nhits',
     'pdfs': 'MCfits/pdfs_TAUP2017',
     'input_path': '/p/project/cjikp20/jikp2007/fitter_input/v3.1.0/files',
     'emin': '92',
     'save': 'false',
+    'c11mean': [28]
 }
     
 ## total options = options + the ones that do not have fixed choices
-user = options.keys() + ['pdfs', 'input_path', 'emin', 'outfolder'] 
+user = options.keys() + ['pdfs', 'input_path', 'emin', 'outfolder', 'c11mean'] 
+   
+
+## parameters that are lists in the submission
+par_list = ['penalty', 'shift', 'fixed']
+## parameters that will be looped on (so also lists)
+par_loop = ['inputs', 'c11mean']
+# things to split by comma
+splt_comma = par_list + par_loop
+print splt_comma
 
 #----------------------------------------------------------
 
+## nonte: for generator(), params['inputs'] is one string
+## in main() it's a list, and will be looped on
+## however, in the generator() docstring it says "list"
+## just because this is what i print out for the user
+## it's a bit confusing
 def generator(params):
     '''
         ftype ['cpu'|'gpu'|'cno']: CPU or GPU fitter.
@@ -46,7 +61,9 @@ def generator(params):
         inputs (list): names of the period (e.g. Phase2) or a year (e.g. '2012')
              If multiple inputs are be given, e.g. ['Phase2', 'Phase3'], multiple
                 submissions will be generated.
-             In case years are given, a range of years between the given ones will be generated, e.g. ['2012','2016'] will create submissions for years 2012 to 2016 inclusive
+             In case years are given, a range of years between the given ones
+                       will be generated, e.g. ['2012','2016'] will create
+                       submissions for years 2012 to 2016 inclusive
 
         tfc ['MZ'|'MI']: type of TFC. Default: MI 
 
@@ -81,7 +98,7 @@ def generator(params):
 
     python generator.py penalty=CNO,pileup inputs=Phase2 ftype=gpu fit=mv met=hm var=nhits pdfs=pdfs_TAUP2017 emin=92 tfc=MZ outfolder=livia_checks
 
-    python generator.py penalty=CNO,Ext_K40 inputs=Phase2 ftype=cno fit=mv met=hm var=nhits pdfs=pdfs_TAUP2017 emin=140 tfc=MI
+    python generator.py penalty=CNO,Ext_K40 inputs=2012,2016 ftype=cno fit=mv met=hm var=nhits pdfs=pdfs_TAUP2017 emin=140 tfc=MI
 
     '''
 
@@ -90,7 +107,7 @@ def generator(params):
 
     # check each parameter given by user
     for par in options:
-        # penalty is a list
+        # parameters that are lists and have only some allowed options
         if par in ['penalty', 'shift', 'fixed']:
             flag = True # by default, we think it's an available option
             for parsp in params[par]:
@@ -143,10 +160,11 @@ def main():
     if len(userinput) == 0:
         wrong_inputs()
 
+
     # first assign none
     opts = {}
     for opt in user:
-        if opt in ['penalty', 'shift', 'fixed']:
+        if opt in splt_comma:
             # for options that can be a list, penalty and shift
             opts[opt] = ['none']
         else:
@@ -155,9 +173,10 @@ def main():
     # then read what user gave
     for opt in user:
         for inp in sys.argv:
-            if opt in inp:
+            if opt in inp.split('=')[0]:
                 # penalty, fixed and shift can be a list; inputs is a list to loop on
-                opts[opt] = inp.split('=')[1].split(',') if opt in ['inputs', 'penalty', 'fixed', 'shift'] else inp.split('=')[1].split(',') 
+                opts[opt] = inp.split('=')[1].split(',') if opt in splt_comma else inp.split('=')[1]
+                print opt, opts[opt]
 
     # assign defaults if nothing given
     for par in defaults:
@@ -182,7 +201,7 @@ def main():
             print 'Folder', outfolder, 'already exists!!'
             print '#######################################'
             return
-       
+    
     if not os.path.exists(opts['outfolder']): os.mkdir(opts['outfolder'])
 
     ## input two years means range between those years
@@ -197,11 +216,16 @@ def main():
     # the parameters are the same as the user gave, but some have to be looped on, and not be lists in the input e.g. fit variable
     params = opts.copy()        
 
+    ## range for c11 guess
+    c11range = range(int(opts['c11mean'][0]), int(opts['c11mean'][1]) + 1)
+
     ## loop over variables that have to be looped on 
-    for var in opts['var']:
-        for inp in opts['inputs']:
-            params['var'] = var
+#    for var in par_loop:
+#    for val in opts[var]:    
+    for inp in opts['inputs']:
+        for c11 in c11range:
             params['inputs'] = inp
+            params['c11mean'] = str(c11)
             print
             print '~~~ This submission:'
             print

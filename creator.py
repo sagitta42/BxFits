@@ -69,6 +69,8 @@ class Submission():
         self.save = params['save']
         self.outfolder = params['outfolder']
 
+        self.c11mean = params['c11mean']
+
         
         ## fitoptions filename
         # pileup penalty changes cfg
@@ -83,9 +85,10 @@ class Submission():
         # in case penalty depends on metallicity
         penmet = '-' + self.met if self.met != 'none' else '' 
         fixicc = '-'.join(self.fixed) + '-fixed' if self.fixed != ['none'] else ''
-        self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + penicc + penmet + fixicc + '.icc'
+        c11icc = '-c11guess' + self.c11mean
+        self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + penicc + penmet + fixicc + c11icc + '.icc'
         # log file name 
-        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + '-emin' + self.emin + penicc + '-' + fixicc + 'met_' + self.met + shiftcfg
+        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + '-emin' + self.emin + penicc + '-' + fixicc + 'met_' + self.met + shiftcfg + c11icc
         
     
     def cfgfile(self):
@@ -206,6 +209,10 @@ class Submission():
         # line 15: pileup, comment out if we do not want to use pileup
         if not 'pileup' in self.penalty:
             icclines[14] = comment(icclines[14])
+
+        # line 25: C11 mean
+        if self.c11mean != 'none':
+            icclines[24] = '{ "C11",          -1,   kMagenta,kSolid,  2,    ' + str(float(self.c11mean)) + ',    "free",  0.,  100. },\n'
 
         # line 31: Pb214
         if self.fittype == 'gpu':
