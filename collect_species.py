@@ -20,10 +20,17 @@ ERRORLESS = ['chi2/ndof']
 ###### special column the value of which is not read from the log file
 ###### but from the name of the log file
 
-special_col = 'C11guess'
+special_cols = ['Period', 'TFC', 'Var']
+
+# special_col = 'C11guess'
 # special_col = 'Period'
 
 ### --------------------------------------------------------- ###
+
+###### old format of the log file
+###### some differences in parsing
+
+OLD_FORMAT = False
 
 ###### fitter format corresponding to our own column names
 
@@ -49,7 +56,12 @@ PARSER = {
  'chi^2/N-DOF': 'chi2/ndof',
 
  '^{11}C 2': 'C11_2',
- '^{210}Po 2': 'Po210_2'
+ '^{210}Po 2': 'Po210_2',
+
+## old format
+  '^{11}C_2': 'C11_2',
+  '^{210}Po_2': 'Po210_2'
+
 }
 
 ### --------------------------------------------------------- ###
@@ -63,36 +75,59 @@ def parse_file(filename):
 
     # table template
 	# columns: fit settings, species + errors (no error for the ones listed as ERRORLESS)
-    df = pd.DataFrame( columns = [special_col] + COLUMNS  + [x + 'Error' for x in np.setdiff1d(COLUMNS,ERRORLESS)] + ['ExpSub', 'ExpTag'])
+    df = pd.DataFrame( columns = special_cols + COLUMNS  + [x + 'Error' for x in np.setdiff1d(COLUMNS,ERRORLESS)] + ['ExpSub', 'ExpTag'])
 
-    # Example of a filename: data_Phase3_EO_22C11_TAUP_MI_Nov.log
-    # -> special column will be 'Phase3'
-    # spec = filename.split('_')[1]
-    # fit-gpu-mv-pdfs_TAUP2017-PeriodPhase2MZ-nhits-emin92_CNO-pileup-penalty-met_hm
-    # spec = filename.split('Period')[1].split('M')[0]
-    # fit-mvPeriod2012-CNOhm-nhits.log
-    # spec = filename.split('Period')[1].split('-')[0]
+    ## special column that is read from filename, not from the log file
+    ## (has to be in the special_cols list anyway)
 
+    # filename example:
     # fit-gpu-mv-pdfs_TAUP2017-PeriodPhase2MI-nhits-emin92_CNO-pileup-penalty-met_hm_C11-shift-c11guess30
-    spec = filename.split('c11guess')[1].split('.')[0]
-
-    df.at[0, special_col] = float(spec)
+    # spec = filename.split('c11guess')[1].split('.')[0]
+    # df.at[0, 'C11guess'] = float(spec)
 
     ### read fit info
 
     f = open(filename)
     lines = f.readlines()
 
+
+    # start from top, find fitter input info
+    idx = 0
+    found = False
+    while idx < len(lines) and not found:
+        idx += 1
+        found = 'Getting data from' in lines[idx] # an. fit
+
+    finp = lines[idx].split(' ')[-1].split('/')[-1] # e.g. PeriodAll_FVpep_TFCLNGS.root
+    specs = {}
+    specs['Period'] = finp.split('_')[0].split('Period')[1] # e.g. PeriodAll
+    specs['FV'] = finp.split('_')[1][2:] # e.g. pep
+    specs['TFC'] = finp.split('_')[2][3:].split('.')[0] # e.g. LNGS
+    specs['Var'] = lines[idx+1].split('final_')[1].split('_pp')[0] # e.g. nhits
+
+    for spec_col in special_cols:
+        df.at[0, spec_col] = specs[spec_col]
+
     # start from the beginning of the file, find exposure
     found = False
     idx = 0
-    while idx < len(lines) and not found:
+    # format to look for min and max energy
+    fmt_ene = 'is set to' if OLD_FORMAT else '=> float:'
+    # format to look for exposure
+    fmt_exp = 'Default:' if OLD_FORMAT else 'default.'
 
-        if 'Inserting [default.Major] exposure' in lines[idx]:
+    while idx < len(lines) and not found:
+        if 'minimum_energy ' + fmt_ene in lines[idx]:
+            df['Emin'] = ene_min_max(lines[idx])
+
+        if 'maximum_energy ' + fmt_ene in lines[idx]:
+            df['Emax'] = ene_min_max(lines[idx])
+
+        if 'Inserting [' + fmt_exp + 'Major] exposure' in lines[idx]:
             df['ExpSub'] = float(lines[idx].split(':')[1].split('[')[1].split(' ')[0])
 
-        # tagged is after sub, so if found, exit
-        if 'Inserting [default.TFCtagged] exposure' in lines[idx]:
+        # tagged exposure is the last in the file, so if found, exit
+        if 'Inserting [' + fmt_exp + 'TFCtagged] exposure' in lines[idx]:
             df['ExpTag'] = float(lines[idx].split(':')[1].split('[')[1].split(' ')[0])
             found = True
 
@@ -139,10 +174,11 @@ def parse_file(filename):
 
             df[PARSER[species] + 'Error'] = float(err)
 
+
     ## calculate weighted average for C11 and Po210 (complementary)
     for sp in ['C11', 'Po210']:
         df[sp + 'avg'] = (df[sp]*df['ExpSub'] + df[sp + '_2']*df['ExpTag']) / (df['ExpSub'] + df['ExpTag'])
-        df[sp + 'avgError'] = df[sp + 'avg'] * np.sqrt( (df[sp + 'Error'] / df[sp])**2 + (df[sp + '_2Error'] / df[sp + '_2'])**2 )
+        df[sp + 'avgError'] = df[sp + 'avg'] * ((df[sp + 'Error'] / df[sp])**2 + (df[sp + '_2Error'] / df[sp + '_2'])**2)**0.5 # using np.sqrt doesn't work with NaN
 
     return df
 
@@ -165,22 +201,32 @@ def parse_folder(foldername):
     nfiles = len(files)
     count = 0
     for f in files:
+        # print every file (if small amount)
         print f
         # print every 100
-        if (count + 1) % 100 == 0:
-		    print count + 1, '/', nfiles
+        # if (count + 1) % 100 == 0:
+		#     print count + 1, '/', nfiles
 
         df = pd.concat([df, parse_file(foldername + '/' + f)], ignore_index=True)
         count += 1
 
     # sort by special column (often year)
-    df = df.sort_values(special_col)
+    df = df.sort_values(special_cols)
     print df
 
     # save output file
     outname = foldername + '_species.out'
     df.to_csv(outname, index=False, sep = ' ')
     print('--> '+outname)
+
+
+
+
+def ene_min_max(line):
+    '''
+    helper function to extract min and max energy from log line
+    '''
+    return int(line.split(' ')[-1] if OLD_FORMAT else line.split('[')[1].split(']')[0])
 
 
 
