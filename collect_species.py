@@ -5,7 +5,7 @@ import os
 
 ###### species to read from the fitter
 
-COLUMNS = ['nu(Be7)', 'nu(pep)', 'Bi210', 'C11', 'Kr85', 'Po210',\
+COLUMNS = ['nu(Be7)', 'nu(pep)', 'nu(pp)', 'Bi210', 'C11', 'Kr85', 'Po210',\
     'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Po210shift', 'C11shift', 'chi2/ndof',\
     'C11_2', 'Po210_2']
 
@@ -20,7 +20,8 @@ ERRORLESS = ['chi2/ndof']
 ###### special column the value of which is not read from the log file
 ###### but from the name of the log file
 
-special_col = 'Period'
+special_col = 'C11guess'
+# special_col = 'Period'
 
 ### --------------------------------------------------------- ###
 
@@ -29,7 +30,7 @@ special_col = 'Period'
 PARSER = {
  '#nu(^{7}Be)': 'nu(Be7)',
  '#nu(pep)': 'nu(pep)',
- '#nu(pp)': 'pp',
+ '#nu(pp)': 'nu(pp)',
 
   '^{14}C': 'C14',
 
@@ -70,8 +71,12 @@ def parse_file(filename):
     # fit-gpu-mv-pdfs_TAUP2017-PeriodPhase2MZ-nhits-emin92_CNO-pileup-penalty-met_hm
     # spec = filename.split('Period')[1].split('M')[0]
     # fit-mvPeriod2012-CNOhm-nhits.log
-    spec = filename.split('Period')[1].split('-')[0]
-    df.at[0, special_col] = spec
+    # spec = filename.split('Period')[1].split('-')[0]
+
+    # fit-gpu-mv-pdfs_TAUP2017-PeriodPhase2MI-nhits-emin92_CNO-pileup-penalty-met_hm_C11-shift-c11guess30
+    spec = filename.split('c11guess')[1].split('.')[0]
+
+    df.at[0, special_col] = float(spec)
 
     ### read fit info
 
@@ -99,6 +104,10 @@ def parse_file(filename):
     while idx >= 0 and not found:
         idx -= 1
         found = 'FIT PARAMETERS' in lines[idx]
+
+    if not found:
+        print '########## FIT PARAMETERS not found!! ########'
+        return pd.DataFrame()
 
     # now, starting from this index, move down and collect data
     for i in range(idx+1, len(lines)):
@@ -130,6 +139,11 @@ def parse_file(filename):
 
             df[PARSER[species] + 'Error'] = float(err)
 
+    ## calculate weighted average for C11 and Po210 (complementary)
+    for sp in ['C11', 'Po210']:
+        df[sp + 'avg'] = (df[sp]*df['ExpSub'] + df[sp + '_2']*df['ExpTag']) / (df['ExpSub'] + df['ExpTag'])
+        df[sp + 'avgError'] = df[sp + 'avg'] * np.sqrt( (df[sp + 'Error'] / df[sp])**2 + (df[sp + '_2Error'] / df[sp + '_2'])**2 )
+
     return df
 
 
@@ -151,6 +165,7 @@ def parse_folder(foldername):
     nfiles = len(files)
     count = 0
     for f in files:
+        print f
         # print every 100
         if (count + 1) % 100 == 0:
 		    print count + 1, '/', nfiles
@@ -173,7 +188,7 @@ if __name__ == '__main__':
     # check if the species are all defined
     for col in COLUMNS:
         if not col in PARSER.values():
-            print 'Species', species, 'is not in PARSER (line 19)!'
+            print 'Species', col, 'is not in PARSER (line 19)!'
             sys.exit(1)
 
     # user input
