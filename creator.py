@@ -1,75 +1,63 @@
+import sys
 import os
 import numpy as np
 
 class Submission():
     def __init__(self, params):
         '''
-        params: dictionary with different parameters from user input
-
-        ftype ['cpu'|'gpu'|'cno']: CPU or GPU fitter.
-            Setting 'cno' means GPU fitter with "CNO configuration"
-            (no C14 and pp in the species). To remove pileup, simply do not put
-            'penalty=pileup'
-
-        fit ['ene'|'mv']: energy only or multivariate fit
-
-        inputs (string): name of the period (e.g. Phase2) or a year (e.g. '2012')
-            The inputs will be read from a folder 'input_files' (create a link in your folder)
-
-        tfc ['MZ'|'MI']: type of TFC. Default: MI 
-
-        input_path (string): path to fitter inputs. Default: path to v3.1.0 inputs in JURECA
-
-        pdfs (string): path to MC PDFs. Default: MCfits/pdfs_TAUP2017 (included in the repo)
-
-        var ['nhits' | 'npmts_dt1' | 'npmts_dt2']: fit variable. Default: nhits
-
-        emin (int): min energy of the fit. Default: 92
-        
-        penalty (list): list of species to be constrained in the fit
-            Constraints are defined in the bottom in ICCpenalty
-
-        fixed (list): list of species to be fixed in the fit
-            Values are defined in the bottom in ICCfixed
-
-        met ['hm'|'lm']: metallicity
-            Used with option penalty or fixed for species the value for which
-            depends on metallicity                      
-
-        shift (list): list of species to apply shift to (C11, Po210)
-        
-        save [True|False]: save the fit output in .root and .pdf                      
-
-        outfolder (string): output folder for the log files
-            If not given, an output folder is created with a name based on the settings
-            Default: false                            
+        For the description of params go to generator.py function generator()
         '''
-        
+
         self.fittype = params['ftype'] 
         self.fitcno = False
         ftyp = self.fittype # for filenames
+
         # fit type CNO is just a GPU fit with extra CNO settings
+        # (right now only means comment out C14 and pp, NOT pileup,
+        # because were running tests with Livia)
         if self.fittype == 'cno':
             self.fitcno = True
             self.fittype = 'gpu'
         
         self.fit = params['fit'] 
-        self.inputs = params['inputs'] 
+        self.inputs = str(params['inputs'])
         self.tfc = params['tfc']
         self.input_path = params['input_path']
         self.pdfs = params['pdfs']
         self.var = params['var'] # is a list always
-        self.emin = params['emin']
+        self.emin = str(params['emin'])
         
+        # values for penalty and fixed are in a dictionary in the bottom
         self.penalty = params['penalty'] # to be constrained (list)
-        self.fixed = params['fixed']
+        self.fixed = params['fixed'] # to be fixed (list)
+        self.penfix = {} # penalty and fixed in one
+
+        for key in ['penalty', 'fixed']:
+            for sp in params[key]:
+                if not sp == 'none': self.penfix[sp] = key # will be empty if both are none
+
+        # needed for the case when penalty or fixed is set for species that depend on metallicity
         self.met = params['met']
+
+        for sp in self.penfix:            
+            # check if metallicity is required for penalty
+            if sp in METSP and self.met == 'none':
+                print
+                print 'Species', sp, 'requires metallicity! Use met=hm or met=lm\n'
+                sys.exit(1)
+    
+        # dictionary {species: value} or 'none'
+        # special feature: c11mean
+        self.scan = params['scan'] 
+        if not self.scan == 'none':
+            self.scansp = self.scan.keys()[0]
+            # ignore c11mean
+            if not self.scansp == 'c11mean': self.penfix[self.scansp] = 'fixed'
+
         self.shift = params['shift']
 
         self.save = params['save']
         self.outfolder = params['outfolder']
-
-        self.c11mean = params['c11mean']
 
         
         ## fitoptions filename
@@ -77,7 +65,7 @@ class Submission():
         pencfg = '-pileup' if 'pileup' in self.penalty else ''
         # shift
         shiftcfg = '' if self.shift == ['none'] else '_' + '-'.join(self.shift) + '-shift'
-        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs + '-' + self.var + '-emin' + self.emin + pencfg + shiftcfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
+        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + '-emin' + self.emin + pencfg + shiftcfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
 
         ## species list filename
         # penalty
@@ -85,10 +73,10 @@ class Submission():
         # in case penalty depends on metallicity
         penmet = '-' + self.met if self.met != 'none' else '' 
         fixicc = '-'.join(self.fixed) + '-fixed' if self.fixed != ['none'] else ''
-        c11icc = '-c11guess' + self.c11mean
-        self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + penicc + penmet + fixicc + c11icc + '.icc'
+        scanicc = '' if self.scan == 'none' else '-scan' + self.scansp + str(self.scan[self.scansp])
+        self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + penicc + penmet + fixicc + scanicc + '.icc'
         # log file name 
-        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + '-emin' + self.emin + penicc + '-' + fixicc + 'met_' + self.met + shiftcfg + c11icc
+        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + '-emin' + self.emin + penicc + '-' + fixicc + 'met_' + self.met + shiftcfg + scanicc
         
     
     def cfgfile(self):
@@ -211,8 +199,8 @@ class Submission():
             icclines[14] = comment(icclines[14])
 
         # line 25: C11 mean
-        if self.c11mean != 'none':
-            icclines[24] = '{ "C11",          -1,   kMagenta,kSolid,  2,    ' + str(float(self.c11mean)) + ',    "free",  0.,  100. },\n'
+        if self.scansp == 'c11mean':
+            icclines[24] = '{{ "C11",          -1,   kMagenta,kSolid,  2,    {0},    "free",  0.,  100. }},\n'.format(float(self.scan['c11mean']))
 
         # line 31: Pb214
         if self.fittype == 'gpu':
@@ -230,37 +218,32 @@ class Submission():
             for i in [21, 25, 27, 29]:
                 icclines[i] = comment(icclines[i])
 
-        # set penalties if given
-        if self.penalty != ['none']:
-            for pensp in self.penalty:
-                # pileup penalty is in cfg not icc
+        # set penalties and fixed if given
+        for pensp in self.penfix:
+        # pileup penalty is in cfg not icc
                 if pensp == 'pileup': continue
 
-                line_num, line = ICCpenalty[pensp]
-                # species for which penalty depends on metallicity
-                if pensp in ['pp','pep', 'CNO']:
-                    icclines[line_num] = line[self.met]
-                # other species
+                # species to scan, if given
+                if pensp in self.scan:
+                    mean = self.scan[pensp] 
+                    sig = 0
                 else:
-                    icclines[line_num] = line
+                    mean = ICCpenalty[pensp]['mean']   
+                    sig = ICCpenalty[pensp]['sigma']
+                    iccsp = pensp
+                    # species for which penalty depends on metallicity
+                    if pensp in METSP:
+                        mean = mean[self.met] 
+                        sig = sig[self.met]
 
-                icclines[line_num] += ',\n'
+                if pensp in NEUTRINOS:
+                    iccsp = 'nu({0})'.format(pensp)
+
+
+                line_num = ICCpenalty[pensp]['line']
+                # format in the icc file
+                icclines[line_num] = '{{ "{0}",        -1,   {1}, kSolid,  2,    {2},    "{4}",  {2},  {3} }},\n'.format(iccsp, ICCpenalty[pensp]['color'], mean, sig, self.penfix[pensp])
        
-        # set fixed if given
-        if self.fixed != ['none']:
-            for fixsp in self.fixed:
-                # get line number from penalty dict
-                line_num = ICCpenalty[fixsp][0]
-                # get line from fixed dict
-                line = ICCfixed[fixsp]
-                # species for which penalty depends on metallicity
-                if fixsp in ['pp','pep', 'CNO']:
-                    icclines[line_num] = line[self.met]
-                # other species
-                else:
-                    icclines[line_num] = line
-
-                icclines[line_num] += ',\n'
 
         ## save file
         # one species list for all fits
@@ -277,17 +260,18 @@ class Submission():
         If yes, append the fit to the existing one
         '''
 
+        print 'Future log file:', self.outfile        
+
         ## input file
         # files on Jureca are different
         cy = '_c19' if self.fittype == 'gpu' else '' 
         # e.g. Period2012_FVpep_TFCMI_c19.root
         inputfile = self.input_path + '/Period' + self.inputs + '_FVpep_TFC' + self.tfc + cy + '.root'
 
-        ## submission file
-        outname = self.outfolder + '_submission.sh'
+        ## CNAF: submission file with bsub, Jureca: file with sbatch commands
+        outname = self.outfolder + '_submission.sh' # one file to rule them all, run interactively
         # to print bin bash or not
-        binbool = os.path.exists(outname)
-        out = open(outname, 'a') # append
+        out = open(outname, 'a') 
 
         extra = '_0' if self.fit == 'mv' else ''
 
@@ -300,16 +284,41 @@ class Submission():
                 './spectralfit', inputfile, 'pp/final_' + self.var + '_pp' + extra,\
                 self.cfgname, self.iccname
 
+            print 'Fit file:', outname
+
+        # Jureca submission
         elif self.fittype == 'gpu':
-            if not binbool: print >> out, '#!/bin/bash'
-            print >> out, './borexino', inputfile,\
+            ## fit file
+            fitname = self.outfolder + '/fit_' + self.outfile + '.sh'
+            fitfile = open(fitname, 'w')
+            print >> fitfile, '#!/bin/bash'
+            print >> fitfile, './borexino', inputfile,\
                 'pp/final_' + self.var + '_pp' + extra,\
                 self.cfgname, self.iccname, ' | tee', self.outfolder + '/' + self.outfile + '.log'
-            out.close()
-            make_executable(outname)
+            fitfile.close()
+            make_executable(fitname)
+            print 'Fit file:', fitname
 
-        print 'Fit:', outname
-        print 'Future log file:', self.outfile
+            ## sbatch file        
+            # template
+            sbatchlines = open('MCfits/templates/sbatch_submission_template.sh').readlines()
+            # our last line
+            sbatchlines[-1] = 'srun ./' + fitname
+            # our file
+            sbatchname = self.outfolder + '/sbatch_' + self.outfile + '.sh'
+            sbatch = open(sbatchname, 'w')
+            sbatch.writelines(sbatchlines)
+            sbatch.close()
+            make_executable(sbatchname)
+            print 'Sbatch file:', sbatchname
+
+            ## file to sbatch all the sbatch files
+            print >> out, 'sbatch', sbatchname
+            make_executable(outname)
+            print 'Submission for all sbatch:', outname
+
+        out.close()
+
 
 
 def make_executable(path):
@@ -321,37 +330,37 @@ def make_executable(path):
 
 
 
-# species: [line number, line] for normal species
-# species: {metallicity : [line number, line]} for the ones depending on metallicity
-# species : line number for the ones that only get fixed and never constrained        
 # line number is line - 1 (i.e. line 1 is 0)        
 ICCpenalty = {
-    'Bi210': [22, '{ "Bi210",        -1,   kSpring, kSolid,  2,    11.84,    "penalty",  11.84,  1.59 }'], # addition for systematics
-#    'Kr85': [29, '{ "Kr85",         -1,   kBlue,   kSolid,  2,    6.8,     "penalty", -999.,  110. }\n'],
-#    'pp': [17, {'hz': '{ "nu(pp)",       -1,   kRed,   kSolid,  2,    131.1,   "penalty",  131.1., 1.4 },\n', 'lz': '{ "nu(pp)",       -1,   kRed,   kSolid,  2,    132.2,   "penalty",  132.2,  1.4 },\n'}],
-    
-    'pep': [17,\
-    {'hm': '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.74,   "penalty", 2.74,  0.04 }',
-     'lm': '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.78,   "penalty", 2.78,  0.04 }'}],
-    
-    'CNO': [28,\
-    {'hm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    4.92,   "penalty", 4.92,  0.56 }',
-     'lm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    3.52,   "penalty", 3.52,  0.37 }'}],
-
-    'Ext_K40': [33]
-
+    'Bi210': {'line': 22,
+              'color': 'kSpring',
+              'mean': 11.84,
+              'sigma': 1.59
+             },
+    'pep': {'line': 17,
+            'color': 'kCyan',
+            'mean': {'hm': 2.74, 'lm': 2.78},
+            'sigma': {'hm': 0.04, 'lm': 0.04}
+            },
+    'CNO': {'line': 28,
+            'color': 'kCyan',
+            'mean': {'hm': 4.92, 'lm': 3.52},
+            'sigma': {'hm': 0.56, 'lm': 0.37}
+            },
+    'Ext_K40': {'line': 33,
+                'color': 'kAzure',
+                'mean': 0.15,
+                'sigma': 0 # it's never penalty, only fixed
+            }
 }
 
-ICCfixed = {
-#    'fixed': '   { "nu(CNO)",      -1,   kCyan,   kSolid,  2,    0.,   "fixed", 0.,  50. },\n',
-#    'fixed5': '   { "nu(CNO)",      -1,   kCyan,   kSolid,  2,    5.,   "fixed", 5.,  50. },\n',
-            
-    'Ext_K40':  '{ "Ext_K40",      -1,   kAzure,  kSolid,  2,    0.15,   "fixed",  0.,  10. }',
+# neutrinos -> format nu(xx)
+NEUTRINOS = ['pp', 'pep', 'CNO', 'Be7']
+# species for which penalty depends on metallicity
+METSP = []
+for sp in ICCpenalty:
+    if type(ICCpenalty[sp]['mean']) == dict: METSP.append(sp)
 
-    'CNO': {'hm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    4.92,   "fixed", 4.92,  0.56 }',
-    'lm': '{ "nu(CNO)",      -1,   kCyan,   kSolid,  2,    3.52,   "fixed", 3.52,  0.37 }'}
-#    'pep': '{ "nu(pep)",      -1,   kCyan,   kSolid,  2,    2.8,   "fixed", 2.8,  10. },'
-}
 
 # i forgot what this was
 #RND = {'Bi210': [10,2], 'C14': [3456000, 172800]}
@@ -366,6 +375,7 @@ PUPPEN = {'Phase2': [2.1, 0.04],
         '2015': [3.2, 0.03],
         '2016': [1.4, 0.03]
 }
+
 
 
 # helper function
