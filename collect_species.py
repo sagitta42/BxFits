@@ -5,32 +5,30 @@ import os
 
 ###### species to read from the fitter
 
-COLUMNS = ['nu(Be7)', 'nu(pep)', 'nu(pp)', 'Bi210', 'C11', 'Kr85', 'Po210',\
-    'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Po210shift', 'C11shift', 'chi2/ndof',\
+COLUMNS = ['nu(Be7)', 'nu(pep)', 'nu(pp)', 'nu(CNO)', 'Bi210', 'C11', 'Kr85', 'Po210',\
+    'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Po210shift', 'C11shift', 'chi2/ndof','MLV',\
     'C11_2', 'Po210_2']
 
 ### --------------------------------------------------------- ###
 
 ###### parameters that don't have the concept of error
 
-ERRORLESS = ['chi2/ndof']
+ERRORLESS = ['chi2/ndof', 'MLV']
 
 ### --------------------------------------------------------- ###
 
 ###### special column the value of which is not read from the log file
 ###### but from the name of the log file
 
-special_cols = ['Period', 'TFC', 'Var']
-
-# special_col = 'C11guess'
-# special_col = 'Period'
+special_cols = ['Period', 'TFC', 'Var', 'FV']
 
 ### --------------------------------------------------------- ###
 
 ###### old format of the log file
 ###### some differences in parsing
 
-OLD_FORMAT = False
+OLD_FORMAT = True
+# OLD_FORMAT = False
 
 ###### fitter format corresponding to our own column names
 
@@ -38,6 +36,7 @@ PARSER = {
  '#nu(^{7}Be)': 'nu(Be7)',
  '#nu(pep)': 'nu(pep)',
  '#nu(pp)': 'nu(pp)',
+ '#nu(CNO)': 'nu(CNO)',
 
   '^{14}C': 'C14',
 
@@ -54,6 +53,7 @@ PARSER = {
  '^{210}MCshiftPo': 'Po210shift',
 
  'chi^2/N-DOF': 'chi2/ndof',
+ 'Minimized Likelihood Value': 'MLV',
 
  '^{11}C 2': 'C11_2',
  '^{210}Po 2': 'Po210_2',
@@ -123,31 +123,38 @@ def parse_file(filename):
         if 'maximum_energy ' + fmt_ene in lines[idx]:
             df['Emax'] = ene_min_max(lines[idx])
 
+        if 'multivariate_ps_fit_bins' in lines[idx]:
+            df['PSbin'] = int(lines[idx].split(' ')[-1])
+
+        if 'multivariate_rdist_fit_bins' in lines[idx]:
+            df['RDbin'] = int(lines[idx].split(' ')[-1])
+
         if 'Inserting [' + fmt_exp + 'Major] exposure' in lines[idx]:
-            df['ExpSub'] = float(lines[idx].split(':')[1].split('[')[1].split(' ')[0])
+            df['ExpSub'] = float(lines[idx].split(':')[-1].split('[')[1].split(' ')[0])
 
         # tagged exposure is the last in the file, so if found, exit
         if 'Inserting [' + fmt_exp + 'TFCtagged] exposure' in lines[idx]:
-            df['ExpTag'] = float(lines[idx].split(':')[1].split('[')[1].split(' ')[0])
+            df['ExpTag'] = float(lines[idx].split(':')[-1].split('[')[1].split(' ')[0])
             found = True
 
         idx+=1
 
     # start from the end of the file, find the line with FIT PARAMETERS
-    idx = len(lines)
+    idx = len(lines)-1
     found = False
     while idx >= 0 and not found:
-        idx -= 1
         found = 'FIT PARAMETERS' in lines[idx]
+        idx -= 1
 
     if not found:
         print '########## FIT PARAMETERS not found!! ########'
         return pd.DataFrame()
 
     # now, starting from this index, move down and collect data
-    for i in range(idx+1, len(lines)):
+    for i in range(idx+2, len(lines)):
         # split the line by equal sign; left is species, right is values
-        info = lines[i].split('=')
+        info = lines[i].split(':')[-1].split('=') if OLD_FORMAT else lines[i].split('=')
+
         # name of the species in the fitter
         species = info[0].strip()
 
@@ -201,11 +208,14 @@ def parse_folder(foldername):
     nfiles = len(files)
     count = 0
     for f in files:
+        # print f
         # print every file (if small amount)
-        print f
-        # print every 100
-        # if (count + 1) % 100 == 0:
-		#     print count + 1, '/', nfiles
+        if nfiles < 100:
+            print f
+        else:
+            # print every 100
+            if (count + 1) % 100 == 0:
+		    print count + 1, '/', nfiles
 
         df = pd.concat([df, parse_file(foldername + '/' + f)], ignore_index=True)
         count += 1
