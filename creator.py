@@ -49,6 +49,7 @@ class Submission():
         # dictionary {species: value} or 'none'
         # special feature: c11mean
         self.scan = params['scan'] 
+        self.scansp = 'none'
         if not self.scan == 'none':
             self.scansp = self.scan.keys()[0]
             # ignore c11mean
