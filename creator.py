@@ -221,29 +221,31 @@ class Submission():
 
         # set penalties and fixed if given
         for pensp in self.penfix:
+            print pensp
         # pileup penalty is in cfg not icc
-                if pensp == 'pileup': continue
+            if pensp == 'pileup': continue
 
-                # species to scan, if given
-                if pensp in self.scan:
-                    mean = self.scan[pensp] 
-                    sig = 0
-                else:
-                    mean = ICCpenalty[pensp]['mean']   
-                    sig = ICCpenalty[pensp]['sigma']
-                    iccsp = pensp
-                    # species for which penalty depends on metallicity
-                    if pensp in METSP:
-                        mean = mean[self.met] 
-                        sig = sig[self.met]
+            # species to scan, if given
+            if pensp in self.scan:
+                mean = self.scan[pensp] 
+                sig = 0
+            else:
+                mean = ICCpenalty[pensp]['mean']   
+                sig = ICCpenalty[pensp]['sigma']
+                iccsp = pensp
+                # species for which penalty depends on metallicity
+                if pensp in METSP:
+                    mean = mean[self.met] 
+                    sig = sig[self.met]
 
-                if pensp in NEUTRINOS:
-                    iccsp = 'nu({0})'.format(pensp)
+            if pensp in NEUTRINOS:
+                iccsp = 'nu({0})'.format(pensp)
 
 
-                line_num = ICCpenalty[pensp]['line']
-                # format in the icc file
-                icclines[line_num] = '{{ "{0}",        -1,   {1}, kSolid,  2,    {2},    "{4}",  {2},  {3} }},\n'.format(iccsp, ICCpenalty[pensp]['color'], mean, sig, self.penfix[pensp])
+            line_num = ICCpenalty[pensp]['line']
+            # format in the icc file
+            icclines[line_num] = '{{ "{0}",        -1,   {1}, kSolid,  2,    {2},    "{4}",  {2},  {3} }},\n'.format(iccsp, ICCpenalty[pensp]['color'], mean, sig, self.penfix[pensp])
+            print icclines[line_num]
        
 
         ## save file
@@ -343,7 +345,7 @@ ICCpenalty = {
             'mean': {'hm': 2.74, 'lm': 2.78},
             'sigma': {'hm': 0.04, 'lm': 0.04}
             },
-    'CNO': {'line': 28,
+    'CNO': {'line': 18,
             'color': 'kCyan',
             'mean': {'hm': 4.92, 'lm': 3.52},
             'sigma': {'hm': 0.56, 'lm': 0.37}
