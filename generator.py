@@ -7,7 +7,7 @@ from creator import *
 # to a given value (part of the scan). Special feature: c11mean
 SCAN = {'pep': np.arange(0, 6, 0.1),
         'c11mean': range(15,29),
-        'CNO': np.arange(0, 10, 0.2)
+        'CNO': np.arange(0, 10.2, 0.2)
         }       
 #----------------------------------------------------------
     
@@ -132,7 +132,7 @@ def generator(params):
             flag = params[par] in options[par]
 
         if not flag:
-            print '\nOptions for', par, ':', ', '.join(options[par]) + '\n'
+            print '\nOptions for', par, ':', ', '.join(str(p) for p in options[par]) + '\n'
             sys.exit(1)
 
 

@@ -53,14 +53,15 @@ PARSER = {
  '^{210}MCshiftPo': 'Po210shift',
 
  'chi^2/N-DOF': 'chi2/ndof',
- 'Minimized Likelihood Value': 'MLV',
+ 'Minimized -2Ln(Likelihood)': 'MLV',
+# 'Minimized Likelihood Value': 'MLV',
 
  '^{11}C 2': 'C11_2',
  '^{210}Po 2': 'Po210_2',
 
 ## old format
-  '^{11}C_2': 'C11_2',
-  '^{210}Po_2': 'Po210_2'
+#  '^{11}C_2': 'C11_2',
+#  '^{210}Po_2': 'Po210_2'
 
 }
 

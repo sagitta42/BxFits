@@ -71,14 +71,19 @@ class Submission():
 
         ## species list filename
         # penalty
-        penicc = '' if self.penalty == ['none'] else '_' + '-'.join(self.penalty) + '-penalty'
+        penicc = '' if self.penalty == ['none'] else '_penalty' + '-'.join(self.penalty)
+#        penicc = '' if self.penalty == ['none'] else '_' + '-'.join(self.penalty) + '-penalty'
         # in case penalty depends on metallicity
         penmet = '-' + self.met if self.met != 'none' else '' 
-        fixicc = '-'.join(self.fixed) + '-fixed' if self.fixed != ['none'] else ''
-        scanicc = '' if self.scan == 'none' else '-scan' + self.scansp + str(self.scan[self.scansp])
-        self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + penicc + penmet + fixicc + scanicc + '.icc'
+        fixicc = '_fixed' + '-'.join(self.fixed) if self.fixed != ['none'] else ''
+#       fixicc = '-'.join(self.fixed) + '-fixed' if self.fixed != ['none'] else ''
+        ulimicc = '_ulim' + '-'.join(self.ulim) if self.ulim != ['none'] else ''
+#        ulimicc = '-'.join(self.ulim) + '-ulim' if self.ulim != ['none'] else ''
+        scanicc = '' if self.scan == 'none' else '_scan'  + self.scansp + str(self.scan[self.scansp])
+#        scanicc = '' if self.scan == 'none' else '-scan' + self.scansp + str(self.scan[self.scansp])
+        self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + penicc + penmet + fixicc + ulimicc + scanicc + '.icc'
         # log file name 
-        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + '-emin' + self.emin + penicc + '-' + fixicc + 'met_' + self.met + shiftcfg + scanicc
+        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + '-emin' + self.emin + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + ulimicc
         
     
     def cfgfile(self):
@@ -90,7 +95,7 @@ class Submission():
         print 'Fitoptions:', self.cfgname
         
         ## if file already exists, do nothing
-        if os.path.exists(self.cfgname):
+        if os.path.exists(self.cfgname) and not self.save:
             return
             
         ## otherwise generate from a template
@@ -116,6 +121,7 @@ class Submission():
         # e.g. MCspectra_FVpep_Period_2012_unmasked.root
         # TAUP and new PDFs have different format
         mcname = 'MCspectra_pp_FVpep_' + self.inputs + '_emin1_masked.root' if 'TAUP' in self.pdfs else 'MCspectra_FVpep_Period_' + self.inputs + '_unmasked.root'
+        # MCspectra_FVpep_Period_Phase2_unmasked.root
             
         cfglines[67] = 'montecarlo_spectra_file = ' + self.pdfs + '/' + mcname
 
