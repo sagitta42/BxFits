@@ -27,8 +27,8 @@ special_cols = ['Period', 'TFC', 'Var', 'FV']
 ###### old format of the log file
 ###### some differences in parsing
 
-OLD_FORMAT = True
-# OLD_FORMAT = False
+# OLD_FORMAT = True
+OLD_FORMAT = False
 
 ###### fitter format corresponding to our own column names
 
@@ -123,11 +123,12 @@ def parse_file(filename):
         if 'maximum_energy ' + fmt_ene in lines[idx]:
             df['Emax'] = ene_min_max(lines[idx])
 
-        if 'multivariate_ps_fit_bins' in lines[idx]:
-            df['PSbin'] = int(lines[idx].split(' ')[-1])
-
-        if 'multivariate_rdist_fit_bins' in lines[idx]:
-            df['RDbin'] = int(lines[idx].split(' ')[-1])
+        # used for systematics
+#        if 'multivariate_ps_fit_bins' in lines[idx]:
+#            df['PSbin'] = ene_min_max(lines[idx]) 
+#
+#        if 'multivariate_rdist_fit_bins' in lines[idx]:
+#            df['RDbin'] = ene_min_max(lines[idx]) 
 
         if 'Inserting [' + fmt_exp + 'Major] exposure' in lines[idx]:
             df['ExpSub'] = float(lines[idx].split(':')[-1].split('[')[1].split(' ')[0])

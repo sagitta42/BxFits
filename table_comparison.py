@@ -27,7 +27,7 @@ def table_comp(folder):
         df = parse_file(folder + '/' + f)
 
         ## assign fake error columns for things that don't have errors
-        noerr_cols = ERRORLESS + [special_col]
+        noerr_cols = ERRORLESS + special_cols
         for noerr in noerr_cols:
             df[noerr + 'Error'] = np.NaN
 

@@ -14,6 +14,7 @@ SCAN = {'pep': np.arange(0, 6, 0.1),
 options = {
     'ftype': ['cpu', 'gpu', 'cno'],
     'fit': ['ene', 'mv'],
+    'fpdf': ['mc', 'ana'],
     'inputs': ['Phase2', 'Phase3'] + range(2012,2020),
     'tfc': ['MI', 'MZ'],
     'var': ['nhits', 'npmts', 'npmts_dt1', 'npmts_dt2'],
@@ -31,6 +32,7 @@ options['fixed'] = options['penalty']
 ## defaults
 defaults = {
     'ftype': 'gpu',
+    'fpdf': 'mc',
     'tfc': 'MI',
     'var': 'nhits',
     'pdfs': 'MCfits/pdfs_TAUP2017',
@@ -201,7 +203,8 @@ def main():
         outfolder += '-' + '_'.join(opts['inputs'])
     
         outfolder += '-' + opts['pdfs'].split('/')[-1]
-        outfolder += '-emin' + opts['emin']
+        emin_part = opts['emin'][0] if len(opts['emin']) == 1 else 'to'.join(opts['emin'])
+        outfolder += '-emin' + emin_part
 
         ## list like options
         for spop in par_list:
