@@ -30,11 +30,12 @@ class Submission():
         # values for penalty and fixed are in a dictionary in the bottom
         self.penalty = params['penalty'] # to be constrained (list)
         self.fixed = params['fixed'] # to be fixed (list)
-        self.penfix = {} # penalty and fixed in one
+        self.ulim = params['ulim'] # to set upper limit (list)
+        self.penfix = {} # penalty, fixed and upper limit in one
 
-        for key in ['penalty', 'fixed']:
+        for key in ['penalty', 'fixed', 'ulim']:
             for sp in params[key]:
-                if not sp == 'none': self.penfix[sp] = key # will be empty if both are none
+                if not sp == 'none': self.penfix[sp] = key # will be empty if all are none
 
         # needed for the case when penalty or fixed is set for species that depend on metallicity
         self.met = params['met']
@@ -219,7 +220,7 @@ class Submission():
             for i in [21, 25, 27, 29]:
                 icclines[i] = comment(icclines[i])
 
-        # set penalties and fixed if given
+        # set penalties, fixed and upper limit if given
         for pensp in self.penfix:
             print pensp
         # pileup penalty is in cfg not icc
@@ -237,6 +238,10 @@ class Submission():
                 if pensp in METSP:
                     mean = mean[self.met] 
                     sig = sig[self.met]
+                # cue to fitter to use upper limit instead of penalty
+                if self.penfix[pensp] == 'ulim':
+                    sig = - sig
+                    self.penfix[pensp] = 'penalty'
 
             if pensp in NEUTRINOS:
                 iccsp = 'nu({0})'.format(pensp)
@@ -337,8 +342,8 @@ def make_executable(path):
 ICCpenalty = {
     'Bi210': {'line': 22,
               'color': 'kSpring',
-              'mean': 11.84,
-              'sigma': 1.59
+              'mean': 11.7,
+              'sigma': 1.6
              },
     'pep': {'line': 17,
             'color': 'kCyan',

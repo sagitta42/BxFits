@@ -6,7 +6,8 @@ from creator import *
 # format {species: value}, to fix a certain species in the species list
 # to a given value (part of the scan). Special feature: c11mean
 SCAN = {'pep': np.arange(0, 6, 0.1),
-        'c11mean': range(15,29)
+        'c11mean': range(15,29),
+        'CNO': np.arange(0, 10, 0.2)
         }       
 #----------------------------------------------------------
     
@@ -14,7 +15,7 @@ SCAN = {'pep': np.arange(0, 6, 0.1),
 options = {
     'ftype': ['cpu', 'gpu', 'cno'],
     'fit': ['ene', 'mv'],
-    'fpdf': ['mc', 'ana'],
+#    'fpdf': ['mc', 'ana'],
     'inputs': ['Phase2', 'Phase3'] + range(2012,2020),
     'tfc': ['MI', 'MZ'],
     'var': ['nhits', 'npmts', 'npmts_dt1', 'npmts_dt2'],
@@ -26,13 +27,14 @@ options = {
     'save': ['true', 'false'],
 }
 
-options['fixed'] = options['penalty']
+options['fixed'] = options['penalty'] # species to be fixed
+options['ulim'] = options['penalty'] # species for upper limit
 #options['scan'] = SCAN.keys() 
     
 ## defaults
 defaults = {
     'ftype': 'gpu',
-    'fpdf': 'mc',
+#    'fpdf': 'mc',
     'tfc': 'MI',
     'var': 'nhits',
     'pdfs': 'MCfits/pdfs_TAUP2017',
@@ -46,7 +48,7 @@ user = options.keys() + ['pdfs', 'input_path', 'emin', 'outfolder'] + ['scan']
    
 
 ## parameters that are lists in the submission
-par_list = ['penalty', 'shift', 'fixed']
+par_list = ['penalty', 'shift', 'fixed', 'ulim']
 ## parameters that will be looped on (so also lists)
 par_loop = ['inputs', 'emin']
 # things to split by comma
@@ -122,7 +124,7 @@ def generator(params):
     # check each parameter given by user
     for par in options:
         # parameters that are lists and have only some allowed options
-        if par in ['penalty', 'shift', 'fixed']:
+        if par in ['penalty', 'shift', 'fixed', 'ulim']:
             flag = True # by default, we think it's an available option
             for parsp in params[par]:
                 if not parsp in options[par]: flag = False # set to False if not available
