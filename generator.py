@@ -3,6 +3,8 @@ import itertools
 from creator import * 
 
 #----------------------------------------------------------
+# format {species: value}, to fix a certain species in the species list
+# to a given value (part of the scan). Special feature: c11mean
 SCAN = {'pep': np.arange(0, 6, 0.1),
         'c11mean': range(15,29)
         }       
@@ -86,9 +88,8 @@ def generator(params):
         fixed (list): list of species to be fixed in the fit
             Values are defined in the bottom in ICCfixed
 
-        scan (dict): format {species: value}, to fix a certain species in the species list
-                    to a given value (part of the scan). Special feature: c11mean
-
+        scan (string): species to perform scan on (must be in SCAN dictionary above)
+            
         met ['hm'|'lm']: metallicity
             Used with option penalty or fixed for species the value for which
             depends on metallicity                      
@@ -267,7 +268,7 @@ def wrong_inputs():
     print
     print 'Options:'
     for op in options:
-        print '\t', op, ':', ', '.join(options[op])
+        print '\t', op, ':', ', '.join(str(x) for x in options[op])
     print
     print 'Defaults:'
     for df in defaults:
