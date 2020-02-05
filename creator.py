@@ -19,7 +19,8 @@ class Submission():
             self.fitcno = True
             self.fittype = 'gpu'
         
-        self.fit = params['fit'] 
+        self.fit = params['fit'] # mv or ene
+        self.fpdf = params['fpdf'] # pdfs analytical or MC
         self.inputs = str(params['inputs'])
         self.tfc = params['tfc']
         self.input_path = params['input_path']
@@ -95,8 +96,9 @@ class Submission():
         print 'Fitoptions:', self.cfgname
         
         ## if file already exists, do nothing
-        if os.path.exists(self.cfgname) and not self.save:
-            return
+        ## changed: the save option means have to do again
+#        if os.path.exists(self.cfgname) and not self.save:
+#            return
             
         ## otherwise generate from a template
         cfglines = open('MCfits/templates/fitoptions_MCfit.cfg').readlines()
@@ -104,12 +106,21 @@ class Submission():
 
         # line 3: fit variable --> in case of npmts_dtX is just npmts
         cfglines[2] = 'fit_variable = ' + self.var.split('_')[0]
+        # line 5: PDFS analytical or MC
+        spdf = {'mc': 'montecarlo', 'ana': 'analytical'}
+        cfglines[4] = 'spectra_pdfs = ' + spdf[self.fpdf]
         
         # line 11: fit variable MC
         cfglines[10] = 'fit_variable_MC = ' + self.var
 
         # line 12: MC ext bkg
-        cfglines[11] = 'MC_ext_bkg = true' # Davide check
+        ebg = {'mc': 'false', 'ana': 'true'}
+        cfglines[11] = 'MC_ext_bkg = ' + ebg[self.fpdf]
+#        cfglines[11] = 'MC_ext_bkg = true' # Davide check
+
+        # line 13: geometric correction
+        if self.fpdf == 'ana':
+            cfglines[12] = comment(cfglines[12])
 
         # boolean for MV fit
         bl = 'true' if self.fit == 'mv' else 'false'
@@ -121,7 +132,11 @@ class Submission():
         # e.g. MCspectra_FVpep_Period_2012_unmasked.root
         # TAUP and new PDFs have different format
         mcname = 'MCspectra_pp_FVpep_' + self.inputs + '_emin1_masked.root' if 'TAUP' in self.pdfs else 'MCspectra_FVpep_Period_' + self.inputs + '_unmasked.root'
-        # MCspectra_FVpep_Period_Phase2_unmasked.root
+        # e.g. MCspectra_FVpep_Period_Phase2_unmasked.root
+
+        # line 38: alpha response function
+        ares = {'mc': 'false', 'ana': 'true'}
+        cfglines[37] = 'use_alpha_response_function = ' + ares[self.fpdf]
             
         cfglines[67] = 'montecarlo_spectra_file = ' + self.pdfs + '/' + mcname
 
@@ -165,7 +180,12 @@ class Submission():
             # add shift on Po210 and C11
             for sh in self.shift:
                 cfglines.append('freeMCshift' + sh + ' = true')
-                
+
+        if self.fpdf == 'ana':
+            cfglines.append('fiducial_mass = 0')
+            cfglines.append('force_dn_after_mask = false')
+
+
 #        if self.fitcno:
 #            # comment out pileup (lines 124 - 128)
 #            for l in range(123,128): cfglines[l] = '#' + cfglines[l]                                     

@@ -7,7 +7,8 @@ from creator import *
 # to a given value (part of the scan). Special feature: c11mean
 SCAN = {'pep': np.arange(0, 6, 0.1),
         'c11mean': range(15,29),
-        'CNO': np.arange(0, 10.2, 0.2)
+        'CNO': np.arange(0, 10.2, 0.5)
+#        'CNO': np.arange(0, 10.2, 0.2)
         }       
 #----------------------------------------------------------
     
@@ -15,7 +16,7 @@ SCAN = {'pep': np.arange(0, 6, 0.1),
 options = {
     'ftype': ['cpu', 'gpu', 'cno'],
     'fit': ['ene', 'mv'],
-#    'fpdf': ['mc', 'ana'],
+    'fpdf': ['mc', 'ana'],
     'inputs': ['Phase2', 'Phase3'] + range(2012,2020),
     'tfc': ['MI', 'MZ'],
     'var': ['nhits', 'npmts', 'npmts_dt1', 'npmts_dt2'],
@@ -34,11 +35,12 @@ options['ulim'] = options['penalty'] # species for upper limit
 ## defaults
 defaults = {
     'ftype': 'gpu',
-#    'fpdf': 'mc',
+    'fpdf': 'mc',
     'tfc': 'MI',
     'var': 'nhits',
     'pdfs': 'MCfits/pdfs_TAUP2017',
-    'input_path': '/p/project/cjikp20/jikp2007/fitter_input/v3.1.0/files',
+    'input_path': '/p/project/cjikp20/jikp2007/fitter_input/v4.0.0/files',
+#    'input_path': '/p/project/cjikp20/jikp2007/fitter_input/v3.1.0/files',
     'emin': '92',
     'save': 'false',
 }
@@ -90,7 +92,10 @@ def generator(params):
             Constraints are defined in the bottom in ICCpenalty
 
         fixed (list): list of species to be fixed in the fit
-            Values are defined in the bottom in ICCfixed
+            Values are defined in the bottom in ICCpenalty
+
+        ulim (list): list of species to put upper limit on in the fit
+            Values are defined in the bottom in ICCpenalty
 
         scan (string): species to perform scan on (must be in SCAN dictionary above)
             
