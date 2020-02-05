@@ -5,9 +5,12 @@ import os
 
 ###### species to read from the fitter
 
-COLUMNS = ['nu(Be7)', 'nu(pep)', 'nu(pp)', 'nu(CNO)', 'Bi210', 'C11', 'Kr85', 'Po210',\
-    'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Po210shift', 'C11shift', 'chi2/ndof','MLV',\
-    'C11_2', 'Po210_2']
+# COLUMNS = ['nu(Be7)', 'nu(pep)', 'nu(pp)', 'nu(CNO)', 'Bi210', 'C11', 'Kr85', 'Po210',\
+#     'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Po210shift', 'C11shift', 'chi2/ndof','MLV',\
+#     'C11_2', 'Po210_2']
+
+
+COLUMNS = ['nu(CNO)', 'MLV']
 
 ### --------------------------------------------------------- ###
 
@@ -20,7 +23,8 @@ ERRORLESS = ['chi2/ndof', 'MLV']
 ###### special column the value of which is not read from the log file
 ###### but from the name of the log file
 
-special_cols = ['Period', 'TFC', 'Var', 'FV']
+# special_cols = ['Period', 'TFC', 'Var', 'FV']
+special_cols = ['Period']
 
 ### --------------------------------------------------------- ###
 
@@ -126,10 +130,10 @@ def parse_file(filename):
 
         # used for systematics
 #        if 'multivariate_ps_fit_bins' in lines[idx]:
-#            df['PSbin'] = ene_min_max(lines[idx]) 
+#            df['PSbin'] = ene_min_max(lines[idx])
 #
 #        if 'multivariate_rdist_fit_bins' in lines[idx]:
-#            df['RDbin'] = ene_min_max(lines[idx]) 
+#            df['RDbin'] = ene_min_max(lines[idx])
 
         if 'Inserting [' + fmt_exp + 'Major] exposure' in lines[idx]:
             df['ExpSub'] = float(lines[idx].split(':')[-1].split('[')[1].split(' ')[0])
@@ -186,8 +190,9 @@ def parse_file(filename):
 
     ## calculate weighted average for C11 and Po210 (complementary)
     for sp in ['C11', 'Po210']:
-        df[sp + 'avg'] = (df[sp]*df['ExpSub'] + df[sp + '_2']*df['ExpTag']) / (df['ExpSub'] + df['ExpTag'])
-        df[sp + 'avgError'] = df[sp + 'avg'] * ((df[sp + 'Error'] / df[sp])**2 + (df[sp + '_2Error'] / df[sp + '_2'])**2)**0.5 # using np.sqrt doesn't work with NaN
+        if sp in df:
+            df[sp + 'avg'] = (df[sp]*df['ExpSub'] + df[sp + '_2']*df['ExpTag']) / (df['ExpSub'] + df['ExpTag'])
+            df[sp + 'avgError'] = df[sp + 'avg'] * ((df[sp + 'Error'] / df[sp])**2 + (df[sp + '_2Error'] / df[sp + '_2'])**2)**0.5 # using np.sqrt doesn't work with NaN
 
     return df
 
@@ -223,6 +228,7 @@ def parse_folder(foldername):
         count += 1
 
     # sort by special column (often year)
+    # df = df.sort_values('nu(CNO)')
     df = df.sort_values(special_cols)
     print df
 
