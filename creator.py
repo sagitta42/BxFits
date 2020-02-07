@@ -128,6 +128,10 @@ class Submission():
         # line 36: multivariate or energy only fit
         cfglines[35] = 'c11_subtracted = ' + bl
 
+        # line 38: alpha response function
+        alph = {'mc': 'false', 'ana': 'true'}
+        cfglines[37] = 'use_alpha_response_function = ' + alph[self.fpdf]
+
         # line 68: PDF path
         # e.g. MCspectra_FVpep_Period_2012_unmasked.root
         # TAUP and new PDFs have different format
@@ -137,8 +141,12 @@ class Submission():
         # line 38: alpha response function
         ares = {'mc': 'false', 'ana': 'true'}
         cfglines[37] = 'use_alpha_response_function = ' + ares[self.fpdf]
-            
-        cfglines[67] = 'montecarlo_spectra_file = ' + self.pdfs + '/' + mcname
+           
+        # line 69: MC PDFs
+        if self.fpdf == 'mc':
+            cfglines[67] = 'montecarlo_spectra_file = ' + self.pdfs + '/' + mcname
+        else:
+            cfglines[67] = comment(cfglines[67])
 
         # line 80: remaining Pb214
         # Pb214 not implemented in the GPU fitter
@@ -146,6 +154,10 @@ class Submission():
 
         # line 82: minimum energy
         cfglines[81] = 'minimum_energy = ' + self.emin
+
+        # line 83: maximum energy
+        ene = {'mc': 950, 'ana': 900}
+        cfglines[82] = 'maximum_energy = ' + ene[self.fpdf]
 
         # line 88: save fit result or not
         cfglines[87] = 'save_fit_results = ' + self.save
@@ -168,6 +180,10 @@ class Submission():
         # line 102: compl. fit variable
         cfglines[101] = 'complementary_histo_name = pp/final_' + self.var + '_pp_1'
 
+        # line 111: dark noise convo
+        dn = {'mc': 'false', 'ana': 'true'}
+        cfglines[110] = 'convolve_dark_noise = ' + dn[sefl.fpdf]
+
         # line 127 and 128: pileup constraint (in species list is set to free, constraint is here)
         if 'pileup' in self.penalty:
             cfglines[126] = 'pileup_penalty_mean = ' + str(PUPPEN[self.inputs][0])
@@ -184,6 +200,7 @@ class Submission():
         if self.fpdf == 'ana':
             cfglines.append('fiducial_mass = 0')
             cfglines.append('force_dn_after_mask = false')
+            cfglines.append('fcher_free = false')
 
 
 #        if self.fitcno:
