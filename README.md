@@ -204,3 +204,10 @@ Po210avg                                              272.531                   
 ```
 
 Later you can open it with Spreadsheet and make a table like in the example ```examples/Ext_K40free_comparison.pdf```
+
+
+### Extra info
+
+"Zara PDFs" (up to May 2019, used for Davide GM results): ``/p/project/cjikp20/jikp2007/PDFs_to_test''
+
+"Giulio PDFs" (up to Dec 2019): ``/p/project/cjikp20/jikp2015/MC_fit_bx_nusol/root''                                                        

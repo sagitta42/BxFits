@@ -157,7 +157,7 @@ class Submission():
 
         # line 83: maximum energy
         ene = {'mc': 950, 'ana': 900}
-        cfglines[82] = 'maximum_energy = ' + ene[self.fpdf]
+        cfglines[82] = 'maximum_energy = ' + str(ene[self.fpdf])
 
         # line 88: save fit result or not
         cfglines[87] = 'save_fit_results = ' + self.save
@@ -182,7 +182,7 @@ class Submission():
 
         # line 111: dark noise convo
         dn = {'mc': 'false', 'ana': 'true'}
-        cfglines[110] = 'convolve_dark_noise = ' + dn[sefl.fpdf]
+        cfglines[110] = 'convolve_dark_noise = ' + dn[self.fpdf]
 
         # line 127 and 128: pileup constraint (in species list is set to free, constraint is here)
         if 'pileup' in self.penalty:
