@@ -141,8 +141,8 @@ class Submission():
         # line 38: alpha response function
         ares = {'mc': 'false', 'ana': 'true'}
         cfglines[37] = 'use_alpha_response_function = ' + ares[self.fpdf]
-           
-        # line 69: MC PDFs
+            
+        # line 68: MC PDFs
         if self.fpdf == 'mc':
             cfglines[67] = 'montecarlo_spectra_file = ' + self.pdfs + '/' + mcname
         else:
@@ -395,8 +395,8 @@ ICCpenalty = {
             },
     'CNO': {'line': 18,
             'color': 'kCyan',
-            'mean': {'hm': 4.92, 'lm': 3.52},
-            'sigma': {'hm': 0.56, 'lm': 0.37}
+            'mean': {'hm': 4.92, 'lm': 3.52, 'zero': 0} ,
+            'sigma': {'hm': 0.56, 'lm': 0.37, 'zero': 0}
             },
     'Ext_K40': {'line': 33,
                 'color': 'kAzure',
@@ -419,7 +419,9 @@ for sp in ICCpenalty:
 #PPPEP = {'hm': [47.76, 0.84], 'lm': [47.5, 0.8]}
 
 ## pileup penalty
-PUPPEN = {'Phase2': [2.1, 0.04],
+PUPPEN = {
+        'Phase2': [2.1, 0.04],
+        'All': [2.1, 0.04],
         '2012': [2.6, 0.03],
         '2013': [2.2, 0.03],
         '2014': [2.0, 0.03],

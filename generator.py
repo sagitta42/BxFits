@@ -17,12 +17,12 @@ options = {
     'ftype': ['cpu', 'gpu', 'cno'],
     'fit': ['ene', 'mv'],
     'fpdf': ['mc', 'ana'],
-    'inputs': ['Phase2', 'Phase3'] + range(2012,2020),
+    'inputs': ['All', 'Phase2', 'Phase3'] + range(2012,2020),
     'tfc': ['MI', 'MZ'],
     'var': ['nhits', 'npmts', 'npmts_dt1', 'npmts_dt2'],
 
     'penalty': ICCpenalty.keys() + ['pileup', 'none'],
-    'met': ['hm', 'lm', 'none'], # metallicity for the pep constraint
+    'met': ['hm', 'lm', 'zero', 'none'], # metallicity for the pep or CNO constraint
     'shift': ['C11', 'Po210', 'none'],    
 
     'save': ['true', 'false'],
@@ -233,7 +233,8 @@ def main():
         if not opts[par] == ['none']: opts[par] = make_range(opts[par])
 
 
-        
+       
+    print        
     print '######################'
     print '~~ Your input:'
     print opts
