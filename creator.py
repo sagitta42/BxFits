@@ -49,13 +49,14 @@ class Submission():
                 sys.exit(1)
     
         # dictionary {species: value} or 'none'
-        # special feature: c11mean
+        # special features: c11mean and c11shift
         self.scan = params['scan'] 
         self.scansp = 'none'
         if not self.scan == 'none':
             self.scansp = self.scan.keys()[0]
-            # ignore c11mean
-            if not self.scansp == 'c11mean': self.penfix[self.scansp] = 'fixed'
+            # ignore c11mean and c11shift
+            if not 'c11' in self.scansp:
+                self.penfix[self.scansp] = 'fixed'
 
         self.shift = params['shift']
 
@@ -68,7 +69,9 @@ class Submission():
         pencfg = '-pileup' if 'pileup' in self.penalty else ''
         # shift
         shiftcfg = '' if self.shift == ['none'] else '_' + '-'.join(self.shift) + '-shift'
-        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + '-emin' + self.emin + pencfg + shiftcfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
+        # scan of c11shift
+        scancfg = '_scan'  + self.scansp + str(self.scan[self.scansp]) if self.scansp == 'c11shift' else ''
+        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + '-emin' + self.emin + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
 
         ## species list filename
         # penalty
@@ -202,6 +205,13 @@ class Submission():
             cfglines.append('force_dn_after_mask = false')
             cfglines.append('fcher_free = false')
 
+        if self.scansp == 'c11shift':
+            cfglines.append('freeMCshiftC11 = true')
+            cfglines.append('freeMCshiftC11step = 0')
+            cfglines.append('freeMCshiftC11min = {0}'.format(self.scan['c11shift']))
+            cfglines.append('freeMCshiftC11max = {0}'.format(self.scan['c11shift']))
+                    
+            
 
 #        if self.fitcno:
 #            # comment out pileup (lines 124 - 128)

@@ -7,7 +7,8 @@ from creator import *
 # to a given value (part of the scan). Special feature: c11mean
 SCAN = {'pep': np.arange(0, 6, 0.1),
         'c11mean': range(15,29),
-        'CNO': np.arange(0, 10.2, 0.5)
+        'CNO': np.arange(0, 10.2, 0.5),
+        'c11shift': np.arange(0, 16.5, 0.5),
 #        'CNO': np.arange(0, 10.2, 0.2)
         }       
 #----------------------------------------------------------
@@ -280,6 +281,7 @@ def wrong_inputs():
     print 'Options:'
     for op in options:
         print '\t', op, ':', ', '.join(str(x) for x in options[op])
+    print '\t', 'scan:', ', '.join(SCAN.keys())
     print
     print 'Defaults:'
     for df in defaults:
