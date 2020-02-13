@@ -27,6 +27,7 @@ ERRORLESS = ['chi2/ndof', 'MLV']
 
 # special_cols = ['Period', 'TFC', 'Var', 'FV']
 special_cols = ['Period']
+#special_cols = []
 
 ### --------------------------------------------------------- ###
 
@@ -107,10 +108,11 @@ def parse_file(filename):
 
     finp = lines[idx].split(' ')[-1].split('/')[-1] # e.g. PeriodAll_FVpep_TFCLNGS.root
     specs = {}
-    specs['Period'] = finp.split('_')[0].split('Period')[1] # e.g. PeriodAll
-    specs['FV'] = finp.split('_')[1][2:] # e.g. pep
-    specs['TFC'] = finp.split('_')[2][3:].split('.')[0] # e.g. LNGS
-    specs['Var'] = lines[idx+1].split('final_')[1].split('_pp')[0] # e.g. nhits
+    specs['Period'] = 'X'
+#    specs['Period'] = finp.split('_')[0].split('Period')[1] # e.g. PeriodAll
+#    specs['FV'] = finp.split('_')[1][2:] # e.g. pep
+#    specs['TFC'] = finp.split('_')[2][3:].split('.')[0] # e.g. LNGS
+#    specs['Var'] = lines[idx+1].split('final_')[1].split('_pp')[0] # e.g. nhits
 
     for spec_col in special_cols:
         df.at[0, spec_col] = specs[spec_col]
@@ -146,6 +148,8 @@ def parse_file(filename):
             found = True
 
         idx+=1
+
+#    print df
 
     # start from the end of the file, find the line with FIT PARAMETERS
     idx = len(lines)-1
@@ -231,7 +235,7 @@ def parse_folder(foldername):
 
     # sort by special column (often year)
     # df = df.sort_values('nu(CNO)')
-    df = df.sort_values(special_cols)
+    if not len(special_cols) == 0: df = df.sort_values(special_cols)
     print df
 
     # save output file
