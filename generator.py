@@ -16,7 +16,7 @@ SCAN = {'pep': np.arange(0, 6, 0.1),
 # available values for each parameter
 options = {
     'ftype': ['cpu', 'gpu', 'cno'],
-    'fit': ['ene', 'mv'],
+    'fit': ['ene', 'mv', 'tag'],
     'fpdf': ['mc', 'ana'],
     'inputs': ['All', 'Phase2', 'Phase3'] + range(2012,2020),
     'tfc': ['MI', 'MZ'],

@@ -19,7 +19,8 @@ class Submission():
             self.fitcno = True
             self.fittype = 'gpu'
         
-        self.fit = params['fit'] # mv or ene
+        # Oemer: tag should be same as full just diff. histo
+        self.fit = params['fit'] # mv, ene (full spectrum), tag
         self.fpdf = params['fpdf'] # pdfs analytical or MC
         self.inputs = str(params['inputs'])
         self.tfc = params['tfc']
@@ -63,7 +64,9 @@ class Submission():
         self.save = params['save']
         self.outfolder = params['outfolder']
 
-        
+       
+        eminname = '-emin' + self.emin
+
         ## fitoptions filename
         # pileup penalty changes cfg
         pencfg = '-pileup' if 'pileup' in self.penalty else ''
@@ -71,7 +74,7 @@ class Submission():
         shiftcfg = '' if self.shift == ['none'] else '_' + '-'.join(self.shift) + '-shift'
         # scan of c11shift
         scancfg = '_scan'  + self.scansp + str(self.scan[self.scansp]) if self.scansp == 'c11shift' else ''
-        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + '-emin' + self.emin + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
+        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname  + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
 
         ## species list filename
         # penalty
@@ -83,11 +86,11 @@ class Submission():
 #       fixicc = '-'.join(self.fixed) + '-fixed' if self.fixed != ['none'] else ''
         ulimicc = '_ulim' + '-'.join(self.ulim) if self.ulim != ['none'] else ''
 #        ulimicc = '-'.join(self.ulim) + '-ulim' if self.ulim != ['none'] else ''
-        scanicc = '' if self.scan == 'none' else '_scan'  + self.scansp + str(self.scan[self.scansp])
+        scanicc = '' if self.scansp in ['none', 'c11shift'] else '_scan'  + self.scansp + str(self.scan[self.scansp])
 #        scanicc = '' if self.scan == 'none' else '-scan' + self.scansp + str(self.scan[self.scansp])
-        self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + penicc + penmet + fixicc + ulimicc + scanicc + '.icc'
+        self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + eminname + penicc + penmet + fixicc + ulimicc + scanicc + '.icc'
         # log file name 
-        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + '-emin' + self.emin + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + ulimicc
+        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
         
     
     def cfgfile(self):
@@ -126,10 +129,12 @@ class Submission():
             cfglines[12] = comment(cfglines[12])
 
         # boolean for MV fit
-        bl = 'true' if self.fit == 'mv' else 'false'
+#        bl = 'true' if self.fit == 'mv' else 'false'
         
         # line 36: multivariate or energy only fit
-        cfglines[35] = 'c11_subtracted = ' + bl
+        boolsub = 'false' if self.fit == 'ene' else 'true'
+        cfglines[35] = 'c11_subtracted = ' + boolsub
+#        cfglines[35] = 'c11_subtracted = ' + bl
 
         # line 38: alpha response function
         alph = {'mc': 'false', 'ana': 'true'}
@@ -141,10 +146,6 @@ class Submission():
         mcname = 'MCspectra_pp_FVpep_' + self.inputs + '_emin1_masked.root' if 'TAUP' in self.pdfs else 'MCspectra_FVpep_Period_' + self.inputs + '_unmasked.root'
         # e.g. MCspectra_FVpep_Period_Phase2_unmasked.root
 
-        # line 38: alpha response function
-        ares = {'mc': 'false', 'ana': 'true'}
-        cfglines[37] = 'use_alpha_response_function = ' + ares[self.fpdf]
-            
         # line 68: MC PDFs
         if self.fpdf == 'mc':
             cfglines[67] = 'montecarlo_spectra_file = ' + self.pdfs + '/' + mcname
@@ -159,8 +160,10 @@ class Submission():
         cfglines[81] = 'minimum_energy = ' + self.emin
 
         # line 83: maximum energy
-        ene = {'mc': 950, 'ana': 900}
-        cfglines[82] = 'maximum_energy = ' + str(ene[self.fpdf])
+        ene = 900 if 'npmts' in self.var else 950
+        cfglines[82] = 'maximum_energy = ' + str(ene)
+#        ene = {'mc': 950, 'ana': 900}
+#        cfglines[82] = 'maximum_energy = ' + str(ene[self.fpdf])
 
         # line 88: save fit result or not
         cfglines[87] = 'save_fit_results = ' + self.save
@@ -172,13 +175,17 @@ class Submission():
             cfglines[89] = 'plot_filename = ' + self.outfolder + '/' + 'plot_' + self.outfile + '.root'
 
         # line 91: ps: only in mv
+        bl = 'true' if self.fit == 'mv' else 'false'
         cfglines[90] = 'multivariate_ps_fit = ' + bl
 
         # line 96: rdist: only in mv
         cfglines[95] = 'multivariate_rdist_fit = ' + bl
 
         # line 101: complem.: only in mv
-        cfglines[100] = 'complementary_histo_fit = ' + bl
+        compbl = 'true' if self.fit == 'mv' else 'false'
+#        combbl = 'false' if self.fit == 'ene' else 'true'
+        cfglines[100] = 'complementary_histo_fit = ' + compbl
+#        cfglines[100] = 'complementary_histo_fit = ' + bl
 
         # line 102: compl. fit variable
         cfglines[101] = 'complementary_histo_name = pp/final_' + self.var + '_pp_1'
@@ -268,10 +275,23 @@ class Submission():
             for i in [12, 15]:
                 icclines[i] = comment(icclines[i])
 
-        # energy only fit: Po210_2 (l 22), C11_2 (l 26), C10_2 (l 28) and He6_2 (l 30) have to go
-        if self.fit == 'ene':
-            for i in [21, 25, 27, 29]:
+        # energy only fit (full spectrum): Po210_2 (l 22), C11_2 (l 26), C10_2 (l 28) and He6_2 (l 30) have to go
+        # fitting the tagged spectrum: the non "_2" species should go: PO210 (l 21), C11 (l 25)
+        clines = {'tag': [20, 24], 'ene': [21, 25, 27, 28], 'mv': []}
+        for i in clines[self.fit]:
                 icclines[i] = comment(icclines[i])
+
+        # fits for C11shift determination
+        if int(self.emin) >= 300:
+            # comment out Po210 (lines 21 and 22)
+            for i in [20,21]:
+                icclines[i] = comment(icclines[i])
+
+#        if self.fit == 'ene':
+#            for i in [21, 25, 27, 29]:
+#                icclines[i] = comment(icclines[i])
+            
+        
 
         # set penalties, fixed and upper limit if given
         for pensp in self.penfix:
@@ -334,7 +354,8 @@ class Submission():
         # to print bin bash or not
         out = open(outname, 'a') 
 
-        extra = '_0' if self.fit == 'mv' else ''
+        extra = {'mv': '_0', 'tag': '_1', 'ene': ''}
+#        extra = '_0' if self.fit == 'mv' else ''
 
         # CNAF submission
         if self.fittype == 'cpu':
@@ -342,7 +363,7 @@ class Submission():
             print >> out, 'bsub -q borexino_physics',\
                 '-e', self.outfolder + '/' + self.outfile + '.err',\
                 '-o', self.outfolder + '/' + self.outfile + '.log',\
-                './spectralfit', inputfile, 'pp/final_' + self.var + '_pp' + extra,\
+                './spectralfit', inputfile, 'pp/final_' + self.var + '_pp' + extra[self.fit],\
                 self.cfgname, self.iccname
 
             print 'Fit file:', outname
@@ -354,7 +375,7 @@ class Submission():
             fitfile = open(fitname, 'w')
             print >> fitfile, '#!/bin/bash'
             print >> fitfile, './borexino', inputfile,\
-                'pp/final_' + self.var + '_pp' + extra,\
+                'pp/final_' + self.var + '_pp' + extra[self.fit],\
                 self.cfgname, self.iccname, ' | tee', self.outfolder + '/' + self.outfile + '.log'
             fitfile.close()
             make_executable(fitname)
