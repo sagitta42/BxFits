@@ -18,7 +18,13 @@ class Submission():
         if self.fittype == 'cno':
             self.fitcno = True
             self.fittype = 'gpu'
-        
+
+        # fitting TFC strict sample to determine C11 shift
+        self.fittfc = False
+        if self.fittype == 'tfc':
+            self.fittfc = True
+            self.fittype = 'gpu'
+
         # Oemer: tag should be same as full just diff. histo
         self.fit = params['fit'] # mv, ene (full spectrum), tag
         self.fpdf = params['fpdf'] # pdfs analytical or MC
@@ -28,6 +34,10 @@ class Submission():
         self.pdfs = params['pdfs']
         self.var = params['var'] # is a list always
         self.emin = str(params['emin'])
+        self.emax = str(params['emax'])
+        ene = 900 if 'npmts' in self.var else 950
+        if self.emax == 'none':
+            self.emax = str(ene)
         
         # values for penalty and fixed are in a dictionary in the bottom
         self.penalty = params['penalty'] # to be constrained (list)
@@ -66,6 +76,7 @@ class Submission():
 
        
         eminname = '-emin' + self.emin
+        emaxname = '-emax' + self.emax
 
         ## fitoptions filename
         # pileup penalty changes cfg
@@ -74,7 +85,7 @@ class Submission():
         shiftcfg = '' if self.shift == ['none'] else '_' + '-'.join(self.shift) + '-shift'
         # scan of c11shift
         scancfg = '_scan'  + self.scansp + str(self.scan[self.scansp]) if self.scansp == 'c11shift' else ''
-        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname  + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
+        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
 
         ## species list filename
         # penalty
@@ -88,9 +99,9 @@ class Submission():
 #        ulimicc = '-'.join(self.ulim) + '-ulim' if self.ulim != ['none'] else ''
         scanicc = '' if self.scansp in ['none', 'c11shift'] else '_scan'  + self.scansp + str(self.scan[self.scansp])
 #        scanicc = '' if self.scan == 'none' else '-scan' + self.scansp + str(self.scan[self.scansp])
-        self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + eminname + penicc + penmet + fixicc + ulimicc + scanicc + '.icc'
+        self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + eminname + emaxname + penicc + penmet + fixicc + ulimicc + scanicc + '.icc'
         # log file name 
-        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
+        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
         
     
     def cfgfile(self):
@@ -160,8 +171,8 @@ class Submission():
         cfglines[81] = 'minimum_energy = ' + self.emin
 
         # line 83: maximum energy
-        ene = 900 if 'npmts' in self.var else 950
-        cfglines[82] = 'maximum_energy = ' + str(ene)
+#        ene = 900 if 'npmts' in self.var else 950
+        cfglines[82] = 'maximum_energy = ' + self.emax
 #        ene = {'mc': 950, 'ana': 900}
 #        cfglines[82] = 'maximum_energy = ' + str(ene[self.fpdf])
 
@@ -254,6 +265,8 @@ class Submission():
             return
             
         ## otherwise generate from a template
+        
+
         icclines = open('MCfits/templates/species_list.icc').readlines()
 
         # line 15: pileup, comment out if we do not want to use pileup
@@ -273,6 +286,13 @@ class Submission():
         if self.fitcno:
             # C14 (l 13) and pp (l 16) are out (not pileup!)
             for i in [12, 15]:
+                icclines[i] = comment(icclines[i])
+
+        # TFC fit: only C11            
+        if self.fittfc:
+            # comment out everything except C11 and C11_2
+            nonc11 = np.setdiff1d(range(12, 34), [24,25])
+            for i in nonc11:
                 icclines[i] = comment(icclines[i])
 
         # energy only fit (full spectrum): Po210_2 (l 22), C11_2 (l 26), C10_2 (l 28) and He6_2 (l 30) have to go

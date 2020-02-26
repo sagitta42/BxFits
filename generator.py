@@ -15,7 +15,7 @@ SCAN = {'pep': np.arange(0, 6, 0.1),
     
 # available values for each parameter
 options = {
-    'ftype': ['cpu', 'gpu', 'cno'],
+    'ftype': ['cpu', 'gpu', 'cno', 'tfc'], # cno and tfc are type of gpu; 
     'fit': ['ene', 'mv', 'tag'],
     'fpdf': ['mc', 'ana'],
     'inputs': ['All', 'Phase2', 'Phase3'] + range(2012,2020),
@@ -43,17 +43,18 @@ defaults = {
     'input_path': '/p/project/cjikp20/jikp2007/fitter_input/v4.0.0/files',
 #    'input_path': '/p/project/cjikp20/jikp2007/fitter_input/v3.1.0/files',
     'emin': '92',
+#    'emax': '
     'save': 'false',
 }
     
 ## total options = options + the ones that do not have fixed choices
-user = options.keys() + ['pdfs', 'input_path', 'emin', 'outfolder'] + ['scan']
+user = options.keys() + ['pdfs', 'input_path', 'emin', 'emax', 'outfolder'] + ['scan']
    
 
 ## parameters that are lists in the submission
 par_list = ['penalty', 'shift', 'fixed', 'ulim']
 ## parameters that will be looped on (so also lists)
-par_loop = ['inputs', 'emin']
+par_loop = ['inputs', 'emin', 'emax']
 # things to split by comma
 splt_comma = par_list + par_loop
 
@@ -88,6 +89,7 @@ def generator(params):
         var ['nhits' | 'npmts_dt1' | 'npmts_dt2']: fit variable. Default: nhits
 
         emin (int): min energy of the fit. Default: 92
+        emax (int): min energy of the fit. Default: 0 (means 900 for npmts and 950 for nhits)
         
         penalty (list): list of species to be constrained in the fit
             Constraints are defined in the bottom in ICCpenalty
@@ -212,7 +214,9 @@ def main():
     
         outfolder += '-' + opts['pdfs'].split('/')[-1]
         emin_part = opts['emin'][0] if len(opts['emin']) == 1 else 'to'.join(opts['emin'])
+        emax_part = opts['emax'][0] if len(opts['emax']) == 1 else 'to'.join(opts['emax'])
         outfolder += '-emin' + emin_part
+        outfolder += '-emax' + emax_part
 
         ## list like options
         for spop in par_list:

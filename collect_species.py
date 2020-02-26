@@ -5,12 +5,13 @@ import os
 
 ###### species to read from the fitter
 
-COLUMNS = ['nu(Be7)', 'nu(pep)',\
+#COLUMNS = ['nu(Be7)', 'nu(pep)',\
 #          'nu(pp)',\
-          'nu(CNO)', 'Bi210', 'C11', 'Kr85', 'Po210',\
-     'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Po210shift', 'C11shift', 'chi2/ndof','MLV',\
-     'C11_2', 'Po210_2']
+#          'nu(CNO)', 'Bi210', 'C11', 'Kr85', 'Po210',\
+#     'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Po210shift', 'C11shift', 'chi2/ndof','MLV',\
+#     'C11_2', 'Po210_2']
 
+COLUMNS = ['C11shift', 'MLV', 'chi2/ndof', 'C11']
 
 #COLUMNS = ['nu(CNO)', 'MLV']
 
@@ -196,7 +197,7 @@ def parse_file(filename):
 
     ## calculate weighted average for C11 and Po210 (complementary)
     for sp in ['C11', 'Po210']:
-        if sp in df:
+        if sp in df and sp + '_2' in df:
             df[sp + 'avg'] = (df[sp]*df['ExpSub'] + df[sp + '_2']*df['ExpTag']) / (df['ExpSub'] + df['ExpTag'])
             df[sp + 'avgError'] = df[sp + 'avg'] * ((df[sp + 'Error'] / df[sp])**2 + (df[sp + '_2Error'] / df[sp + '_2'])**2)**0.5 # using np.sqrt doesn't work with NaN
 
