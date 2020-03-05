@@ -223,11 +223,17 @@ class Submission():
             cfglines.append('force_dn_after_mask = false')
             cfglines.append('fcher_free = false')
 
-        if self.scansp == 'c11shift':
+        ## C11 shift            
+        if "TAUP" in self.pdfs:
+            cfglines.append('freeMCshiftC11 = false')
+            cfglines.append('freeMCshiftC11step = 0')
+        else:
             cfglines.append('freeMCshiftC11 = true')
             cfglines.append('freeMCshiftC11step = 0')
-            cfglines.append('freeMCshiftC11min = {0}'.format(self.scan['c11shift']))
-            cfglines.append('freeMCshiftC11max = {0}'.format(self.scan['c11shift']))
+            c11value = self.scan['c11shift'] if self.scansp == 'c11shift' else 7.0
+        
+            cfglines.append('freeMCshiftC11min = {0}'.format(c11value))
+            cfglines.append('freeMCshiftC11max = {0}'.format(c11value))
                     
             
 
@@ -317,7 +323,7 @@ class Submission():
         for pensp in self.penfix:
             print pensp
         # pileup penalty is in cfg not icc
-            if pensp == 'pileup': continue
+            if pensp in ['pileup', 'c11shift']: continue
 
             # species to scan, if given
             if pensp in self.scan:
