@@ -374,7 +374,8 @@ class Submission():
 
         ## input file
         # files on Jureca are different
-        cy = '_c19' if self.fittype == 'gpu' else '' 
+#        cy = '_c19' if self.fittype == 'gpu' else '' 
+        cy = '' if 'TAUP' in self.pdfs else '_c19'
         # e.g. Period2012_FVpep_TFCMI_c19.root
         inputfile = self.input_path + '/Period' + self.inputs + '_FVpep_TFC' + self.tfc + cy + '.root'
 
