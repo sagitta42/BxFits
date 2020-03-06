@@ -85,7 +85,7 @@ class Submission():
         shiftcfg = '' if self.shift == ['none'] else '_' + '-'.join(self.shift) + '-shift'
         # scan of c11shift
         scancfg = '_scan'  + self.scansp + str(self.scan[self.scansp]) if self.scansp == 'c11shift' else ''
-        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
+        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.fpdf + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
 
         ## species list filename
         # penalty
@@ -101,7 +101,7 @@ class Submission():
 #        scanicc = '' if self.scan == 'none' else '-scan' + self.scansp + str(self.scan[self.scansp])
         self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + eminname + emaxname + penicc + penmet + fixicc + ulimicc + scanicc + '.icc'
         # log file name 
-        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
+        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.fpdf + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
         
     
     def cfgfile(self):
@@ -227,16 +227,17 @@ class Submission():
             for i in range(118,128): cfglines[i] = comment(cfglines[i])
 
         ## C11 shift            
-        if "TAUP" in self.pdfs:
-            cfglines.append('freeMCshiftC11 = false')
-            cfglines.append('freeMCshiftC11step = 0')
-        else:
-            cfglines.append('freeMCshiftC11 = true')
-            cfglines.append('freeMCshiftC11step = 0')
-            c11value = self.scan['c11shift'] if self.scansp == 'c11shift' else 7.0
+        else:                                     
+            if "TAUP" in self.pdfs:
+                cfglines.append('freeMCshiftC11 = false')
+                cfglines.append('freeMCshiftC11step = 0')
+            else:
+                cfglines.append('freeMCshiftC11 = true')
+                cfglines.append('freeMCshiftC11step = 0')
+                c11value = self.scan['c11shift'] if self.scansp == 'c11shift' else 7.0
         
-            cfglines.append('freeMCshiftC11min = {0}'.format(c11value))
-            cfglines.append('freeMCshiftC11max = {0}'.format(c11value))
+                cfglines.append('freeMCshiftC11min = {0}'.format(c11value))
+                cfglines.append('freeMCshiftC11max = {0}'.format(c11value))
                     
             
 
@@ -280,7 +281,7 @@ class Submission():
 
         # line 15: pileup, comment out if we do not want to use pileup
         if not 'pileup' in self.penalty:
-            icclines[14] = comment(icclines[14])
+            icclines[14] = comment(icclines[14], '//')
 
         # line 25: C11 mean
         if self.scansp == 'c11mean':
@@ -289,32 +290,32 @@ class Submission():
         # line 31: Pb214
         if self.fittype == 'gpu':
             # comment out because not implemented in the GPU fitter
-            icclines[30] = comment(icclines[30])
+            icclines[30] = comment(icclines[30], '//')
 
         # CNO configuration species
         if self.fitcno:
             # C14 (l 13) and pp (l 16) are out (not pileup!)
             for i in [12, 15]:
-                icclines[i] = comment(icclines[i])
+                icclines[i] = comment(icclines[i], '//')
 
         # TFC fit: only C11            
         if self.fittfc:
             # comment out everything except C11 and C11_2
             nonc11 = np.setdiff1d(range(12, 34), [24,25])
             for i in nonc11:
-                icclines[i] = comment(icclines[i])
+                icclines[i] = comment(icclines[i], '//')
 
         # energy only fit (full spectrum): Po210_2 (l 22), C11_2 (l 26), C10_2 (l 28) and He6_2 (l 30) have to go
         # fitting the tagged spectrum: the non "_2" species should go: PO210 (l 21), C11 (l 25)
         clines = {'tag': [20, 24], 'ene': [21, 25, 27, 28], 'mv': []}
         for i in clines[self.fit]:
-                icclines[i] = comment(icclines[i])
+                icclines[i] = comment(icclines[i], '//')
 
         # fits for C11shift determination
         if int(self.emin) >= 300:
             # comment out Po210 (lines 21 and 22)
             for i in [20,21]:
-                icclines[i] = comment(icclines[i])
+                icclines[i] = comment(icclines[i], '//')
 
 #        if self.fit == 'ene':
 #            for i in [21, 25, 27, 29]:
@@ -493,5 +494,5 @@ PUPPEN = {
 
 
 # helper function
-def comment(line):
-    return '//' + line
+def comment(line, sym='#'):
+    return sym + line
