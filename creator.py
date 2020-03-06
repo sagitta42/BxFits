@@ -223,6 +223,9 @@ class Submission():
             cfglines.append('force_dn_after_mask = false')
             cfglines.append('fcher_free = false')
 
+            ## comment out MC pileup stuff
+            for i in range(118,128): cfglines[i] = comment(cfglines[i])
+
         ## C11 shift            
         if "TAUP" in self.pdfs:
             cfglines.append('freeMCshiftC11 = false')
