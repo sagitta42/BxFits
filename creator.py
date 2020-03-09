@@ -38,6 +38,9 @@ class Submission():
         ene = 900 if 'npmts' in self.var else 950
         if self.emax == 'none':
             self.emax = str(ene)
+        self.rdmin = str(params['rdmin'])
+        self.rdmax = str(params['rdmax'])
+        self.rdbin = str(params['rdbin'])
         
         # values for penalty and fixed are in a dictionary in the bottom
         self.penalty = params['penalty'] # to be constrained (list)
@@ -77,6 +80,9 @@ class Submission():
        
         eminname = '-emin' + self.emin
         emaxname = '-emax' + self.emax
+        rdminname = '-rdmin' + self.rdmin
+        rdmaxname = '-rdmax' + self.rdmax
+        rdbinname = '-rdbin' + self.rdbin
 
         ## fitoptions filename
         # pileup penalty changes cfg
@@ -85,7 +91,7 @@ class Submission():
         shiftcfg = '' if self.shift == ['none'] else '_' + '-'.join(self.shift) + '-shift'
         # scan of c11shift
         scancfg = '_scan'  + self.scansp + str(self.scan[self.scansp]) if self.scansp == 'c11shift' else ''
-        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
+        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
 #        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.fpdf + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
 
         ## species list filename
@@ -102,7 +108,7 @@ class Submission():
 #        scanicc = '' if self.scan == 'none' else '-scan' + self.scansp + str(self.scan[self.scansp])
         self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + eminname + emaxname + penicc + penmet + fixicc + ulimicc + scanicc + '.icc'
         # log file name 
-        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
+        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
 #        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.fpdf + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
         
     
@@ -196,6 +202,11 @@ class Submission():
 
         # line 96: rdist: only in mv
         cfglines[95] = 'multivariate_rdist_fit = ' + bl
+
+        # line 97 and 98: RD min and max
+        cfglines[96] = 'multivariate_rdist_fit_min = ' + self.rdmin
+        cfglines[97] = 'multivariate_rdist_fit_max = ' + self.rdmax
+        cfglines[98] = 'multivariate_rdist_fit_bins = ' + self.rdbin
 
         # line 101: complem.: only in mv
         compbl = 'true' if self.fit == 'mv' else 'false'

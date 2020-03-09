@@ -45,17 +45,20 @@ defaults = {
 #    'input_path': '/p/project/cjikp20/jikp2007/fitter_input/v3.1.0/files',
     'emin': '92',
 #    'emax': '
+    'rdmin': 500,
+    'rdmax': 900,
+    'rdbin': 16,
     'save': 'false',
 }
     
 ## total options = options + the ones that do not have fixed choices
-user = options.keys() + ['pdfs', 'input_path', 'emin', 'emax', 'outfolder'] + ['scan']
+user = options.keys() + ['pdfs', 'input_path', 'emin', 'emax', 'rdmin', 'rdmax', 'rdbin','outfolder'] + ['scan']
    
 
 ## parameters that are lists in the submission
 par_list = ['penalty', 'shift', 'fixed', 'ulim']
 ## parameters that will be looped on (so also lists)
-par_loop = ['inputs', 'emin', 'emax']
+par_loop = ['inputs', 'emin', 'emax', 'rdmin', 'rdmax', 'rdbin', 'tfc']
 # things to split by comma
 splt_comma = par_list + par_loop
 
@@ -236,7 +239,12 @@ def main():
 
     ## inputs that loop to make separate submissions: create ranges
     for par in par_loop:
-        if not opts[par] == ['none']: opts[par] = make_range(opts[par])
+        if not opts[par] == ['none']:
+            # for emin and emax, make a range
+            if par in ['emin', 'emax']:
+                opts[par] = make_range(opts[par])
+#            else:
+#                opts[par
 
 
        
@@ -296,10 +304,10 @@ def wrong_inputs():
 
 
 def make_range(lst):
-    if lst[0].isdigit():
-        return range(int(lst[0]), int(lst[-1]) + 1)
+#    if lst[0].isdigit():
+    return range(int(lst[0]), int(lst[-1]) + 1)
     # if it's something like Phase2
-    return lst
+#    return lst
 
 
 
