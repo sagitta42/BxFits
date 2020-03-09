@@ -182,8 +182,12 @@ def generator(params):
 
 
 
-def main():
-    userinput = sys.argv[1:]
+def setup_gen(userinput=None):
+    if userinput == None:
+        userinput = sys.argv[1:]
+    print '@@@@@'
+    print userinput
+    print '@@@@@'
    
     ## if simpy python generator.py is called, show all options
     if len(userinput) == 0:
@@ -201,7 +205,7 @@ def main():
 
     # then read what user gave
     for opt in user:
-        for inp in sys.argv:
+        for inp in userinput:
             if opt in inp.split('=')[0]:
                 # penalty, fixed and shift can be a list; inputs is a list to loop on
                 opts[opt] = inp.split('=')[1].split(',') if opt in splt_comma else inp.split('=')[1]
@@ -319,4 +323,4 @@ def make_range(lst, tp=int, step=1):
 
 
 if __name__ == '__main__':
-    main()
+    setup_gen()

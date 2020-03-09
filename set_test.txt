@@ -1,0 +1,13 @@
+inputs=Phase3
+tfc=MI,MZ
+pdfs=pdfs_davide
+emin=140,150
+rdmax=900,916
+rdmin=484,500
+fit=mv
+shift=Po210
+fixed=pep
+ulim=Bi210
+met=hm
+ftype=cno
+outfolder=test_set_file2
