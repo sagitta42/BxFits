@@ -224,7 +224,7 @@ class Submission():
             cfglines.append('fcher_free = false')
 
             ## comment out MC pileup stuff
-            for i in range(118,128): cfglines[i] = comment(cfglines[i])
+            for i in range(118,132): cfglines[i] = comment(cfglines[i])
 
         ## C11 shift            
         else:                                     
@@ -271,8 +271,8 @@ class Submission():
         print 'Species list:', self.iccname
 
         ## if file already exists, do nothing            
-        if os.path.exists(self.iccname):
-            return
+#        if os.path.exists(self.iccname):
+#            return
             
         ## otherwise generate from a template
         
