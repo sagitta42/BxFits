@@ -5,6 +5,15 @@ import sys
 
 from collect_species import *
 
+# define columns we want (override what is in collect_species) --> doesn't work
+#COLUMNS = ['nu(Be7)', 'nu(pep)',\
+##          'nu(pp)',\
+#          'nu(CNO)', 'Bi210', 'C11', 'Kr85', 'Po210',\
+#     'Ext_Bi214', 'Ext_K40', 'Ext_Tl208',\
+##        'Po210shift', 'C11shift',\
+#        'chi2/ndof','MLV',\
+#     'C11_2', 'Po210_2']
+
 
 def table_comp_v1(folder):
     '''
@@ -33,6 +42,7 @@ def table_comp_v1(folder):
         columns = [c for c in df.columns if not 'Error' in c]
         for col in columns:
             print '~~~', col
+#            print df[col]
             if not col in noerr_cols:
                 df[col] = df[col].round(2)
                 df[col + 'Error'] = df[col + 'Error'].round(2)

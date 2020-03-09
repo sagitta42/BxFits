@@ -18,7 +18,7 @@ SCAN = {'pep': np.arange(0, 6, 0.1),
 options = {
     'ftype': ['cpu', 'gpu', 'cno', 'tfc'], # cno and tfc are type of gpu; 
     'fit': ['ene', 'mv', 'tag'],
-    'fpdf': ['mc', 'ana'],
+#    'fpdf': ['mc', 'ana'],
     'inputs': ['All', 'Phase2', 'Phase3'] + range(2012,2020),
     'tfc': ['MI', 'MZ'],
     'var': ['nhits', 'npmts', 'npmts_dt1', 'npmts_dt2'],
@@ -37,7 +37,7 @@ options['ulim'] = options['penalty'] # species for upper limit
 ## defaults
 defaults = {
     'ftype': 'gpu',
-    'fpdf': 'mc',
+#    'fpdf': 'mc',
     'tfc': 'MI',
     'var': 'nhits',
     'pdfs': 'MCfits/pdfs_TAUP2017',

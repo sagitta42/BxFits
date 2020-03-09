@@ -6,9 +6,11 @@ import os
 ###### species to read from the fitter
 
 COLUMNS = ['nu(Be7)', 'nu(pep)',\
-          'nu(pp)',\
+#          'nu(pp)',\
           'nu(CNO)', 'Bi210', 'C11', 'Kr85', 'Po210',\
-     'Ext_Bi214', 'Ext_K40', 'Ext_Tl208', 'Po210shift', 'C11shift', 'chi2/ndof','MLV',\
+     'Ext_Bi214', 'Ext_K40', 'Ext_Tl208',\
+#        'Po210shift', 'C11shift',\
+        'chi2/ndof','MLV',\
      'C11_2', 'Po210_2']
 
 #COLUMNS = ['C11shift', 'MLV', 'chi2/ndof', 'C11']

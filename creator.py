@@ -27,11 +27,11 @@ class Submission():
 
         # Oemer: tag should be same as full just diff. histo
         self.fit = params['fit'] # mv, ene (full spectrum), tag
-        self.fpdf = params['fpdf'] # pdfs analytical or MC
+#        self.fpdf = params['fpdf'] # pdfs analytical or MC
         self.inputs = str(params['inputs'])
         self.tfc = params['tfc']
         self.input_path = params['input_path']
-        self.pdfs = params['pdfs']
+        self.pdfs = params['pdfs'] # path or "ana"
         self.var = params['var'] # is a list always
         self.emin = str(params['emin'])
         self.emax = str(params['emax'])
@@ -85,7 +85,8 @@ class Submission():
         shiftcfg = '' if self.shift == ['none'] else '_' + '-'.join(self.shift) + '-shift'
         # scan of c11shift
         scancfg = '_scan'  + self.scansp + str(self.scan[self.scansp]) if self.scansp == 'c11shift' else ''
-        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.fpdf + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
+        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
+#        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.fpdf + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
 
         ## species list filename
         # penalty
@@ -101,7 +102,8 @@ class Submission():
 #        scanicc = '' if self.scan == 'none' else '-scan' + self.scansp + str(self.scan[self.scansp])
         self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + eminname + emaxname + penicc + penmet + fixicc + ulimicc + scanicc + '.icc'
         # log file name 
-        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.fpdf + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
+        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
+#        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.fpdf + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
         
     
     def cfgfile(self):
@@ -124,19 +126,21 @@ class Submission():
         # line 3: fit variable --> in case of npmts_dtX is just npmts
         cfglines[2] = 'fit_variable = ' + self.var.split('_')[0]
         # line 5: PDFS analytical or MC
-        spdf = {'mc': 'montecarlo', 'ana': 'analytical'}
-        cfglines[4] = 'spectra_pdfs = ' + spdf[self.fpdf]
+#        spdf = {'mc': 'montecarlo', 'ana': 'analytical'}
+        spdf = 'analytical' if self.pdfs == 'ana' else 'montecarlo'
+        cfglines[4] = 'spectra_pdfs = ' + spdf
         
         # line 11: fit variable MC
         cfglines[10] = 'fit_variable_MC = ' + self.var
 
         # line 12: MC ext bkg
-        ebg = {'mc': 'false', 'ana': 'true'}
-        cfglines[11] = 'MC_ext_bkg = ' + ebg[self.fpdf]
+#        ebg = {'mc': 'false', 'ana': 'true'}
+        ebg = 'true' if self.pdfs == 'ana' else 'false'
+        cfglines[11] = 'MC_ext_bkg = ' + ebg
 #        cfglines[11] = 'MC_ext_bkg = true' # Davide check
 
         # line 13: geometric correction
-        if self.fpdf == 'ana':
+        if self.pdfs == 'ana':
             cfglines[12] = comment(cfglines[12])
 
         # boolean for MV fit
@@ -148,8 +152,9 @@ class Submission():
 #        cfglines[35] = 'c11_subtracted = ' + bl
 
         # line 38: alpha response function
-        alph = {'mc': 'false', 'ana': 'true'}
-        cfglines[37] = 'use_alpha_response_function = ' + alph[self.fpdf]
+#        alph = {'mc': 'false', 'ana': 'true'}
+        alph = 'true' if self.pdfs == 'ana' else 'mc'
+        cfglines[37] = 'use_alpha_response_function = ' + alph
 
         # line 68: PDF path
         # e.g. MCspectra_FVpep_Period_2012_unmasked.root
@@ -158,10 +163,10 @@ class Submission():
         # e.g. MCspectra_FVpep_Period_Phase2_unmasked.root
 
         # line 68: MC PDFs
-        if self.fpdf == 'mc':
-            cfglines[67] = 'montecarlo_spectra_file = ' + self.pdfs + '/' + mcname
-        else:
+        if self.pdfs == 'ana':
             cfglines[67] = comment(cfglines[67])
+        else:
+            cfglines[67] = 'montecarlo_spectra_file = ' + self.pdfs + '/' + mcname
 
         # line 80: remaining Pb214
         # Pb214 not implemented in the GPU fitter
@@ -202,8 +207,9 @@ class Submission():
         cfglines[101] = 'complementary_histo_name = pp/final_' + self.var + '_pp_1'
 
         # line 111: dark noise convo
-        dn = {'mc': 'false', 'ana': 'true'}
-        cfglines[110] = 'convolve_dark_noise = ' + dn[self.fpdf]
+#        dn = {'mc': 'false', 'ana': 'true'}
+        dn = 'true' if self.pdfs == 'ana' else 'false'
+        cfglines[110] = 'convolve_dark_noise = ' + dn
 
         # line 127 and 128: pileup constraint (in species list is set to free, constraint is here)
         if 'pileup' in self.penalty:
@@ -218,7 +224,7 @@ class Submission():
             for sh in self.shift:
                 cfglines.append('freeMCshift' + sh + ' = true')
 
-        if self.fpdf == 'ana':
+        if self.pdfs == 'ana':
             cfglines.append('fiducial_mass = 0')
             cfglines.append('force_dn_after_mask = false')
             cfglines.append('fcher_free = false')
@@ -271,8 +277,8 @@ class Submission():
         print 'Species list:', self.iccname
 
         ## if file already exists, do nothing            
-#        if os.path.exists(self.iccname):
-#            return
+        if os.path.exists(self.iccname):
+            return
             
         ## otherwise generate from a template
         
