@@ -41,6 +41,7 @@ class Submission():
         self.rdmin = str(params['rdmin'])
         self.rdmax = str(params['rdmax'])
         self.rdbin = str(params['rdbin'])
+        self.c11shift = str(params['c11sh'])
         
         # needed for the case when penalty or fixed is set for species that depend on metallicity
         self.met = params['met']                            
@@ -54,7 +55,7 @@ class Submission():
                 print 'Species', sp, 'requires metallicity! Use met=hm or met=lm\n'
                 sys.exit(1)
 
-        # penalty, fixed and ulim names before we extract values
+        # penalty, fixed and ulim name parts for icc and log file before we extract values
         penicc = '' if params['penalty'] == ['none'] else '_penalty' + '-'.join(sp.replace(':','_') for sp in params['penalty'])
         fixicc = '_fixed' + '-'.join(sp.replace(':','_') for sp in params['fixed']) if params['fixed'] != ['none'] else ''
         ulimicc = '_ulim' + '-'.join(sp.replace(':', '_') for sp in params['ulim']) if params['ulim'] != ['none'] else ''
@@ -93,18 +94,22 @@ class Submission():
             # ignore c11mean and c11shift
             if not 'c11' in self.scansp:
                 self.penfix[self.scansp] = 'fixed'
+            if self.scansp == 'c11shift':
+                self.c11shift = self.scan['c11shift']
 
         self.shift = params['shift']
 
         self.save = params['save']
         self.outfolder = params['outfolder']
 
-       
+      
+        ## parts for cfg and log filenames
         eminname = '-emin' + self.emin
         emaxname = '-emax' + self.emax
         rdminname = '-rdmin' + self.rdmin
         rdmaxname = '-rdmax' + self.rdmax
         rdbinname = '-rdbin' + self.rdbin
+        c11name = '' if self.pdfs == 'ana' else '-c11shift' + self.c11shift
 
         ## fitoptions filename
         # pileup penalty changes cfg
@@ -113,25 +118,15 @@ class Submission():
         shiftcfg = '' if self.shift == ['none'] else '_' + '-'.join(self.shift) + '-shift'
         # scan of c11shift
         scancfg = '_scan'  + self.scansp + str(self.scan[self.scansp]) if self.scansp == 'c11shift' else ''
-        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
-#        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.fpdf + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
+        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + c11name + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
 
         ## species list filename
-        # penalty
-#        penicc = '' if self.penalty == ['none'] else '_penalty' + '-'.join(self.penalty)
-#        penicc = '' if self.penalty == ['none'] else '_' + '-'.join(self.penalty) + '-penalty'
         # in case penalty depends on metallicity
         penmet = '-' + self.met if self.met != 'none' else '' 
-#        fixicc = '_fixed' + '-'.join(self.fixed) if self.fixed != ['none'] else ''
-#       fixicc = '-'.join(self.fixed) + '-fixed' if self.fixed != ['none'] else ''
-#        ulimicc = '_ulim' + '-'.join(self.ulim) if self.ulim != ['none'] else ''
-#        ulimicc = '-'.join(self.ulim) + '-ulim' if self.ulim != ['none'] else ''
         scanicc = '' if self.scansp in ['none', 'c11shift'] else '_scan'  + self.scansp + str(self.scan[self.scansp])
-#        scanicc = '' if self.scan == 'none' else '-scan' + self.scansp + str(self.scan[self.scansp])
         self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + eminname + emaxname + penicc + penmet + fixicc + ulimicc + scanicc + '.icc'
         # log file name 
-        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
-#        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.fpdf + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
+        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + c11name + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
         
     
     def cfgfile(self):
@@ -149,13 +144,11 @@ class Submission():
             
         ## otherwise generate from a template
         cfglines = open('MCfits/templates/fitoptions.cfg').readlines()
-#        cfglines = open('MCfits/templates/fitoptions_MCfit.cfg').readlines()
         cfglines = [ln.rstrip('\r\n') for ln in cfglines]
 
         # line 3: fit variable --> in case of npmts_dtX is just npmts
         cfglines[2] = 'fit_variable = ' + self.var.split('_')[0]
         # line 5: PDFS analytical or MC
-#        spdf = {'mc': 'montecarlo', 'ana': 'analytical'}
         spdf = 'analytical' if self.pdfs == 'ana' else 'montecarlo'
         cfglines[4] = 'spectra_pdfs = ' + spdf
         
@@ -163,25 +156,18 @@ class Submission():
         cfglines[10] = 'fit_variable_MC = ' + self.var
 
         # line 12: MC ext bkg
-#        ebg = {'mc': 'false', 'ana': 'true'}
         ebg = 'true' if self.pdfs == 'ana' else 'false'
         cfglines[11] = 'MC_ext_bkg = ' + ebg
-#        cfglines[11] = 'MC_ext_bkg = true' # Davide check
 
         # line 13: geometric correction
         if self.pdfs == 'ana':
             cfglines[12] = comment(cfglines[12])
 
-        # boolean for MV fit
-#        bl = 'true' if self.fit == 'mv' else 'false'
-        
         # line 36: multivariate or energy only fit
         boolsub = 'false' if self.fit == 'ene' else 'true'
         cfglines[35] = 'c11_subtracted = ' + boolsub
-#        cfglines[35] = 'c11_subtracted = ' + bl
 
         # line 38: alpha response function
-#        alph = {'mc': 'false', 'ana': 'true'}
         alph = 'true' if self.pdfs == 'ana' else 'mc'
         cfglines[37] = 'use_alpha_response_function = ' + alph
 
@@ -207,8 +193,6 @@ class Submission():
         # line 83: maximum energy
 #        ene = 900 if 'npmts' in self.var else 950
         cfglines[82] = 'maximum_energy = ' + self.emax
-#        ene = {'mc': 950, 'ana': 900}
-#        cfglines[82] = 'maximum_energy = ' + str(ene[self.fpdf])
 
         # line 88: save fit result or not
         cfglines[87] = 'save_fit_results = ' + self.save
@@ -233,15 +217,12 @@ class Submission():
 
         # line 101: complem.: only in mv
         compbl = 'true' if self.fit == 'mv' else 'false'
-#        combbl = 'false' if self.fit == 'ene' else 'true'
         cfglines[100] = 'complementary_histo_fit = ' + compbl
-#        cfglines[100] = 'complementary_histo_fit = ' + bl
 
         # line 102: compl. fit variable
         cfglines[101] = 'complementary_histo_name = pp/final_' + self.var + '_pp_1'
 
         # line 111: dark noise convo
-#        dn = {'mc': 'false', 'ana': 'true'}
         dn = 'true' if self.pdfs == 'ana' else 'false'
         cfglines[110] = 'convolve_dark_noise = ' + dn
 
@@ -274,10 +255,9 @@ class Submission():
             else:
                 cfglines.append('freeMCshiftC11 = true')
                 cfglines.append('freeMCshiftC11step = 0')
-                c11value = self.scan['c11shift'] if self.scansp == 'c11shift' else 7.0
         
-                cfglines.append('freeMCshiftC11min = {0}'.format(c11value))
-                cfglines.append('freeMCshiftC11max = {0}'.format(c11value))
+                cfglines.append('freeMCshiftC11min = {0}'.format(self.c11shift))
+                cfglines.append('freeMCshiftC11max = {0}'.format(self.c11shift))
                     
             
 
@@ -286,7 +266,8 @@ class Submission():
 #            for l in range(123,128): cfglines[l] = '#' + cfglines[l]                                     
         
         # line 103: dark noise: only in analytical fit, not MC fit
-#        cfglines[102] = 'dark_noise_window = win' + self.var[-1] + '\n'
+        if self.pdfs == 'ana':
+            cfglines[102] = 'dark_noise_window = win' + self.var[-1]
 
         # line 112 pp/pep constraint
 #        if 'ppDpep' in self.penalty:
@@ -357,12 +338,6 @@ class Submission():
             # comment out Po210 (lines 21 and 22)
             for i in [20,21]:
                 icclines[i] = comment(icclines[i], '//')
-
-#        if self.fit == 'ene':
-#            for i in [21, 25, 27, 29]:
-#                icclines[i] = comment(icclines[i])
-            
-        
 
         # set penalties, fixed and upper limit if given
         for pensp in self.penfix:
@@ -515,9 +490,6 @@ METSP = []
 for sp in ICCpenalty:
     if type(ICCpenalty[sp]['mean']) == dict: METSP.append(sp)
 
-
-# i forgot what this was
-#RND = {'Bi210': [10,2], 'C14': [3456000, 172800]}
 
 #PPPEP = {'hm': [47.76, 0.84], 'lm': [47.5, 0.8]}
 
