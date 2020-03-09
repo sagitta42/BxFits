@@ -139,7 +139,8 @@ def generator(params):
         if par in ['penalty', 'shift', 'fixed', 'ulim']:
             flag = True # by default, we think it's an available option
             for parsp in params[par]:
-                if not parsp in options[par]: flag = False # set to False if not available
+                if not parsp.split(':')[0] in options[par]: flag = False # set to False if not available
+#                if not parsp in options[par]: flag = False # set to False if not available
         else:
             flag = params[par] in options[par]
 

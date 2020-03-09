@@ -42,25 +42,47 @@ class Submission():
         self.rdmax = str(params['rdmax'])
         self.rdbin = str(params['rdbin'])
         
-        # values for penalty and fixed are in a dictionary in the bottom
-        self.penalty = params['penalty'] # to be constrained (list)
-        self.fixed = params['fixed'] # to be fixed (list)
-        self.ulim = params['ulim'] # to set upper limit (list)
-        self.penfix = {} # penalty, fixed and upper limit in one
-
-        for key in ['penalty', 'fixed', 'ulim']:
-            for sp in params[key]:
-                if not sp == 'none': self.penfix[sp] = key # will be empty if all are none
-
         # needed for the case when penalty or fixed is set for species that depend on metallicity
-        self.met = params['met']
-
-        for sp in self.penfix:            
-            # check if metallicity is required for penalty
+        self.met = params['met']                            
+        # check if metallicity given 
+        allsp = []
+        for tp in ['penalty', 'fixed', 'ulim']:
+            allsp += [ sp.split(':')[0] for sp in params[tp] ]
+        for sp in allsp:
             if sp in METSP and self.met == 'none':
                 print
                 print 'Species', sp, 'requires metallicity! Use met=hm or met=lm\n'
                 sys.exit(1)
+
+        # penalty, fixed and ulim names before we extract values
+        penicc = '' if params['penalty'] == ['none'] else '_penalty' + '-'.join(sp.replace(':','_') for sp in params['penalty'])
+        fixicc = '_fixed' + '-'.join(sp.replace(':','_') for sp in params['fixed']) if params['fixed'] != ['none'] else ''
+        ulimicc = '_ulim' + '-'.join(sp.replace(':', '_') for sp in params['ulim']) if params['ulim'] != ['none'] else ''
+
+        # one dictionary for all: penalty, fixed and ulim, to use increating icc
+        # values for penalty and fixed are in a dictionary in the bottom
+        self.penfix = {}
+        for key in ['penalty', 'fixed', 'ulim']:
+            for i in range(len(params[key])):
+                sp = params[key][i]
+                if not sp == 'none':
+                    # extract value if given
+                    if ':' in sp:
+                        spec, val = sp.split(':')
+                        params[key][i] = spec
+                        if spec in METSP:
+                            ICCpenalty[spec]['mean'][self.met] = float(val)
+                        else:
+                            ICCpenalty[spec]['mean'] = float(val)
+                        print spec, '->', val
+                    # add to global dict
+                    self.penfix[params[key][i]] = key # will be empty if all are none
+
+        # pen, fix and ulim separately: for names, and for pileup which is in the cfg
+        self.penalty = params['penalty'] # to be constrained (list)
+        self.fixed = params['fixed'] # to be fixed (list)
+        self.ulim = params['ulim'] # to set upper limit (list)
+
     
         # dictionary {species: value} or 'none'
         # special features: c11mean and c11shift
@@ -96,13 +118,13 @@ class Submission():
 
         ## species list filename
         # penalty
-        penicc = '' if self.penalty == ['none'] else '_penalty' + '-'.join(self.penalty)
+#        penicc = '' if self.penalty == ['none'] else '_penalty' + '-'.join(self.penalty)
 #        penicc = '' if self.penalty == ['none'] else '_' + '-'.join(self.penalty) + '-penalty'
         # in case penalty depends on metallicity
         penmet = '-' + self.met if self.met != 'none' else '' 
-        fixicc = '_fixed' + '-'.join(self.fixed) if self.fixed != ['none'] else ''
+#        fixicc = '_fixed' + '-'.join(self.fixed) if self.fixed != ['none'] else ''
 #       fixicc = '-'.join(self.fixed) + '-fixed' if self.fixed != ['none'] else ''
-        ulimicc = '_ulim' + '-'.join(self.ulim) if self.ulim != ['none'] else ''
+#        ulimicc = '_ulim' + '-'.join(self.ulim) if self.ulim != ['none'] else ''
 #        ulimicc = '-'.join(self.ulim) + '-ulim' if self.ulim != ['none'] else ''
         scanicc = '' if self.scansp in ['none', 'c11shift'] else '_scan'  + self.scansp + str(self.scan[self.scansp])
 #        scanicc = '' if self.scan == 'none' else '-scan' + self.scansp + str(self.scan[self.scansp])
@@ -288,8 +310,8 @@ class Submission():
         print 'Species list:', self.iccname
 
         ## if file already exists, do nothing            
-        if os.path.exists(self.iccname):
-            return
+#        if os.path.exists(self.iccname):
+#            return
             
         ## otherwise generate from a template
         

@@ -5,8 +5,8 @@ import sys
 
 from collect_species import *
 
-# define columns we want (override what is in collect_species) --> doesn't work
-#COLUMNS = ['nu(Be7)', 'nu(pep)',\
+# define columns we want (override what is in collect_species)
+#collect_species.COLUMNS = ['nu(Be7)', 'nu(pep)',\
 ##          'nu(pp)',\
 #          'nu(CNO)', 'Bi210', 'C11', 'Kr85', 'Po210',\
 #     'Ext_Bi214', 'Ext_K40', 'Ext_Tl208',\
