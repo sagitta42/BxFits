@@ -148,7 +148,8 @@ class Submission():
 #            return
             
         ## otherwise generate from a template
-        cfglines = open('MCfits/templates/fitoptions_MCfit.cfg').readlines()
+        cfglines = open('MCfits/templates/fitoptions.cfg').readlines()
+#        cfglines = open('MCfits/templates/fitoptions_MCfit.cfg').readlines()
         cfglines = [ln.rstrip('\r\n') for ln in cfglines]
 
         # line 3: fit variable --> in case of npmts_dtX is just npmts
@@ -310,8 +311,9 @@ class Submission():
         print 'Species list:', self.iccname
 
         ## if file already exists, do nothing            
-#        if os.path.exists(self.iccname):
-#            return
+        if os.path.exists(self.iccname):
+            print '\tcreator.py: iccfile : already exists'
+            return
             
         ## otherwise generate from a template
         
