@@ -6,7 +6,7 @@ def massive(userfile):
     print '~~~~~'
     f = open(userfile)
     lines = f.readlines()
-    userinput = [l.rstrip() for l in lines]
+    userinput = [l.rstrip() for l in lines if not '#' in l]
     print userinput
     print '~~~~~'
     setup_gen(userinput)

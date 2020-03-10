@@ -185,9 +185,6 @@ def generator(params):
 def setup_gen(userinput=None):
     if userinput == None:
         userinput = sys.argv[1:]
-    print '@@@@@'
-    print userinput
-    print '@@@@@'
    
     ## if simpy python generator.py is called, show all options
     if len(userinput) == 0:
