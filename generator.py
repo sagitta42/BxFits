@@ -50,10 +50,11 @@ defaults = {
     'rdbin': 16,
     'c11sh': 7.0,
     'save': 'false',
+    'nbatch': 1,
 }
     
 ## total options = options + the ones that do not have fixed choices
-user = options.keys() + ['pdfs', 'input_path', 'outfolder'] +\
+user = options.keys() + ['pdfs', 'input_path', 'outfolder', 'nbatch'] +\
        ['emin', 'emax', 'rdmin', 'rdmax', 'rdbin', 'c11sh'] + ['scan']
    
 
@@ -65,6 +66,10 @@ par_loop = ['inputs', 'emin', 'emax', 'rdmin', 'rdmax', 'rdbin', 'c11sh', 'tfc']
 splt_comma = par_list + par_loop
 
 #----------------------------------------------------------
+
+# global batch counter
+bcount = 0
+
 
 ## nonte: for generator(), params['inputs'] is one string
 ## in main() it's a list, and will be looped on
@@ -132,6 +137,8 @@ def generator(params):
 
     '''
 
+    global bcount
+
     ## ---------------------------------
 
 
@@ -177,8 +184,12 @@ def generator(params):
     
     print # readability
     
-    # submission file for CNAF
-    s.subfile()
+    ## submission file for CNAF
+    # according to the counter of submissions and number of submissions in one batch, tell the subfile to which sbatch file it belongs
+    nfile = bcount / int(params['nbatch'])
+    s.subfile(nfile)
+    # update number of fits
+    bcount+=1
 
 
 
@@ -285,6 +296,12 @@ def setup_gen(userinput=None):
         print params
         print
         generator(params)
+    
+    # final submission file
+    make_executable(opts['outfolder'] + '_submission.sh')
+    print '---------------'
+    print 'Submission for all sbatch:', opts['outfolder'] + '_submission.sh'
+    print '---------------'
 
     print
 

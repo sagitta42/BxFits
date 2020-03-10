@@ -1,5 +1,6 @@
 import sys
 import os
+import shutil
 import numpy as np
 
 class Submission():
@@ -381,7 +382,7 @@ class Submission():
 
 
 
-    def subfile(self):
+    def subfile(self, nfile):
         '''
         Create submission/exe .sh file if does not exist
         If yes, append the fit to the existing one
@@ -429,22 +430,23 @@ class Submission():
             print 'Fit file:', fitname
 
             ## sbatch file        
-            # template
-            sbatchlines = open('MCfits/templates/sbatch_submission_template.sh').readlines()
-            # our last line
-            sbatchlines[-1] = 'srun ./' + fitname
             # our file
-            sbatchname = self.outfolder + '/sbatch_' + self.outfile + '.sh'
-            sbatch = open(sbatchname, 'w')
-            sbatch.writelines(sbatchlines)
-            sbatch.close()
-            make_executable(sbatchname)
+            sbatchname = self.outfolder + '/sbatch_' + str(nfile) + '.sh'
+
+            # if file doesn't exist, create
+            if not os.path.exists(sbatchname):
+                # template
+                shutil.copy('MCfits/templates/sbatch_submission_template.sh', sbatchname)
+                make_executable(sbatchname)
+                # add to top file that sbatches all the sbatch files
+                print >> out, 'sbatch', sbatchname
+
+            # our submission
+            sbfile = open(sbatchname, 'a')
+            print >> sbfile, 'srun ./' + fitname
+            sbfile.close()
             print 'Sbatch file:', sbatchname
 
-            ## file to sbatch all the sbatch files
-            print >> out, 'sbatch', sbatchname
-            make_executable(outname)
-            print 'Submission for all sbatch:', outname
 
         out.close()
 

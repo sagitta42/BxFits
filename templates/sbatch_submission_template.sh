@@ -9,4 +9,3 @@
 #SBATCH --account=jikp20 
 #SBATCH --gres=gpu:4 
 
-srun ./sen_fitdata.sh
