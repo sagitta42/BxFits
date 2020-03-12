@@ -28,8 +28,9 @@ ERRORLESS = ['chi2/ndof', 'MLV']
 ###### special column the value of which is not read from the log file
 ###### but from the name of the log file
 
+special_cols = ['Period', 'TFC', 'Var']
 # special_cols = ['Period', 'TFC', 'Var', 'FV']
-special_cols = ['Period']
+#special_cols = ['Period']
 #special_cols = []
 
 ### --------------------------------------------------------- ###
@@ -114,8 +115,8 @@ def parse_file(filename):
     specs['Period'] = 'X'
 #    specs['Period'] = finp.split('_')[0].split('Period')[1] # e.g. PeriodAll
 #    specs['FV'] = finp.split('_')[1][2:] # e.g. pep
-#    specs['TFC'] = finp.split('_')[2][3:].split('.')[0] # e.g. LNGS
-#    specs['Var'] = lines[idx+1].split('final_')[1].split('_pp')[0] # e.g. nhits
+    specs['TFC'] = finp.split('_')[2][3:].split('.')[0] # e.g. LNGS
+    specs['Var'] = lines[idx+1].split('final_')[1].split('_pp')[0] # e.g. nhits
 
     for spec_col in special_cols:
         df.at[0, spec_col] = specs[spec_col]

@@ -61,7 +61,7 @@ user = options.keys() + ['pdfs', 'input_path', 'outfolder', 'nbatch'] +\
 ## parameters that are lists in the submission
 par_list = ['penalty', 'shift', 'fixed', 'ulim']
 ## parameters that will be looped on (so also lists)
-par_loop = ['inputs', 'emin', 'emax', 'rdmin', 'rdmax', 'rdbin', 'c11sh', 'tfc']
+par_loop = ['inputs', 'emin', 'emax', 'rdmin', 'rdmax', 'rdbin', 'c11sh', 'tfc','var']
 # things to split by comma
 splt_comma = par_list + par_loop
 
