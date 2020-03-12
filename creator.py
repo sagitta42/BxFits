@@ -144,7 +144,7 @@ class Submission():
 #            return
             
         ## otherwise generate from a template
-        cfglines = open('MCfits/templates/fitoptions.cfg').readlines()
+        cfglines = open('BxFits/templates/fitoptions.cfg').readlines()
         cfglines = [ln.rstrip('\r\n') for ln in cfglines]
 
         # line 3: fit variable --> in case of npmts_dtX is just npmts
@@ -300,7 +300,7 @@ class Submission():
         ## otherwise generate from a template
         
 
-        icclines = open('MCfits/templates/species_list.icc').readlines()
+        icclines = open('BxFits/templates/species_list.icc').readlines()
 
         # line 15: pileup, comment out if we do not want to use pileup
         if not 'pileup' in self.penalty:
@@ -436,7 +436,7 @@ class Submission():
             # if file doesn't exist, create
             if not os.path.exists(sbatchname):
                 # template
-                shutil.copy('MCfits/templates/sbatch_submission_template.sh', sbatchname)
+                shutil.copy('BxFits/templates/sbatch_submission_template.sh', sbatchname)
                 make_executable(sbatchname)
                 # add to top file that sbatches all the sbatch files
                 print >> out, 'sbatch', sbatchname

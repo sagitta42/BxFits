@@ -11,4 +11,10 @@ def massive(userfile):
     print '~~~~~'
     setup_gen(userinput)
 
-massive(sys.argv[1])    
+if len(sys.argv) == 1:    
+    print generator.__doc__
+    print 'Syntax: python massive.py config_file.txt'
+    print 'Config file example: BxFits/set_test.txt'
+    print
+else:
+    massive(sys.argv[1])    

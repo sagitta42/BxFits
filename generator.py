@@ -40,7 +40,7 @@ defaults = {
 #    'fpdf': 'mc',
     'tfc': 'MI',
     'var': 'nhits',
-    'pdfs': 'MCfits/pdfs_TAUP2017',
+    'pdfs': 'BxFits/pdfs_TAUP2017',
     'input_path': '/p/project/cjikp20/jikp2007/fitter_input/v4.0.0/files',
 #    'input_path': '/p/project/cjikp20/jikp2007/fitter_input/v3.1.0/files',
     'emin': '92',
@@ -85,7 +85,7 @@ def generator(params):
 
         fit ['ene'|'mv']: energy only or multivariate fit
 
-        inputs (list): names of the period (e.g. Phase2) or a year (e.g. '2012')
+        inputs (string): name of the period (e.g. Phase2) or a year (e.g. '2012')
              If multiple inputs are be given, e.g. ['Phase2', 'Phase3'], multiple
                 submissions will be generated.
              In case years are given, a range of years between the given ones
@@ -95,35 +95,46 @@ def generator(params):
         tfc ['MZ'|'MI']: type of TFC. Default: MI 
 
         input_path (string): path to fitter inputs. Default: path to v3.1.0 inputs in JURECA
-        pdfs (string): path to MC PDFs. Default: MCfits/pdfs_TAUP2017 (included in the repo)
+        pdfs (string): "ana" for analytical fit, or path to MC PDFs for MC fit. Default: BxFits/pdfs_TAUP2017 (included in the repo)
 
         var ['nhits' | 'npmts_dt1' | 'npmts_dt2']: fit variable. Default: nhits
 
         emin (int): min energy of the fit. Default: 92
-        emax (int): min energy of the fit. Default: 0 (means 900 for npmts and 950 for nhits)
+        emax (int): min energy of the fit. Default: 'none' (means 900 for npmts and 950 for nhits)
+            If two values are given, e.g. [140,150], submissions for a range of values
+                with min 140 max 150 and step 2 will be generated
+
+        rdmin (int): min range of RD histo. Default: 500                    
+        rdmax (int): max range of RD histo. Default: 900                    
+        rdbin (int): bin width of RD histo. Default: 16
+            If multiple values are given, multiple submissions for given values
+                will be generated
         
-        penalty (list): list of species to be constrained in the fit
-            Constraints are defined in the bottom in ICCpenalty
-
-        fixed (list): list of species to be fixed in the fit
+        penalty (string): species to be constrained in the fit
+        fixed (string): species to be fixed in the fit
+        ulim (string): species to put upper limit on in the fit
             Values are defined in the bottom in ICCpenalty
+            Available species and values are defined in the bottom in ICCpenalty
+            Possible to give the exact value instead of the default one
+            Format example: Bi210:11.7,pep:2.99                          
+            When no values are given, e.g. Bi210,pep , default values from ICCpenalty are used                          
 
-        ulim (list): list of species to put upper limit on in the fit
-            Values are defined in the bottom in ICCpenalty
-
-        scan (string): species to perform scan on (must be in SCAN dictionary above)
+        scan (string): species to perform scan on
+            Must be in SCAN dictionary above, defining species and range of values
             
         met ['hm'|'lm']: metallicity
             Used with option penalty or fixed for species the value for which
             depends on metallicity                      
 
-        shift (list): list of species to apply shift to (C11, Po210)
+        shift (string): species to apply free shift to (C11, Po210)
+        c11sh (float): value to fix C11 shift in MC fit. Default: 7.0
 
         save [True|False]: save the fit output in .root and .pdf                      
 
         outfolder (string): output folder for the log files
             If not given, an output folder is created with a name based on the settings
-            Default: false                            
+            Default: false                           
+        nbatch: number of fits in one Jureca job. Default: 1                            
     
   Examples:
 
@@ -257,7 +268,7 @@ def setup_gen(userinput=None):
         if not opts[par] == ['none']:
             # for emin and emax, make a range
             if par in ['emin', 'emax']:
-                opts[par] = make_range(opts[par], int, 1)
+                opts[par] = make_range(opts[par], int, 2)
             elif par == 'c11sh':
                 opts[par] = make_range(opts[par], float, 0.5)
 #            else:
