@@ -1,62 +1,116 @@
-# MCfits
+# BxFits
 
 Generating and analysing custom MC fits
 
-Part 0: Set up this machinery
+Part 0: Set up fitter
 
-Part 1: Generate submission
+Part 1: Set up this machinery
 
-Part 2: Collect fit results
+Part 2: Generate submissions
 
-Part 3: Create comparison tables
+Part 3: Collect fit results
+
+Part 4: Create comparison tables
 
 
+## Part 0: Set up fitter
 
-## Part 0: Set up this machinery
+Two setup scripts:
 
-Go to your fit folder e.g.
+```/p/project/cjikp20/jikp2008/setup_fitter_p*.sh```
 
-```console
-cd /p/project/cjikp20/jikp2008/2019-11-11-cno/bx-GooStats-release/bx-GooStats
-```
+Usage:
 
-Check out this repo
-
-```console
-git clone https://github.com/sagitta42/MCfits.git
-```
-
-Link the generator files to the fit directory
+1. Create a folder in which you want to install the fitter, e.g.
 
 ```console
-ln -s MCfits/creator.py .
-ln -s MCfits/generator.py .
+mkdir 2020-03-11-fitter-v63
 ```
 
-Note: linking is good for when there is an update. Then you can simply do
+2. Copy the two scripts there
 
 ```console
-git pull
+cp setup_fitter_p*.sh 2020-03-11-fitter-v631/.
 ```
 
-In the ```MCfits/``` folder, and it will be updated, unlike if you make a copy.
-
-
-
-## Part 1: Generate submission
-
-In your fit folder, do
+3. Run the first script and state fitter version
 
 ```console
-python generator.py
+./setup_fitter_p1.sh 6.3.1
 ```
 
-And you will see the available options for the fit generation like fit type, TFC, variable etc.
+(it will ask you for the git credentials as part of the process and
+ then keep going)
+
+4. After the script is done running, run the second part
+
+```console
+./setup_fitter_p2.sh
+```
+
+5. Done
 
 
+## Part 1: Set up this machinery
+
+1. In your ```bx-GooStats``` folder, get the package
 
 
-## Part 2: Collect fit results
+```console
+git clone https://github.com/sagitta42/BxFits.git
+```
+
+2. Set up the basics
+
+```console
+./BxFits/setitup.sh
+```
+
+## Part 2: Generate submissions
+
+1. Create a configuration file e.g. ```config_file.txt``` with lines
+
+```bash
+inputs=Phase3
+Emin=140,150
+Rdmin=484,500
+var=npmts_dt1,npmts_dt2
+nbatch=10
+outfolder=my_systematics
+...
+```
+Example file included in this repo: ```total_systematics_ana_hm.txt```
+
+2. To see all possible inputs, do
+
+```console
+python massive.py
+```
+
+3. To create combinations do
+
+```console
+python massive.py config_file.txt
+```
+
+It will create
+
+- folder ```fitoptions/``` with generated cfg files 
+
+- folder ```species_list``` with generated icc files
+
+- folder ```outfolder/``` (the name you give with the ```outfolder``` variable in ```config_file.txt```) with ```fit_*.sh``` files corresponding to your settings, and ```sbatch_*.sh``` files that launch the fit files. The future log files will be saved in this folder
+
+- file ```outfolder_submission.sh``` that launches all the jobs
+
+4. To submit the jobs do
+
+```console
+./outfolder_submission.sh
+```
+
+
+## Part 3: Collect fit results
 
 Usage
 
@@ -103,12 +157,12 @@ plt.savefig('examples/bi210rate.png')
 
 
 
-## Part 3: Create comparison tables
+## Part 4: Create comparison tables
 
 Use
 
 ```console
-python table_comparison.py foldername
+python table_comparison_v1.py foldername
 ```
 
 It will create a file ```foldername_comparison.csv``` that you can open with Spreadsheet. The results from each log file in the folder will be put side by side for comparison
