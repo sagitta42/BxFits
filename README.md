@@ -60,6 +60,8 @@ cp setup_fitter_p*.sh 2020-03-11-fitter-v631/.
 git clone https://github.com/sagitta42/BxFits.git
 ```
 
+NOTE: ```git clone``` does not work in develgpus mode for some reason. After the fitter installation, you will be in develgpus mode, so before proceeding to Part 1, do ```exit``` to exit to the normal mode (then go back to the ```bx-GooStats/``` folder).
+
 2. Set up the basics
 
 ```console
