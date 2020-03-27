@@ -81,7 +81,7 @@ nbatch=10
 outfolder=my_systematics
 ...
 ```
-Example file included in this repo: ```total_systematics_ana_hm.txt```
+Example files included in this repo: ```total_systematics_ana_hm.txt, systematics_ana_hm_mi.sh```
 
 2. To see all possible inputs, do
 
