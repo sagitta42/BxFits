@@ -111,6 +111,7 @@ It will create
 ./outfolder_submission.sh
 ```
 
+Make sure to do it when you are NOT in GPU mode.
 
 ## Part 3: Collect fit results
 

@@ -28,7 +28,8 @@ ERRORLESS = ['chi2/ndof', 'MLV']
 ###### special column the value of which is not read from the log file
 ###### but from the name of the log file
 
-special_cols = ['Period', 'TFC', 'Var']
+#special_cols = ['Period', 'TFC', 'Var']
+special_cols = ['TFC', 'Var'] #, 'Emin', 'Emax', 'RDmin', 'RDmax', 'RDbin']
 # special_cols = ['Period', 'TFC', 'Var', 'FV']
 #special_cols = ['Period']
 #special_cols = []
@@ -41,6 +42,7 @@ special_cols = ['Period', 'TFC', 'Var']
 # OLD_FORMAT = True
 OLD_FORMAT = False
 
+### --------------------------------------------------------- ###
 ###### fitter format corresponding to our own column names
 
 PARSER = {
@@ -78,6 +80,21 @@ PARSER = {
 
 ### --------------------------------------------------------- ###
 
+##### variables and their parser values
+# used for systematics
+# format to look for min and max energy
+fmt_ene = 'is set to' if OLD_FORMAT else '=> float:'
+
+VARPARSER = {
+    'Emin': 'minimum_energy ' + fmt_ene, 
+    'Emax': 'maximum_energy ' + fmt_ene
+}
+
+for x in ['bins','max','min']:
+    VARPARSER['RD' + x] = 'multivariate_rdist_fit_' + x
+
+### --------------------------------------------------------- ###
+
 
 def parse_file(filename):
     '''
@@ -110,12 +127,13 @@ def parse_file(filename):
         idx += 1
         found = 'Getting data from' in lines[idx] # an. fit
 
-    finp = lines[idx].split(' ')[-1].split('/')[-1] # e.g. PeriodAll_FVpep_TFCLNGS.root
+#    finp = lines[idx].split(' ')[-1].split('/')[-1] # e.g. PeriodAll_FVpep_TFCLNGS.root
+    finp = lines[idx].split('c19')[0].split('/')[-1]
     specs = {}
-    specs['Period'] = 'X'
+#    specs['Period'] = 'X'
 #    specs['Period'] = finp.split('_')[0].split('Period')[1] # e.g. PeriodAll
 #    specs['FV'] = finp.split('_')[1][2:] # e.g. pep
-    specs['TFC'] = finp.split('_')[2][3:].split('.')[0] # e.g. LNGS
+    specs['TFC'] = finp.split('TFC')[1].split('_')[0] # e.g. LNGS
     specs['Var'] = lines[idx+1].split('final_')[1].split('_pp')[0] # e.g. nhits
 
     for spec_col in special_cols:
@@ -124,24 +142,14 @@ def parse_file(filename):
     # start from the beginning of the file, find exposure
     found = False
     idx = 0
-    # format to look for min and max energy
-    fmt_ene = 'is set to' if OLD_FORMAT else '=> float:'
     # format to look for exposure
     fmt_exp = 'Default:' if OLD_FORMAT else 'default.'
 
     while idx < len(lines) and not found:
-        if 'minimum_energy ' + fmt_ene in lines[idx]:
-            df['Emin'] = ene_min_max(lines[idx])
+        for var in VARPARSER:
+            if VARPARSER[var] in lines[idx]:
+                df[var] = ene_min_max(lines[idx])
 
-        if 'maximum_energy ' + fmt_ene in lines[idx]:
-            df['Emax'] = ene_min_max(lines[idx])
-
-        # used for systematics
-#        if 'multivariate_ps_fit_bins' in lines[idx]:
-#            df['PSbin'] = ene_min_max(lines[idx])
-#
-#        if 'multivariate_rdist_fit_bins' in lines[idx]:
-#            df['RDbin'] = ene_min_max(lines[idx])
 
         if 'Inserting [' + fmt_exp + 'Major] exposure' in lines[idx]:
             df['ExpSub'] = float(lines[idx].split(':')[-1].split('[')[1].split(' ')[0])
