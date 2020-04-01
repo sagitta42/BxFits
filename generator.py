@@ -48,6 +48,8 @@ defaults = {
     'rdmin': 500,
     'rdmax': 900,
     'rdbin': 16,
+    'psmin': 400,
+    'psmax': 650,
     'c11sh': 7.0,
     'save': 'false',
     'nbatch': 1,
@@ -55,13 +57,15 @@ defaults = {
     
 ## total options = options + the ones that do not have fixed choices
 user = options.keys() + ['pdfs', 'input_path', 'outfolder', 'nbatch'] +\
-       ['emin', 'emax', 'rdmin', 'rdmax', 'rdbin', 'c11sh'] + ['scan']
+       ['emin', 'emax', 'rdmin', 'rdmax', 'rdbin', 'psmin', 'psmax', 'c11sh'] +\
+       ['scan']
    
 
 ## parameters that are lists in the submission
 par_list = ['penalty', 'shift', 'fixed', 'ulim']
 ## parameters that will be looped on (so also lists)
-par_loop = ['inputs', 'emin', 'emax', 'rdmin', 'rdmax', 'rdbin', 'c11sh', 'tfc','var']
+par_loop = ['inputs', 'emin', 'emax', 'rdmin', 'rdmax', 'rdbin', 'psmin', 'psmax',\
+           'c11sh', 'tfc','var']
 # things to split by comma
 splt_comma = par_list + par_loop
 
@@ -107,6 +111,8 @@ def generator(params):
         rdmin (int): min range of RD histo. Default: 500                    
         rdmax (int): max range of RD histo. Default: 900                    
         rdbin (int): bin width of RD histo. Default: 16
+        psmin (int): min range of PS histo. Default: 400                    
+        psmax (int): max range of PS histo. Default: 650                    
             If multiple values are given, multiple submissions for given values
                 will be generated
         

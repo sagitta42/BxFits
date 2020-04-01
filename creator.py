@@ -42,6 +42,8 @@ class Submission():
         self.rdmin = str(params['rdmin'])
         self.rdmax = str(params['rdmax'])
         self.rdbin = str(params['rdbin'])
+        self.psmin = str(params['psmin'])
+        self.psmax = str(params['psmax'])
         self.c11shift = str(params['c11sh'])
         
         # needed for the case when penalty or fixed is set for species that depend on metallicity
@@ -207,6 +209,10 @@ class Submission():
         # line 91: ps: only in mv
         bl = 'true' if self.fit == 'mv' else 'false'
         cfglines[90] = 'multivariate_ps_fit = ' + bl
+
+        # line 92, 93: PS range
+        cfglines[91] = 'multivariate_ps_fit_min = ' + self.psmin
+        cfglines[92] = 'multivariate_ps_fit_max = ' + self.psmax
 
         # line 96: rdist: only in mv
         cfglines[95] = 'multivariate_rdist_fit = ' + bl

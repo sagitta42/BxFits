@@ -172,6 +172,8 @@ def parse_file(filename):
 
     if not found:
         print '########## FIT PARAMETERS not found!! ########'
+        print filename
+        print '#########'
         return pd.DataFrame()
 
     # now, starting from this index, move down and collect data
@@ -248,7 +250,7 @@ def parse_folder(foldername):
     # sort by special column (often year)
     # df = df.sort_values('nu(CNO)')
     if not len(special_cols) == 0: df = df.sort_values(special_cols)
-    print df
+    print df.head(10)
 
     # save output file
     outname = foldername + '_species.out'
