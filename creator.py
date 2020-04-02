@@ -112,6 +112,8 @@ class Submission():
         rdminname = '-rdmin' + self.rdmin
         rdmaxname = '-rdmax' + self.rdmax
         rdbinname = '-rdbin' + self.rdbin
+        psminname = '-psmin' + self.psmin
+        psmaxname = '-psmax' + self.psmax
         c11name = '' if self.pdfs == 'ana' else '-c11shift' + self.c11shift
 
         ## fitoptions filename
@@ -121,7 +123,7 @@ class Submission():
         shiftcfg = '' if self.shift == ['none'] else '_' + '-'.join(self.shift) + '-shift'
         # scan of c11shift
         scancfg = '_scan'  + self.scansp + str(self.scan[self.scansp]) if self.scansp == 'c11shift' else ''
-        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + c11name + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
+        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + psminname + psmaxname + c11name + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
 
         ## species list filename
         # in case penalty depends on metallicity
@@ -129,7 +131,7 @@ class Submission():
         scanicc = '' if self.scansp in ['none', 'c11shift'] else '_scan'  + self.scansp + str(self.scan[self.scansp])
         self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + eminname + emaxname + penicc + penmet + fixicc + ulimicc + scanicc + '.icc'
         # log file name 
-        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + c11name + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
+        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + psminname + psmaxname + c11name + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
         
     
     def cfgfile(self):
@@ -177,7 +179,8 @@ class Submission():
         # line 68: PDF path
         # e.g. MCspectra_FVpep_Period_2012_unmasked.root
         # TAUP and new PDFs have different format
-        mcname = 'MCspectra_pp_FVpep_' + self.inputs + '_emin1_masked.root' if 'TAUP' in self.pdfs else 'MCspectra_FVpep_Period_' + self.inputs + '_unmasked.root'
+        # current way of fitting: apply_mask = false in the cfg, and using masked PDFs
+        mcname = 'MCspectra_pp_FVpep_' + self.inputs + '_emin1_masked.root' if 'TAUP' in self.pdfs else 'MCspectra_FVpep_Period_' + self.inputs + '.root'# '_unmasked.root'
         # e.g. MCspectra_FVpep_Period_Phase2_unmasked.root
 
         # line 68: MC PDFs
@@ -437,7 +440,10 @@ class Submission():
 
             ## sbatch file        
             # our file
-            sbatchname = self.outfolder + '/sbatch_' + str(nfile) + '.sh'
+            if nfile == -1:
+                sbatchname = self.outfolder + '/sbatch_' + self.outfile + '.sh'
+            else:
+                sbatchname = self.outfolder + '/sbatch_' + str(nfile) + '.sh'
 
             # if file doesn't exist, create
             if not os.path.exists(sbatchname):
@@ -471,8 +477,8 @@ def make_executable(path):
 ICCpenalty = {
     'Bi210': {'line': 22,
               'color': 'kSpring',
-              'mean': 11.7,
-              'sigma': 1.6
+              'mean': 10.8, #11.7,
+              'sigma': 1.3 # 1.6
              },
     'pep': {'line': 17,
             'color': 'kCyan',

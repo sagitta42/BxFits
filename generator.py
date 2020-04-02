@@ -19,7 +19,7 @@ options = {
     'ftype': ['cpu', 'gpu', 'cno', 'tfc'], # cno and tfc are type of gpu; 
     'fit': ['ene', 'mv', 'tag'],
 #    'fpdf': ['mc', 'ana'],
-    'inputs': ['All', 'Phase2', 'Phase3'] + range(2012,2020),
+    'inputs': ['All', 'Phase2', 'Phase3', 'Phase3Strict'] + range(2012,2020),
     'tfc': ['MI', 'MZ'],
     'var': ['nhits', 'npmts', 'npmts_dt1', 'npmts_dt2'],
 
@@ -52,7 +52,7 @@ defaults = {
     'psmax': 650,
     'c11sh': 7.0,
     'save': 'false',
-    'nbatch': 1,
+    'nbatch': 0,
 }
     
 ## total options = options + the ones that do not have fixed choices
@@ -203,7 +203,8 @@ def generator(params):
     
     ## submission file for CNAF
     # according to the counter of submissions and number of submissions in one batch, tell the subfile to which sbatch file it belongs
-    nfile = bcount / int(params['nbatch'])
+    nb = int(params['nbatch'])
+    nfile = bcount / nb  if nb else -1
     s.subfile(nfile)
     # update number of fits
     bcount+=1
@@ -273,8 +274,10 @@ def setup_gen(userinput=None):
     for par in par_loop:
         if not opts[par] == ['none']:
             # for emin and emax, make a range
-            if par in ['emin', 'emax']:
+            if par == 'emin':
                 opts[par] = make_range(opts[par], int, 2)
+            elif par == 'emax':
+                opts[par] = make_range(opts[par], int, 16)
             elif par == 'c11sh':
                 opts[par] = make_range(opts[par], float, 0.5)
 #            else:

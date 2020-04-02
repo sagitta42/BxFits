@@ -92,6 +92,8 @@ VARPARSER = {
 
 for x in ['bins','max','min']:
     VARPARSER['RD' + x] = 'multivariate_rdist_fit_' + x
+for x in ['max','min']:
+    VARPARSER['PS' + x] = 'multivariate_ps_fit' + x
 
 ### --------------------------------------------------------- ###
 

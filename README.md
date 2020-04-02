@@ -271,4 +271,6 @@ Davide PDFs: ```/p/project/cjikp20/jikp2007/c11_test_PDFs```
 
 "Giulio PDFs" (up to Dec 2019): ```/p/project/cjikp20/jikp2015/MC_fit_bx_nusol/root```
 
+Most recent PDFs (CNO week Apr 2): ```/p/project/cjikp20/jikp2015/MCpdfs/v2.1.0```
+
 
