@@ -40,7 +40,8 @@ class Submission():
         if self.emax == 'none':
             self.emax = str(ene)
         self.rdmin = str(params['rdmin'])
-        self.rdmax = str(params['rdmax'])
+        self.rdmax = self.emax
+#        self.rdmax = str(params['rdmax'])
         self.rdbin = str(params['rdbin'])
         self.psmin = str(params['psmin'])
         self.psmax = str(params['psmax'])
@@ -58,10 +59,7 @@ class Submission():
                 print 'Species', sp, 'requires metallicity! Use met=hm or met=lm\n'
                 sys.exit(1)
 
-        # penalty, fixed and ulim name parts for icc and log file before we extract values
-        penicc = '' if params['penalty'] == ['none'] else '_penalty' + '-'.join(sp.replace(':','_') for sp in params['penalty'])
         fixicc = '_fixed' + '-'.join(sp.replace(':','_') for sp in params['fixed']) if params['fixed'] != ['none'] else ''
-        ulimicc = '_ulim' + '-'.join(sp.replace(':', '_') for sp in params['ulim']) if params['ulim'] != ['none'] else ''
 
         # one dictionary for all: penalty, fixed and ulim, to use increating icc
         # values for penalty and fixed are in a dictionary in the bottom
@@ -72,15 +70,24 @@ class Submission():
                 if not sp == 'none':
                     # extract value if given
                     if ':' in sp:
-                        spec, val = sp.split(':')
+                        spec, val, sig = sp.split(':')
                         params[key][i] = spec
                         if spec in METSP:
                             ICCpenalty[spec]['mean'][self.met] = float(val)
+                            ICCpenalty[spec]['sigma'][self.met] = float(sig)
                         else:
                             ICCpenalty[spec]['mean'] = float(val)
+                            ICCpenalty[spec]['sigma'] = float(sig)
                         print spec, '->', val
                     # add to global dict
                     self.penfix[params[key][i]] = key # will be empty if all are none
+
+        # to accomodate Bi now
+        ulimicc = '_ulim' + '-'.join(sp + '_' + str(ICCpenalty[sp]['mean']) for sp in params['ulim']) if params['ulim'] != ['none'] else ''
+        penicc = '_pen' + '-'.join(sp if sp in METSP else sp + '_' + str(ICCpenalty[sp]['mean']) for sp in params['penalty']) if params['penalty'] != ['none'] else ''
+#        ulimicc = '_ulim' + '-'.join(sp.replace(':', '_') for sp in params['ulim']) if params['ulim'] != ['none'] else ''
+        # penalty, fixed and ulim name parts for icc and log file before we extract values
+#        penicc = '' if params['penalty'] == ['none'] else '_penalty' + '-'.join(sp.replace(':','_') for sp in params['penalty'])
 
         # pen, fix and ulim separately: for names, and for pileup which is in the cfg
         self.penalty = params['penalty'] # to be constrained (list)
@@ -222,7 +229,7 @@ class Submission():
 
         # line 97 and 98: RD min and max
         cfglines[96] = 'multivariate_rdist_fit_min = ' + self.rdmin
-        cfglines[97] = 'multivariate_rdist_fit_max = ' + self.rdmax
+        cfglines[97] = 'multivariate_rdist_fit_max = ' + self.rdmax # cannot be larger than emax -> decided to synch
         cfglines[98] = 'multivariate_rdist_fit_bins = ' + self.rdbin
 
         # line 101: complem.: only in mv
@@ -356,13 +363,13 @@ class Submission():
             if pensp in ['pileup', 'c11shift']: continue
 
             # species to scan, if given
+            iccsp = pensp
             if pensp in self.scan:
                 mean = self.scan[pensp] 
                 sig = 0
             else:
                 mean = ICCpenalty[pensp]['mean']   
                 sig = ICCpenalty[pensp]['sigma']
-                iccsp = pensp
                 # species for which penalty depends on metallicity
                 if pensp in METSP:
                     mean = mean[self.met] 
@@ -477,7 +484,9 @@ def make_executable(path):
 ICCpenalty = {
     'Bi210': {'line': 22,
               'color': 'kSpring',
-              'mean': 10.8, #11.7,
+ #             'mean': 12.5,  # Phase3Large
+#              'sigma': 1.1,
+              'mean': 10.8, # Phase3Strict
               'sigma': 1.3 # 1.6
              },
     'pep': {'line': 17,

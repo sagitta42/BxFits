@@ -7,7 +7,8 @@ from creator import *
 # to a given value (part of the scan). Special feature: c11mean
 SCAN = {'pep': np.arange(0, 6, 0.1),
         'c11mean': range(15,29),
-        'CNO': np.arange(0, 10.2, 0.5),
+        'CNO': np.arange(0, 15, 0.5),
+        'Bi210': np.arange(0,20,0.5),
 #        'c11shift': range(7,8), # fixed to 7.0
         'c11shift': np.arange(0, 16.5, 0.5),
 #        'CNO': np.arange(0, 10.2, 0.2)
@@ -19,7 +20,7 @@ options = {
     'ftype': ['cpu', 'gpu', 'cno', 'tfc'], # cno and tfc are type of gpu; 
     'fit': ['ene', 'mv', 'tag'],
 #    'fpdf': ['mc', 'ana'],
-    'inputs': ['All', 'Phase2', 'Phase3', 'Phase3Strict'] + range(2012,2020),
+    'inputs': ['All', 'Phase2', 'Phase3', 'Phase3Strict', 'Phase3Large'] + range(2012,2020),
     'tfc': ['MI', 'MZ'],
     'var': ['nhits', 'npmts', 'npmts_dt1', 'npmts_dt2'],
 
@@ -46,7 +47,7 @@ defaults = {
     'emin': '92',
 #    'emax': '
     'rdmin': 500,
-    'rdmax': 900,
+#    'rdmax': 900,
     'rdbin': 16,
     'psmin': 400,
     'psmax': 650,
@@ -57,14 +58,18 @@ defaults = {
     
 ## total options = options + the ones that do not have fixed choices
 user = options.keys() + ['pdfs', 'input_path', 'outfolder', 'nbatch'] +\
-       ['emin', 'emax', 'rdmin', 'rdmax', 'rdbin', 'psmin', 'psmax', 'c11sh'] +\
+       ['emin', 'emax', 'rdmin',\
+#           'rdmax',\
+           'rdbin', 'psmin', 'psmax', 'c11sh'] +\
        ['scan']
    
 
 ## parameters that are lists in the submission
 par_list = ['penalty', 'shift', 'fixed', 'ulim']
 ## parameters that will be looped on (so also lists)
-par_loop = ['inputs', 'emin', 'emax', 'rdmin', 'rdmax', 'rdbin', 'psmin', 'psmax',\
+par_loop = ['inputs', 'emin', 'emax', 'rdmin',\
+#            'rdmax',\
+            'rdbin', 'psmin', 'psmax',\
            'c11sh', 'tfc','var']
 # things to split by comma
 splt_comma = par_list + par_loop
@@ -98,6 +103,7 @@ def generator(params):
 
         tfc ['MZ'|'MI']: type of TFC. Default: MI 
 
+        input_path (string): path to fitter inputs. Default: path to v3.1.0 inputs in JURECA
         input_path (string): path to fitter inputs. Default: path to v3.1.0 inputs in JURECA
         pdfs (string): "ana" for analytical fit, or path to MC PDFs for MC fit. Default: BxFits/pdfs_TAUP2017 (included in the repo)
 
@@ -274,7 +280,7 @@ def setup_gen(userinput=None):
     for par in par_loop:
         if not opts[par] == ['none']:
             # for emin and emax, make a range
-            if par == 'emin':
+            if par in ['emin', 'psmin', 'psmax']:
                 opts[par] = make_range(opts[par], int, 2)
             elif par == 'emax':
                 opts[par] = make_range(opts[par], int, 16)
@@ -290,7 +296,6 @@ def setup_gen(userinput=None):
     print '~~ Your input:'
     print opts
     print '######################'
-
     # the parameters are the same as the user gave, but some have to be looped on, and not be lists in the input e.g. fit variable
     params = opts.copy()        
 
