@@ -36,7 +36,7 @@ def table_comp_v1(folder):
         df = parse_file(folder + '/' + f)
 
         ## parameters that don't have errors 
-        noerr_cols = ERRORLESS + special_cols + ['Emin','Emax', 'ExpSub', 'ExpTag']
+        noerr_cols = ERRORLESS + special_cols + ['Emin','Emax', 'RDmin', 'RDmax', 'RDbins', 'PSmin', 'PSmax', 'C11shift', 'Po210shift', 'ExpSub', 'ExpTag']
         
         # replace mean with mean + error (string)
         columns = [c for c in df.columns if not 'Error' in c]

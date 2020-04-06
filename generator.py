@@ -47,7 +47,7 @@ defaults = {
     'emin': '92',
 #    'emax': '
     'rdmin': 500,
-#    'rdmax': 900,
+    'rdmax': 0, # if 0, will be the same as emax
     'rdbin': 16,
     'psmin': 400,
     'psmax': 650,
@@ -59,7 +59,7 @@ defaults = {
 ## total options = options + the ones that do not have fixed choices
 user = options.keys() + ['pdfs', 'input_path', 'outfolder', 'nbatch'] +\
        ['emin', 'emax', 'rdmin',\
-#           'rdmax',\
+           'rdmax',\
            'rdbin', 'psmin', 'psmax', 'c11sh'] +\
        ['scan']
    
@@ -68,7 +68,7 @@ user = options.keys() + ['pdfs', 'input_path', 'outfolder', 'nbatch'] +\
 par_list = ['penalty', 'shift', 'fixed', 'ulim']
 ## parameters that will be looped on (so also lists)
 par_loop = ['inputs', 'emin', 'emax', 'rdmin',\
-#            'rdmax',\
+            'rdmax',\
             'rdbin', 'psmin', 'psmax',\
            'c11sh', 'tfc','var']
 # things to split by comma

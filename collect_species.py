@@ -9,7 +9,8 @@ COLUMNS = ['nu(Be7)', 'nu(pep)',\
 #          'nu(pp)',\
           'nu(CNO)', 'Bi210', 'C11', 'Kr85', 'Po210',\
      'Ext_Bi214', 'Ext_K40', 'Ext_Tl208',\
-#        'Po210shift', 'C11shift',\
+        'C11shift',\
+        'Po210shift',\
         'chi2/ndof','MLV',\
      'C11_2', 'Po210_2']
 
@@ -93,7 +94,7 @@ VARPARSER = {
 for x in ['bins','max','min']:
     VARPARSER['RD' + x] = 'multivariate_rdist_fit_' + x
 for x in ['max','min']:
-    VARPARSER['PS' + x] = 'multivariate_ps_fit' + x
+    VARPARSER['PS' + x] = 'multivariate_ps_fit_' + x
 
 ### --------------------------------------------------------- ###
 

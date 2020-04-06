@@ -40,7 +40,7 @@ class Submission():
         if self.emax == 'none':
             self.emax = str(ene)
         self.rdmin = str(params['rdmin'])
-        self.rdmax = self.emax
+        self.rdmax = self.emax if params['rdmax'] == 0 else params['rdmax']
 #        self.rdmax = str(params['rdmax'])
         self.rdbin = str(params['rdbin'])
         self.psmin = str(params['psmin'])
