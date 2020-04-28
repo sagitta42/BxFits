@@ -5,13 +5,13 @@ from creator import *
 #----------------------------------------------------------
 # format {species: value}, to fix a certain species in the species list
 # to a given value (part of the scan). Special feature: c11mean
-SCAN = {'pep': np.arange(0, 6, 0.1),
+SCAN = {'pep': np.arange(0, 6.2, 0.2),
         'c11mean': range(15,29),
-        'CNO': np.arange(0, 15, 0.5),
+#        'CNO': np.arange(0, 15, 0.5),
         'Bi210': np.arange(0,20,0.5),
 #        'c11shift': range(7,8), # fixed to 7.0
         'c11shift': np.arange(0, 16.5, 0.5),
-#        'CNO': np.arange(0, 10.2, 0.2)
+        'CNO': np.arange(0, 10.5, 0.5)
         }       
 #----------------------------------------------------------
     
@@ -24,7 +24,7 @@ options = {
     'tfc': ['MI', 'MZ'],
     'var': ['nhits', 'npmts', 'npmts_dt1', 'npmts_dt2'],
 
-    'penalty': ICCpenalty.keys() + ['pileup', 'none'],
+    'penalty': ICCpenalty.keys() + ['pileup', 'none', 'pp-pep'],
     'met': ['hm', 'lm', 'zero', 'none'], # metallicity for the pep or CNO constraint
     'shift': ['C11', 'Po210', 'none'],    
 
@@ -277,15 +277,15 @@ def setup_gen(userinput=None):
     if not os.path.exists(opts['outfolder']): os.mkdir(opts['outfolder'])
 
     ## inputs that loop to make separate submissions: create ranges
-    for par in par_loop:
-        if not opts[par] == ['none']:
-            # for emin and emax, make a range
-            if par in ['emin', 'psmin', 'psmax']:
-                opts[par] = make_range(opts[par], int, 2)
-            elif par == 'emax':
-                opts[par] = make_range(opts[par], int, 16)
-            elif par == 'c11sh':
-                opts[par] = make_range(opts[par], float, 0.5)
+#    for par in par_loop:
+#        if not opts[par] == ['none']:
+#            # for emin and emax, make a range
+#            if par in ['emin', 'psmin', 'psmax']:
+#                opts[par] = make_range(opts[par], int, 2)
+#            elif par == 'emax':
+#                opts[par] = make_range(opts[par], int, 16)
+#            elif par == 'c11sh':
+#                opts[par] = make_range(opts[par], float, 0.5)
 #            else:
 #                opts[par
 

@@ -30,10 +30,10 @@ ERRORLESS = ['chi2/ndof', 'MLV']
 ###### but from the name of the log file
 
 #special_cols = ['Period', 'TFC', 'Var']
-special_cols = ['TFC', 'Var'] #, 'Emin', 'Emax', 'RDmin', 'RDmax', 'RDbin']
+#special_cols = ['TFC', 'Var'] #, 'Emin', 'Emax', 'RDmin', 'RDmax', 'RDbin']
 # special_cols = ['Period', 'TFC', 'Var', 'FV']
 #special_cols = ['Period']
-#special_cols = []
+special_cols = []
 
 ### --------------------------------------------------------- ###
 

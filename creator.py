@@ -84,7 +84,7 @@ class Submission():
 
         # to accomodate Bi now
         ulimicc = '_ulim' + '-'.join(sp + '_' + str(ICCpenalty[sp]['mean']) for sp in params['ulim']) if params['ulim'] != ['none'] else ''
-        penicc = '_pen' + '-'.join(sp if sp in METSP else sp + '_' + str(ICCpenalty[sp]['mean']) for sp in params['penalty']) if params['penalty'] != ['none'] else ''
+        penicc = '_pen' + '-'.join(sp if ((sp in METSP) or (sp not in ICCpenalty)) else sp + '_' + str(ICCpenalty[sp]['mean']) for sp in params['penalty']) if params['penalty'] != ['none'] else ''
 #        ulimicc = '_ulim' + '-'.join(sp.replace(':', '_') for sp in params['ulim']) if params['ulim'] != ['none'] else ''
         # penalty, fixed and ulim name parts for icc and log file before we extract values
 #        penicc = '' if params['penalty'] == ['none'] else '_penalty' + '-'.join(sp.replace(':','_') for sp in params['penalty'])
@@ -126,6 +126,7 @@ class Submission():
         ## fitoptions filename
         # pileup penalty changes cfg
         pencfg = '-pileup' if 'pileup' in self.penalty else ''
+        if 'pp-pep' in self.penalty: pencfg += '_pp-pep-' + self.met 
         # shift
         shiftcfg = '' if self.shift == ['none'] else '_' + '-'.join(self.shift) + '-shift'
         # scan of c11shift
@@ -287,10 +288,10 @@ class Submission():
             cfglines[102] = 'dark_noise_window = win' + self.var[-1]
 
         # line 112 pp/pep constraint
-#        if 'ppDpep' in self.penalty:
-#            cfglines[111] = 'apply_pp/pep_constrain = true\n'
-#            cfglines[112] = 'mean(Rpp/Rpep) = ' + str(PPPEP[self.metal][0]) + '\n'
-#            cfglines[113] = 'sigma(Rpp/Rpep) = ' + str(PPPEP[self.metal][1]) + '\n'
+        if 'pp-pep' in self.penalty:
+            cfglines.append('apply_pp/pep_constrain = true')
+            cfglines.append('mean(Rpp/Rpep) = {0}'.format(PPPEP[self.met][0]))
+            cfglines.append('sigma(Rpp/Rpep) = {0}'.format(PPPEP[self.met][1]))
 
 
         ## save file
@@ -321,6 +322,11 @@ class Submission():
         # line 15: pileup, comment out if we do not want to use pileup
         if not 'pileup' in self.penalty:
             icclines[14] = comment(icclines[14], '//')
+
+        # line 21, 22: Po210 guess
+        guess = 60 if 'Phase3' in self.inputs else 300
+        icclines[20] = '{{ "Po210",        -1,   kOrange, kSolid,  2,    {0}.,   "free",  0.01,3000. }},\n'.format(guess)
+        icclines[21] = '{{ "Po210_2",        -1,   kOrange, kSolid,  2,    {0}.,   "free",  0.01,3000. }},\n'.format(guess)
 
         # line 25: C11 mean
         if self.scansp == 'c11mean':
@@ -359,8 +365,8 @@ class Submission():
         # set penalties, fixed and upper limit if given
         for pensp in self.penfix:
             print pensp
-        # pileup penalty is in cfg not icc
-            if pensp in ['pileup', 'c11shift']: continue
+            # these penalties or fixed are in cfg not icc
+            if pensp in ['pileup', 'c11shift', 'pp-pep']: continue
 
             # species to scan, if given
             iccsp = pensp
@@ -409,7 +415,8 @@ class Submission():
         ## input file
         # files on Jureca are different
 #        cy = '_c19' if self.fittype == 'gpu' else '' 
-        cy = '' if 'TAUP' in self.pdfs else '_c19'
+#        cy = '' if 'TAUP' in self.pdfs else '_c19'
+        cy = '' if ('v1.0.0' in self.input_path) or ('v100' in self.input_path) else '_c19'
         # e.g. Period2012_FVpep_TFCMI_c19.root
         inputfile = self.input_path + '/Period' + self.inputs + '_FVpep_TFC' + self.tfc + cy + '.root'
 
@@ -513,8 +520,9 @@ METSP = []
 for sp in ICCpenalty:
     if type(ICCpenalty[sp]['mean']) == dict: METSP.append(sp)
 
-
-#PPPEP = {'hm': [47.76, 0.84], 'lm': [47.5, 0.8]}
+# penalty on pp/pep ratio for Phase-II CNO analysis
+PPPEP = {'hm': [47.76, 0.84], 'lm': [47.5, 0.8]}
+METSP.append('pp-pep')
 
 ## pileup penalty
 PUPPEN = {
