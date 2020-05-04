@@ -51,7 +51,7 @@ defaults = {
     'rdbin': 16,
     'psmin': 400,
     'psmax': 650,
-    'c11sh': 7.0,
+    'c11sh': 7.0, # recent studies show 5-6
     'save': 'false',
     'nbatch': 0,
 }

@@ -59,7 +59,6 @@ class Submission():
                 print 'Species', sp, 'requires metallicity! Use met=hm or met=lm\n'
                 sys.exit(1)
 
-        fixicc = '_fixed' + '-'.join(sp.replace(':','_') for sp in params['fixed']) if params['fixed'] != ['none'] else ''
 
         # one dictionary for all: penalty, fixed and ulim, to use increating icc
         # values for penalty and fixed are in a dictionary in the bottom
@@ -85,6 +84,10 @@ class Submission():
         # to accomodate Bi now
         ulimicc = '_ulim' + '-'.join(sp + '_' + str(ICCpenalty[sp]['mean']) for sp in params['ulim']) if params['ulim'] != ['none'] else ''
         penicc = '_pen' + '-'.join(sp if ((sp in METSP) or (sp not in ICCpenalty)) else sp + '_' + str(ICCpenalty[sp]['mean']) for sp in params['penalty']) if params['penalty'] != ['none'] else ''
+        fixicc = '_fixed' + '-'.join(sp + '_' + str(ICCpenalty[sp]['mean'][self.met]) if sp in METSP else sp + '_' + str(ICCpenalty[sp]['mean']) for sp in params['fixed']) if params['fixed'] != ['none'] else ''
+#        fixicc = '_fixed' + '-'.join(sp if ((sp in METSP) or (sp not in ICCpenalty)) else sp + '_' + str(ICCpenalty[sp]['mean']) for sp in params['fixed']) if params['fixed'] != ['none'] else ''
+#        fixicc = '_fixed' + '-'.join(sp + '_' + str(ICCpenalty[sp]['mean']) for sp in params['fixed']) if params['fixed'] != ['none'] else ''
+#        fixicc = '_fixed' + '-'.join(sp.replace(':','_') for sp in params['fixed']) if params['fixed'] != ['none'] else ''
 #        ulimicc = '_ulim' + '-'.join(sp.replace(':', '_') for sp in params['ulim']) if params['ulim'] != ['none'] else ''
         # penalty, fixed and ulim name parts for icc and log file before we extract values
 #        penicc = '' if params['penalty'] == ['none'] else '_penalty' + '-'.join(sp.replace(':','_') for sp in params['penalty'])
@@ -121,7 +124,7 @@ class Submission():
         rdbinname = '-rdbin' + self.rdbin
         psminname = '-psmin' + self.psmin
         psmaxname = '-psmax' + self.psmax
-        c11name = '' if self.pdfs == 'ana' else '-c11shift' + self.c11shift
+        c11name = '' if self.pdfs == 'ana' or 'C11' in self.shift else '-c11shift' + self.c11shift
 
         ## fitoptions filename
         # pileup penalty changes cfg
@@ -187,8 +190,14 @@ class Submission():
         # line 68: PDF path
         # e.g. MCspectra_FVpep_Period_2012_unmasked.root
         # TAUP and new PDFs have different format
-        # current way of fitting: apply_mask = false in the cfg, and using masked PDFs
-        mcname = 'MCspectra_pp_FVpep_' + self.inputs + '_emin1_masked.root' if 'TAUP' in self.pdfs else 'MCspectra_FVpep_Period_' + self.inputs + '.root'# '_unmasked.root'
+        # previous way of fitting: apply_mask = false in the cfg, and using masked PDFs
+        # current way: apply_mask = true in cfg, and using unmasked PDFs
+        if 'TAUP' in self.pdfs:
+            print 'Current fitoptions template has applying_mask = true, and there are no unmasked TAUP PDFs!'
+            sys.exit(1)
+
+        mcname = 'MCspectra_FVpep_Period_' + self.inputs + '_unmasked.root'
+#        mcname = 'MCspectra_pp_FVpep_' + self.inputs + '_emin1_masked.root' if 'TAUP' in self.pdfs else 'MCspectra_FVpep_Period_' + self.inputs + '.root'# '_unmasked.root'
         # e.g. MCspectra_FVpep_Period_Phase2_unmasked.root
 
         # line 68: MC PDFs
@@ -270,10 +279,10 @@ class Submission():
             if "TAUP" in self.pdfs:
                 cfglines.append('freeMCshiftC11 = false')
                 cfglines.append('freeMCshiftC11step = 0')
-            else:
+            elif not 'C11' in self.shift:
+                # if C11 in shift it means it should be free, otherwise fix
                 cfglines.append('freeMCshiftC11 = true')
                 cfglines.append('freeMCshiftC11step = 0')
-        
                 cfglines.append('freeMCshiftC11min = {0}'.format(self.c11shift))
                 cfglines.append('freeMCshiftC11max = {0}'.format(self.c11shift))
                     

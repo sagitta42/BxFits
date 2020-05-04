@@ -32,8 +32,8 @@ ERRORLESS = ['chi2/ndof', 'MLV']
 #special_cols = ['Period', 'TFC', 'Var']
 #special_cols = ['TFC', 'Var'] #, 'Emin', 'Emax', 'RDmin', 'RDmax', 'RDbin']
 # special_cols = ['Period', 'TFC', 'Var', 'FV']
-#special_cols = ['Period']
-special_cols = []
+special_cols = ['Period']
+#special_cols = []
 
 ### --------------------------------------------------------- ###
 
@@ -134,7 +134,7 @@ def parse_file(filename):
     finp = lines[idx].split('c19')[0].split('/')[-1]
     specs = {}
 #    specs['Period'] = 'X'
-#    specs['Period'] = finp.split('_')[0].split('Period')[1] # e.g. PeriodAll
+    specs['Period'] = finp.split('_')[0].split('Period')[1] # e.g. PeriodAll
 #    specs['FV'] = finp.split('_')[1][2:] # e.g. pep
     specs['TFC'] = finp.split('TFC')[1].split('_')[0] # e.g. LNGS
     specs['Var'] = lines[idx+1].split('final_')[1].split('_pp')[0] # e.g. nhits
@@ -196,6 +196,7 @@ def parse_file(filename):
         # mean value of the fit
         val = info[1].strip().split(' ')[0].strip()
         df[PARSER[species]] = float(val)
+#        print df
 
         ## assign error if it exists for given column
         if not PARSER[species] in ERRORLESS:
@@ -217,6 +218,7 @@ def parse_file(filename):
             df[sp + 'avg'] = (df[sp]*df['ExpSub'] + df[sp + '_2']*df['ExpTag']) / (df['ExpSub'] + df['ExpTag'])
             df[sp + 'avgError'] = df[sp + 'avg'] * ((df[sp + 'Error'] / df[sp])**2 + (df[sp + '_2Error'] / df[sp + '_2'])**2)**0.5 # using np.sqrt doesn't work with NaN
 
+#    print df            
     return df
 
 
@@ -248,6 +250,8 @@ def parse_folder(foldername):
 		    print count + 1, '/', nfiles
 
         df = pd.concat([df, parse_file(foldername + '/' + f)], ignore_index=True)
+#        print df
+#        return
         count += 1
 
     # sort by special column (often year)
