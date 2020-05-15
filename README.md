@@ -265,8 +265,12 @@ Later you can open it with Spreadsheet and make a table like in the example ```e
 
 ### Extra info
 
-CNAF:
-PDFs: /storage/gpfs_data/borexino/wg/nusol/MCpdfs/v2.1.3
-Fitter inputs: /storage/gpfs_data/borexino/wg/nusol/fitter_input/v4.1.3
+CNAF paths
+
+PDFs:
+/storage/gpfs_data/borexino/wg/nusol/MCpdfs/v2.1.3
+
+Fitter inputs:
+/storage/gpfs_data/borexino/wg/nusol/fitter_input/v4.1.3
 
 

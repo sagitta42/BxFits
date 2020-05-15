@@ -47,7 +47,7 @@ defaults = {
     'input_path': '/p/project/cjikp20/jikp2007/fitter_input/v4.0.0/files',
 #    'input_path': '/p/project/cjikp20/jikp2007/fitter_input/v3.1.0/files',
     'rdmin': 500,
-    'rdmax': 0, # if 0, will be the same as emax
+    'rdmax': 900,
     'rdbin': 16,
     'psmin': 400,
     'psmax': 650,
@@ -119,7 +119,7 @@ def generator(params):
                 with min 140 max 150 and step 2 will be generated
 
         rdmin (int): min range of RD histo. Default: 500                    
-        rdmax (int): max range of RD histo. Default: 900                    
+        rdmax (int): max range of RD histo. Default: 900. If 0, will be equal to Emax                    
         rdbin (int): bin width of RD histo. Default: 16
         psmin (int): min range of PS histo. Default: 400                    
         psmax (int): max range of PS histo. Default: 650                    
@@ -188,11 +188,9 @@ def generator(params):
     ## ---------------------------------
 
     ## init
+
     s = Submission(params)
     
-    print # readability
-    print '#######################################'
-    print
     
     
     ## corresponding cfg file
@@ -297,7 +295,7 @@ def setup_gen(userinput=None):
        
     print        
     print '######################'
-    print '~~ Your input:'
+    print 'Your input:'
     print opts
     print '######################'
     # the parameters are the same as the user gave, but some have to be looped on, and not be lists in the input e.g. fit variable
@@ -319,8 +317,9 @@ def setup_gen(userinput=None):
         # assign scan value    
         if opts['scan'] != 'none': params['scan'] = {opts['scan']: combo[-1]}
 
-        print
-        print '~~~ This submission:'
+        # readability
+        print '\n#######################################\n'
+        print 'This submission:'
         print
         print params
         print

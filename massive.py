@@ -1,9 +1,9 @@
 from generator import *
 
 def massive(userfile):
-    print '~~~~~'
+    print '#######'
     print 'Reading settings file'
-    print '~~~~~'
+    print '#######'
     f = open(userfile)
     lines = f.readlines()
     userinput = [l.rstrip() for l in lines if not '#' in l]

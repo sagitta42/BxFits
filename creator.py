@@ -34,7 +34,7 @@ class Submission():
             self.emax = str(ene)
         
         self.rdmin = str(params['rdmin'])
-        self.rdmax = self.emax if params['rdmax'] == 0 else params['rdmax']
+        self.rdmax = self.emax if params['rdmax'] == 0 else str(params['rdmax'])
 #        self.rdmax = str(params['rdmax'])
         self.rdbin = str(params['rdbin'])
         self.psmin = str(params['psmin'])
@@ -201,8 +201,9 @@ class Submission():
             cfglines[67] = 'montecarlo_spectra_file = ' + self.pdfs + '/' + mcname
 
         # line 80: remaining Pb214
-        # Pb214 not implemented in the GPU fitter
-        if self.arch == 'gpu': cfglines[79] = "use_remaining_pb214 = false" # default is true
+        # Pb214 not implemented in the GPU fitter; apparently also not in CPU?..
+#        if self.arch == 'gpu':
+        cfglines[79] = "use_remaining_pb214 = false" # default is true
 
         # line 82: minimum energy
         cfglines[81] = 'minimum_energy = ' + self.emin
@@ -337,9 +338,9 @@ class Submission():
             icclines[24] = '{{ "C11",          -1,   kMagenta,kSolid,  2,    {0},    "free",  0.,  100. }},\n'.format(float(self.scan['c11mean']))
 
         # line 31: Pb214
-        if self.arch == 'gpu':
-            # comment out because not implemented in the GPU fitter
-            icclines[30] = comment(icclines[30], '//')
+#        if self.arch == 'gpu':
+        # comment out because not implemented in the GPU fitter; apparently also not in CPU fitter?
+        icclines[30] = comment(icclines[30], '//')
 
         # CNO configuration species
         if self.fittype == 'cno':
@@ -368,7 +369,6 @@ class Submission():
 
         # set penalties, fixed and upper limit if given
         for pensp in self.penfix:
-            print pensp
             # these penalties or fixed are in cfg not icc
             if pensp in ['pileup', 'c11shift', 'pp-pep']: continue
 
