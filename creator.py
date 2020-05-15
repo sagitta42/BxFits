@@ -417,44 +417,86 @@ class Submission():
         print 'Future log file:', self.outfile        
 
         ## input file
-        # files on Jureca are different
-#        cy = '_c19' if self.fittype == 'gpu' else '' 
-#        cy = '' if 'TAUP' in self.pdfs else '_c19'
+        # files for TAUP inputs don't have "c_xx" in them 
         cy = '' if ('v1.0.0' in self.input_path) or ('v100' in self.input_path) else '_c19'
         # e.g. Period2012_FVpep_TFCMI_c19.root
         inputfile = self.input_path + '/Period' + self.inputs + '_FVpep_TFC' + self.tfc + cy + '.root'
 
-        ## CNAF: submission file with bsub, Jureca: file with sbatch commands
-        outname = self.outfolder + '_submission.sh' # one file to rule them all, run interactively
-        # to print bin bash or not
+        ## fit file (for a single fit)
+        fitname = self.outfolder + '/fit_' + self.outfile + '.sh'
+        fitfile = open(fitname, 'w')
+        extra = {'mv': '_0', 'tag': '_1', 'ene': ''}
+        print >> fitfile, '#!/bin/bash'
+        print >> fitfile, './borexino', inputfile,\
+            'pp/final_' + self.var + '_pp' + extra[self.fit],\
+            self.cfgname, self.iccname, ' | tee', self.outfolder + '/' + self.outfile + '.log'
+        fitfile.close()
+        make_executable(fitname)
+        print 'Fit file:', fitname
+
+        ## CNAF: submission file with condor, Jureca: file with sbatch commands
+        # one file to rule them all, and launch all the submissions 
+        outname = self.outfolder + '_submission.sh' 
+        # to print bin bash or not (?)
         out = open(outname, 'a') 
 
-        extra = {'mv': '_0', 'tag': '_1', 'ene': ''}
-#        extra = '_0' if self.fit == 'mv' else ''
-
-        # CNAF submission
+            
+        ## CNAF submission
         if self.arch == 'cpu':
+            ## old bsub format
+#            print >> out, 'bsub -q borexino_physics',\
+#                '-e', self.outfolder + '/' + self.outfile + '.err',\
+#                '-o', self.outfolder + '/' + self.outfile + '.log',\
+#                './spectralfit', inputfile, 'pp/final_' + self.var + '_pp' + extra[self.fit],\
+#                self.cfgname, self.iccname
 
-            print >> out, 'bsub -q borexino_physics',\
-                '-e', self.outfolder + '/' + self.outfile + '.err',\
-                '-o', self.outfolder + '/' + self.outfile + '.log',\
-                './spectralfit', inputfile, 'pp/final_' + self.var + '_pp' + extra[self.fit],\
-                self.cfgname, self.iccname
+            ## file with the fit(s)
+            if nfile == -1:
+                fitsubname = self.outfolder + '/fitsub_' + self.outfile + '.sh'
+            else:
+                fitsubname = self.outfolder + '/fitsub_' + str(nfile) + '.sh'
 
-            print 'Fit file:', outname
+            # if file doesn't exist, create
+            if not os.path.exists(fitsubname):
+                print 'creating fitsub', fitsubname
+                fitsub = open(fitsubname, 'w')
+                print >> fitsub, '#!/bin/bash'
+                print >> fitsub, 'source /storage/gpfs_data/borexino/users/dingbx/Software/root_v6.18.04.Linux-centos7-x86_64-gcc4.8/bin/thisroot.sh'
+                print >> fitsub, 'source /storage/gpfs_data/borexino/users/dingbx/bx-GooStats-v6.3.2/setup.sh'
+                # our directory
+                curdir = os.getcwd()
+                print >> fitsub, 'cd', curdir
+                fitsub.close()
+                make_executable(fitsubname)
+
+            # add our fit    
+            fitsub = open(fitsubname, 'a')
+            print >> fitsub, './' + fitname
+            fitsub.close()
+            print 'Fit sub file:', fitsubname
+
+            ## condor file that submits the file with the fit(s)
+            condorname = fitsubname.split('.')[0] + '.sub'
+            # if file doesn't exist, create
+            if not os.path.exists(condorname):
+                clines = open('BxFits/templates/condor_template.sub').readlines()
+                # executable
+                clines[1] = 'executable = ' + fitsubname + '\n'
+                # out and err files
+                clines[2] = 'output = ' + fitsubname.split('.')[0] + '.out\n'
+                clines[3] = 'error = ' + fitsubname.split('.')[0] + '.err\n'
+                condor = open(condorname,'w')
+                condor.writelines(clines)
+                make_executable(condorname)
+
+                # add to top submission file
+                print >> out, 'condor_submit -spool -name sn-01.cr.cnaf.infn.it ' + condorname
+                print >> out, 'sleep 60'
+
+
 
         # Jureca submission
         elif self.arch == 'gpu':
-            ## fit file
-            fitname = self.outfolder + '/fit_' + self.outfile + '.sh'
-            fitfile = open(fitname, 'w')
-            print >> fitfile, '#!/bin/bash'
-            print >> fitfile, './borexino', inputfile,\
-                'pp/final_' + self.var + '_pp' + extra[self.fit],\
-                self.cfgname, self.iccname, ' | tee', self.outfolder + '/' + self.outfile + '.log'
-            fitfile.close()
-            make_executable(fitname)
-            print 'Fit file:', fitname
 
             ## sbatch file        
             # our file

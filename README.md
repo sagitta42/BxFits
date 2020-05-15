@@ -265,12 +265,8 @@ Later you can open it with Spreadsheet and make a table like in the example ```e
 
 ### Extra info
 
-"Zara PDFs" (up to May 2019, used for Davide GM results): ```/p/project/cjikp20/jikp2007/PDFs_to_test```
-
-Davide PDFs: ```/p/project/cjikp20/jikp2007/c11_test_PDFs```  
-
-"Giulio PDFs" (up to Dec 2019): ```/p/project/cjikp20/jikp2015/MC_fit_bx_nusol/root```
-
-Most recent PDFs (CNO week Apr 2): ```/p/project/cjikp20/jikp2015/MCpdfs/v2.1.0```
+CNAF:
+PDFs: /storage/gpfs_data/borexino/wg/nusol/MCpdfs/v2.1.3
+Fitter inputs: /storage/gpfs_data/borexino/wg/nusol/fitter_input/v4.1.3
 
 
