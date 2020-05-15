@@ -8,23 +8,9 @@ class Submission():
         '''
         For the description of params go to generator.py function generator()
         '''
-
-        self.fittype = params['ftype'] 
-        self.fitcno = False
-        ftyp = self.fittype # for filenames
-
-        # fit type CNO is just a GPU fit with extra CNO settings
-        # (right now only means comment out C14 and pp, NOT pileup,
-        # because were running tests with Livia)
-        if self.fittype == 'cno':
-            self.fitcno = True
-            self.fittype = 'gpu'
-
-        # fitting TFC strict sample to determine C11 shift
-        self.fittfc = False
-        if self.fittype == 'tfc':
-            self.fittfc = True
-            self.fittype = 'gpu'
+        
+        self.arch = params['arch'] # cpu or gpu 
+        self.fittype = params['ftype'] # full, cno or tfc
 
         # Oemer: tag should be same as full just diff. histo
         self.fit = params['fit'] # mv, ene (full spectrum), tag
@@ -34,11 +20,19 @@ class Submission():
         self.input_path = params['input_path']
         self.pdfs = params['pdfs'] # path or "ana"
         self.var = params['var'] # is a list always
+
+        # default emin for Npmts and Nhits
         self.emin = str(params['emin'])
+        if self.emin == 'none':
+            ene = 85 if 'npmts' in self.var else 92
+            self.emin = str(ene)
+
+        # default emax for Npmts and Nhits
         self.emax = str(params['emax'])
-        ene = 900 if 'npmts' in self.var else 950
         if self.emax == 'none':
+            ene = 900 if 'npmts' in self.var else 950
             self.emax = str(ene)
+        
         self.rdmin = str(params['rdmin'])
         self.rdmax = self.emax if params['rdmax'] == 0 else params['rdmax']
 #        self.rdmax = str(params['rdmax'])
@@ -134,15 +128,15 @@ class Submission():
         shiftcfg = '' if self.shift == ['none'] else '_' + '-'.join(self.shift) + '-shift'
         # scan of c11shift
         scancfg = '_scan'  + self.scansp + str(self.scan[self.scansp]) if self.scansp == 'c11shift' else ''
-        self.cfgname = 'fitoptions/fitoptions_' + ftyp + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + psminname + psmaxname + c11name + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
+        self.cfgname = 'fitoptions/fitoptions_' + self.arch + '-' + self.fittype + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + psminname + psmaxname + c11name + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
 
         ## species list filename
         # in case penalty depends on metallicity
         penmet = '-' + self.met if self.met != 'none' else '' 
         scanicc = '' if self.scansp in ['none', 'c11shift'] else '_scan'  + self.scansp + str(self.scan[self.scansp])
-        self.iccname = 'species_list/species-fit-' + ftyp + '-' + self.fit + eminname + emaxname + penicc + penmet + fixicc + ulimicc + scanicc + '.icc'
+        self.iccname = 'species_list/species-fit-' + self.arch + '-' + self.fittype + '-' + self.fit + eminname + emaxname + penicc + penmet + fixicc + ulimicc + scanicc + '.icc'
         # log file name 
-        self.outfile = 'fit-' + ftyp + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + psminname + psmaxname + c11name + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
+        self.outfile = 'fit-' + self.arch + '-' + self.fittype + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + psminname + psmaxname + c11name + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
         
     
     def cfgfile(self):
@@ -208,7 +202,7 @@ class Submission():
 
         # line 80: remaining Pb214
         # Pb214 not implemented in the GPU fitter
-        if self.fittype == 'gpu': cfglines[79] = "use_remaining_pb214 = false" # default is true
+        if self.arch == 'gpu': cfglines[79] = "use_remaining_pb214 = false" # default is true
 
         # line 82: minimum energy
         cfglines[81] = 'minimum_energy = ' + self.emin
@@ -257,9 +251,9 @@ class Submission():
         if 'pileup' in self.penalty:
             cfglines[126] = 'pileup_penalty_mean = ' + str(PUPPEN[self.inputs][0])
             cfglines[127] = 'pileup_penalty_sigma = ' + str(PUPPEN[self.inputs][1])
-        else:
-            # no pileup at all (also in species list)
-            for l in range(123,128): cfglines[l] = '#' + cfglines[l]                                     
+#        else:
+#            # no pileup at all (also in species list)
+#            for l in range(123,128): cfglines[l] = '#' + cfglines[l]                                     
 
         if self.shift != ['none']:
             # add shift on Po210 and C11
@@ -288,9 +282,9 @@ class Submission():
                     
             
 
-#        if self.fitcno:
-#            # comment out pileup (lines 124 - 128)
-#            for l in range(123,128): cfglines[l] = '#' + cfglines[l]                                     
+        if self.fittype == 'cno':
+            # comment out pileup (lines 124 - 128) and C14 stuff (119-122)
+            for l in range(118,128): cfglines[l] = '#' + cfglines[l]                                     
         
         # line 103: dark noise: only in analytical fit, not MC fit
         if self.pdfs == 'ana':
@@ -327,10 +321,11 @@ class Submission():
         
 
         icclines = open('BxFits/templates/species_list.icc').readlines()
+        
+        # line 15: pileup, comment out if it's not in penalty (means not using at all) 
+#        if not 'pileup' in self.penalty:
+#            icclines[14] = comment(icclines[14], '//')
 
-        # line 15: pileup, comment out if we do not want to use pileup
-        if not 'pileup' in self.penalty:
-            icclines[14] = comment(icclines[14], '//')
 
         # line 21, 22: Po210 guess
         guess = 60 if 'Phase3' in self.inputs else 300
@@ -342,18 +337,18 @@ class Submission():
             icclines[24] = '{{ "C11",          -1,   kMagenta,kSolid,  2,    {0},    "free",  0.,  100. }},\n'.format(float(self.scan['c11mean']))
 
         # line 31: Pb214
-        if self.fittype == 'gpu':
+        if self.arch == 'gpu':
             # comment out because not implemented in the GPU fitter
             icclines[30] = comment(icclines[30], '//')
 
         # CNO configuration species
-        if self.fitcno:
-            # C14 (l 13) and pp (l 16) are out (not pileup!)
-            for i in [12, 15]:
+        if self.fittype == 'cno':
+            # C14 (l 13), pileup (l 15) and pp (l 16) are out 
+            for i in [12, 14, 15]:
                 icclines[i] = comment(icclines[i], '//')
 
         # TFC fit: only C11            
-        if self.fittfc:
+        if self.fittype == 'tfc':
             # comment out everything except C11 and C11_2
             nonc11 = np.setdiff1d(range(12, 34), [24,25])
             for i in nonc11:
@@ -438,7 +433,7 @@ class Submission():
 #        extra = '_0' if self.fit == 'mv' else ''
 
         # CNAF submission
-        if self.fittype == 'cpu':
+        if self.arch == 'cpu':
 
             print >> out, 'bsub -q borexino_physics',\
                 '-e', self.outfolder + '/' + self.outfile + '.err',\
@@ -449,7 +444,7 @@ class Submission():
             print 'Fit file:', outname
 
         # Jureca submission
-        elif self.fittype == 'gpu':
+        elif self.arch == 'gpu':
             ## fit file
             fitname = self.outfolder + '/fit_' + self.outfile + '.sh'
             fitfile = open(fitname, 'w')

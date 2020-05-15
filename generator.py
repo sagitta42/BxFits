@@ -17,7 +17,8 @@ SCAN = {'pep': np.arange(0, 6.2, 0.2),
     
 # available values for each parameter
 options = {
-    'ftype': ['cpu', 'gpu', 'cno', 'tfc'], # cno and tfc are type of gpu; 
+    'arch': ['cpu','gpu'],
+    'ftype': ['full', 'cno', 'tfc'], # cno and tfc are type of gpu; 
     'fit': ['ene', 'mv', 'tag'],
 #    'fpdf': ['mc', 'ana'],
     'inputs': ['All', 'Phase2', 'Phase3', 'Phase3Strict', 'Phase3Large'] + range(2012,2020),
@@ -37,15 +38,14 @@ options['ulim'] = options['penalty'] # species for upper limit
     
 ## defaults
 defaults = {
-    'ftype': 'gpu',
+    'arch': 'gpu',
+    'ftype': 'cno',
 #    'fpdf': 'mc',
     'tfc': 'MI',
     'var': 'nhits',
     'pdfs': 'BxFits/pdfs_TAUP2017',
     'input_path': '/p/project/cjikp20/jikp2007/fitter_input/v4.0.0/files',
 #    'input_path': '/p/project/cjikp20/jikp2007/fitter_input/v3.1.0/files',
-    'emin': '92',
-#    'emax': '
     'rdmin': 500,
     'rdmax': 0, # if 0, will be the same as emax
     'rdbin': 16,
@@ -87,10 +87,14 @@ bcount = 0
 ## it's a bit confusing
 def generator(params):
     '''
-        ftype ['cpu'|'gpu'|'cno']: CPU or GPU fitter.
-            Setting 'cno' means GPU fitter with "CNO configuration"
-            (no C14 and pp in the species). To remove pileup, simply do not put
-            'penalty=pileup'
+        arc ['cpu'|'gpu']: architecture, CPU (CNAF) or GPU (Jureca) fitter
+
+        ftype ['full'|'cno'|'tfc']: "type" of the fit
+            'full': our standard energy range (from around 85),
+                including all the species
+            'cno': "CNO configuration" i.e. no pp, C14 and pileup
+            'tfc': configuration for fitting a single shape (C11) to
+                strict TFC sample to determine C11 shift
 
         fit ['ene'|'mv']: energy only or multivariate fit
 
