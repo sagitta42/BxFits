@@ -186,13 +186,15 @@ class Submission():
         # TAUP and new PDFs have different format
         # previous way of fitting: apply_mask = false in the cfg, and using masked PDFs
         # current way: apply_mask = true in cfg, and using unmasked PDFs
-        if 'TAUP' in self.pdfs:
-            print 'Current fitoptions template has applying_mask = true, and there are no unmasked TAUP PDFs!'
-            sys.exit(1)
-
-        mcname = 'MCspectra_FVpep_Period_' + self.inputs + '_unmasked.root'
-#        mcname = 'MCspectra_pp_FVpep_' + self.inputs + '_emin1_masked.root' if 'TAUP' in self.pdfs else 'MCspectra_FVpep_Period_' + self.inputs + '.root'# '_unmasked.root'
+        taup = False
+        for word in ['TAUP', 'v1.0.0', 'v100']: taup = taup or (word in self.pdfs)
+        if taup:
+            # change apply mask to false because there are no unmasked TAUP PDFs
+            cfglines[7] = 'applying mask = false'
+            mcname = 'MCspectra_pp_FVpep_{0}_emin1_masked.root'.format(self.inputs)
+        else:
         # e.g. MCspectra_FVpep_Period_Phase2_unmasked.root
+            mcname = 'MCspectra_FVpep_Period_{0}_unmasked.root'.format(self.inputs)
 
         # line 68: MC PDFs
         if self.pdfs == 'ana':
@@ -250,8 +252,8 @@ class Submission():
 
         # line 127 and 128: pileup constraint (in species list is set to free, constraint is here)
         if 'pileup' in self.penalty:
-            cfglines[126] = 'pileup_penalty_mean = ' + str(PUPPEN[self.inputs][0])
-            cfglines[127] = 'pileup_penalty_sigma = ' + str(PUPPEN[self.inputs][1])
+            cfglines[126] = 'pileup_penalty_mean = {0}'.format(PUPPEN[self.inputs][0])
+            cfglines[127] = 'pileup_penalty_sigma = {0}'.format(PUPPEN[self.inputs][1])
 #        else:
 #            # no pileup at all (also in species list)
 #            for l in range(123,128): cfglines[l] = '#' + cfglines[l]                                     
@@ -271,7 +273,7 @@ class Submission():
 
         ## C11 shift            
         else:                                     
-            if "TAUP" in self.pdfs:
+            if taup:
                 cfglines.append('freeMCshiftC11 = false')
                 cfglines.append('freeMCshiftC11step = 0')
             elif not 'C11' in self.shift:
@@ -325,8 +327,9 @@ class Submission():
         
         # line 15: pileup, comment out if it's not in penalty (means not using at all) 
 #        if not 'pileup' in self.penalty:
-#            icclines[14] = comment(icclines[14], '//')
-
+        # line 15: comment out pileup if doing Ana fit (only convo available right now)
+        if self.pdfs == 'ana':
+            icclines[14] = comment(icclines[14], '//')
 
         # line 21, 22: Po210 guess
         guess = 60 if 'Phase3' in self.inputs else 300
@@ -417,10 +420,14 @@ class Submission():
         print 'Future log file:', self.outfile        
 
         ## input file
-        # files for TAUP inputs don't have "c_xx" in them 
-        cy = '' if ('v1.0.0' in self.input_path) or ('v100' in self.input_path) else '_c19'
-        # e.g. Period2012_FVpep_TFCMI_c19.root
-        inputfile = self.input_path + '/Period' + self.inputs + '_FVpep_TFC' + self.tfc + cy + '.root'
+        if ('v1.0.0' in self.input_path) or ('v100' in self.input_path):
+            # e.g. pepFV_TFCMainz/PeriodAll_FVpep_TFCMZ.root
+            inputfile = 'pepFV_TFC{0}/Period{1}_FVpep_TFC{2}.root'.format({'MZ': 'Mainz', 'MI': 'Milano'}[self.tfc], self.inputs, self.tfc)
+        else:
+            # e.g. Period2012_FVpep_TFCMI_c19.root
+            inputfile = 'Period{0}_FVpep_TFC{1}_c19.root'.format(self.inputs, self.tfc)
+
+        inputfile = self.input_path + '/' + inputfile
 
         ## fit file (for a single fit)
         fitname = self.outfolder + '/fit_' + self.outfile + '.sh'
@@ -476,15 +483,16 @@ class Submission():
             print 'Fit sub file:', fitsubname
 
             ## condor file that submits the file with the fit(s)
-            condorname = fitsubname.split('.')[0] + '.sub'
+            condorname = '.'.join(fitsubname.split('.')[:-1]) + '.sub'
             # if file doesn't exist, create
             if not os.path.exists(condorname):
                 clines = open('BxFits/templates/condor_template.sub').readlines()
                 # executable
                 clines[1] = 'executable = ' + fitsubname + '\n'
                 # out and err files
-                clines[2] = 'output = ' + fitsubname.split('.')[0] + '.out\n'
-                clines[3] = 'error = ' + fitsubname.split('.')[0] + '.err\n'
+                corename = os.path.splitext(fitsubname)[0]
+                clines[2] = 'output = ' + self.outfolder + '/' + corename + '.out\n'
+                clines[3] = 'error = ' + self.outfolder + '/' + corename  + '.err\n'
                 condor = open(condorname,'w')
                 condor.writelines(clines)
                 make_executable(condorname)
