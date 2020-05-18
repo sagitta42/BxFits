@@ -39,7 +39,7 @@ class Submission():
         self.rdbin = str(params['rdbin'])
         self.psmin = str(params['psmin'])
         self.psmax = str(params['psmax'])
-        self.c11shift = str(params['c11sh'])
+#        self.c11shift = str(params['c11sh'])
         
         # needed for the case when penalty or fixed is set for species that depend on metallicity
         self.met = params['met']                            
@@ -91,6 +91,16 @@ class Submission():
         self.fixed = params['fixed'] # to be fixed (list)
         self.ulim = params['ulim'] # to set upper limit (list)
 
+        self.shift = params['shift']
+        dct = {}
+        if self.shift != ['none']:
+            for sh in self.shift:
+                if ':' in sh:
+                    sp,val = sh.split(':')
+                    dct[sp] = val
+                else:
+                    dct[sh] = 'free'
+        self.shift = dct
     
         # dictionary {species: value} or 'none'
         # special features: c11mean and c11shift
@@ -102,9 +112,10 @@ class Submission():
             if not 'c11' in self.scansp:
                 self.penfix[self.scansp] = 'fixed'
             if self.scansp == 'c11shift':
-                self.c11shift = self.scan['c11shift']
+                self.shift['C11'] = self.scan['c11shift']
+#                self.c11shift = self.scan['c11shift']
 
-        self.shift = params['shift']
+
 
         self.save = params['save']
         self.outfolder = params['outfolder']
@@ -118,25 +129,25 @@ class Submission():
         rdbinname = '-rdbin' + self.rdbin
         psminname = '-psmin' + self.psmin
         psmaxname = '-psmax' + self.psmax
-        c11name = '' if self.pdfs == 'ana' or 'C11' in self.shift else '-c11shift' + self.c11shift
+#        c11name = '' if self.pdfs == 'ana' or 'C11' in self.shift else '-c11shift' + self.c11shift
 
         ## fitoptions filename
         # pileup penalty changes cfg
         pencfg = '-pileup' if 'pileup' in self.penalty else ''
         if 'pp-pep' in self.penalty: pencfg += '_pp-pep-' + self.met 
         # shift
-        shiftcfg = '' if self.shift == ['none'] else '_' + '-'.join(self.shift) + '-shift'
+        shiftcfg = '' if self.shift == {} else '-shift' + '_'.join(sh + '-' + self.shift[sh] for sh in self.shift)
         # scan of c11shift
-        scancfg = '_scan'  + self.scansp + str(self.scan[self.scansp]) if self.scansp == 'c11shift' else ''
-        self.cfgname = 'fitoptions/fitoptions_' + self.arch + '-' + self.fittype + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + psminname + psmaxname + c11name + pencfg + shiftcfg + scancfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
+#        scancfg = '_scan'  + self.scansp + str(self.scan[self.scansp]) if self.scansp == 'c11shift' else ''
+        self.cfgname = 'fitoptions/fitoptions_' + self.arch + '-' + self.fittype + '-' + self.fit + '-' + self.inputs + self.tfc + '-' + self.pdfs.split('/')[-1] + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + psminname + psmaxname + pencfg + shiftcfg + '.cfg' # e.g. fitoptions_mv-all-pdfs_TAUP2017-nhits.cfg
 
         ## species list filename
         # in case penalty depends on metallicity
         penmet = '-' + self.met if self.met != 'none' else '' 
-        scanicc = '' if self.scansp in ['none', 'c11shift'] else '_scan'  + self.scansp + str(self.scan[self.scansp])
-        self.iccname = 'species_list/species-fit-' + self.arch + '-' + self.fittype + '-' + self.fit + eminname + emaxname + penicc + penmet + fixicc + ulimicc + scanicc + '.icc'
+#        scanicc = '' if self.scansp in ['none', 'c11shift'] else '_scan'  + self.scansp + str(self.scan[self.scansp])
+        self.iccname = 'species_list/species-fit-' + self.arch + '-' + self.fittype + '-' + self.fit + eminname + emaxname + penicc + penmet + fixicc + ulimicc + '.icc'
         # log file name 
-        self.outfile = 'fit-' + self.arch + '-' + self.fittype + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + psminname + psmaxname + c11name + penicc + fixicc + 'met_' + self.met + shiftcfg + scanicc + scancfg + ulimicc
+        self.outfile = 'fit-' + self.arch + '-' + self.fittype + '-' + self.fit + '-' + self.pdfs.split('/')[-1] + '-' + 'Period' + self.inputs + self.tfc + '-' + self.var + eminname + emaxname + rdminname + rdmaxname + rdbinname + psminname + psmaxname + penicc + fixicc + 'met_' + self.met + shiftcfg + ulimicc
         
     
     def cfgfile(self):
@@ -258,10 +269,21 @@ class Submission():
 #            # no pileup at all (also in species list)
 #            for l in range(123,128): cfglines[l] = '#' + cfglines[l]                                     
 
-        if self.shift != ['none']:
-            # add shift on Po210 and C11
-            for sh in self.shift:
-                cfglines.append('freeMCshift' + sh + ' = true')
+        for sh in ['Po210','C11']:
+            # if it's in the shift, it's either free of fixed
+            if sh in self.shift:
+                if self.shift[sh] == 'free':
+                    cfglines.append('freeMCshift' + sh + ' = true')
+                else:
+                    cfglines.append('freeMCshift{0} = true'.format(sh))
+                    cfglines.append('freeMCshift{0}step = 0'.format(sh))
+                    cfglines.append('freeMCshift{0}min = {1}'.format(sh, self.shift[sh]))
+                    cfglines.append('freeMCshift{0}max = {1}'.format(sh, self.shift[sh]))
+            # if not, it's fixed to zero
+            else:
+                cfglines.append('freeMCshift{0} = false'.format(sh))
+                cfglines.append('freeMCshift{0}step = 0'.format(sh))
+                    
 
         if self.pdfs == 'ana':
             cfglines.append('fiducial_mass = 0')
@@ -271,19 +293,6 @@ class Submission():
             ## comment out MC pileup stuff
             for i in range(118,132): cfglines[i] = comment(cfglines[i])
 
-        ## C11 shift            
-        else:                                     
-            if taup:
-                cfglines.append('freeMCshiftC11 = false')
-                cfglines.append('freeMCshiftC11step = 0')
-            elif not 'C11' in self.shift:
-                # if C11 in shift it means it should be free, otherwise fix
-                cfglines.append('freeMCshiftC11 = true')
-                cfglines.append('freeMCshiftC11step = 0')
-                cfglines.append('freeMCshiftC11min = {0}'.format(self.c11shift))
-                cfglines.append('freeMCshiftC11max = {0}'.format(self.c11shift))
-                    
-            
 
         if self.fittype == 'cno':
             # comment out pileup (lines 124 - 128) and C14 stuff (119-122)
