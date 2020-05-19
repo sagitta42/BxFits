@@ -500,8 +500,8 @@ class Submission():
                 clines[1] = 'executable = ' + fitsubname + '\n'
                 # out and err files
                 corename = os.path.splitext(fitsubname)[0]
-                clines[2] = 'output = ' + self.outfolder + '/' + corename + '.out\n'
-                clines[3] = 'error = ' + self.outfolder + '/' + corename  + '.err\n'
+                clines[2] = 'output = ' + corename + '.out\n'
+                clines[3] = 'error = ' + corename  + '.err\n'
                 condor = open(condorname,'w')
                 condor.writelines(clines)
                 make_executable(condorname)
