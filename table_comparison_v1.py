@@ -52,7 +52,8 @@ def table_comp_v1(folder):
 
         # transpose
         df = df.transpose()
-        df.columns = [f.split('.')[0]]
+        df.columns = [os.path.splitext(f)[0]]
+#        df.columns = [f.split('.')[0]]
         print df
 
         ## concat to massive one

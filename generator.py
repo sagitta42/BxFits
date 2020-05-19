@@ -11,7 +11,8 @@ SCAN = {'pep': np.arange(0, 6.2, 0.2),
         'Bi210': np.arange(0,20,0.5),
 #        'c11shift': range(7,8), # fixed to 7.0
         'c11shift': np.arange(0, 16.5, 0.5),
-        'CNO': np.arange(0, 10.5, 0.5)
+        'CNO': np.arange(0, 2.0, 0.5)
+#        'CNO': np.arange(0, 10.5, 0.5)
         }       
 #----------------------------------------------------------
     
@@ -85,7 +86,7 @@ bcount = 0
 ## however, in the generator() docstring it says "list"
 ## just because this is what i print out for the user
 ## it's a bit confusing
-def generator(params):
+def generator(params_gen):
     '''
         arc ['cpu'|'gpu']: architecture, CPU (CNAF) or GPU (Jureca) fitter
 
@@ -168,6 +169,7 @@ def generator(params):
 
     ## ---------------------------------
 
+    params = copy.deepcopy(params_gen)
 
     # check each parameter given by user
     for par in options:
@@ -310,7 +312,9 @@ def setup_gen(userinput=None):
 
     # loop over all combos
     for combo in itertools.product(*loop_iter):
-        params = opts.copy()        
+        print combo
+        params = copy.deepcopy(opts)
+        print params
         # assign current combination
         for i in range(len(par_loop)):
             params[par_loop[i]] = combo[i]
@@ -331,6 +335,8 @@ def setup_gen(userinput=None):
         print params
         print
         generator(params)
+#        print params
+#        print opts
     
     # final submission file
     make_executable(opts['outfolder'] + '_submission.sh')

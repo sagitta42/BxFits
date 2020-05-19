@@ -2,12 +2,15 @@ import sys
 import os
 import shutil
 import numpy as np
+import copy # for deep copy of dict
 
 class Submission():
-    def __init__(self, params):
+    def __init__(self, params_gen):
         '''
         For the description of params go to generator.py function generator()
         '''
+
+        params = copy.deepcopy(params_gen)
         
         self.arch = params['arch'] # cpu or gpu 
         self.fittype = params['ftype'] # full, cno or tfc
@@ -98,8 +101,10 @@ class Submission():
                 if ':' in sh:
                     sp,val = sh.split(':')
                     dct[sp] = val
+                    print sp, 'shift ->', dct[sp]
                 else:
                     dct[sh] = 'free'
+                    print sh, 'shift ->', dct[sh]
         self.shift = dct
     
         # dictionary {species: value} or 'none'
