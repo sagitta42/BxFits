@@ -299,7 +299,6 @@ def setup_gen(userinput=None):
     print opts
     print '######################'
     # the parameters are the same as the user gave, but some have to be looped on, and not be lists in the input e.g. fit variable
-    params = opts.copy()        
 
     ## loop over the parameters that define separate submissions
 
@@ -311,11 +310,19 @@ def setup_gen(userinput=None):
 
     # loop over all combos
     for combo in itertools.product(*loop_iter):
+        params = opts.copy()        
         # assign current combination
         for i in range(len(par_loop)):
             params[par_loop[i]] = combo[i]
         # assign scan value    
-        if opts['scan'] != 'none': params['scan'] = {opts['scan']: combo[-1]}
+#        if opts['scan'] != 'none': params['scan'] = {opts['scan']: combo[-1]}
+        if opts['scan'] != 'none':
+            scline = '{0}:{1}:0'.format(opts['scan'], str(combo[-1]))
+            if params['fixed'] != ['none']:
+                params['fixed'].append(scline)
+            else:
+                params['fixed'] = [scline]
+
 
         # readability
         print '\n#######################################\n'

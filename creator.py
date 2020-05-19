@@ -104,15 +104,15 @@ class Submission():
     
         # dictionary {species: value} or 'none'
         # special features: c11mean and c11shift
-        self.scan = params['scan'] 
-        self.scansp = 'none'
-        if not self.scan == 'none':
-            self.scansp = self.scan.keys()[0]
-            # ignore c11mean and c11shift
-            if not 'c11' in self.scansp:
-                self.penfix[self.scansp] = 'fixed'
-            if self.scansp == 'c11shift':
-                self.shift['C11'] = self.scan['c11shift']
+#        self.scan = params['scan'] 
+#        self.scansp = 'none'
+#        if not self.scan == 'none':
+#            self.scansp = self.scan.keys()[0]
+#            # ignore c11mean and c11shift
+#            if not 'c11' in self.scansp:
+#                self.penfix[self.scansp] = 'fixed'
+#            if self.scansp == 'c11shift':
+#                self.shift['C11'] = self.scan['c11shift']
 #                self.c11shift = self.scan['c11shift']
 
 
@@ -346,8 +346,8 @@ class Submission():
         icclines[21] = '{{ "Po210_2",        -1,   kOrange, kSolid,  2,    {0}.,   "free",  0.01,3000. }},\n'.format(guess)
 
         # line 25: C11 mean
-        if self.scansp == 'c11mean':
-            icclines[24] = '{{ "C11",          -1,   kMagenta,kSolid,  2,    {0},    "free",  0.,  100. }},\n'.format(float(self.scan['c11mean']))
+#        if self.scansp == 'c11mean':
+#            icclines[24] = '{{ "C11",          -1,   kMagenta,kSolid,  2,    {0},    "free",  0.,  100. }},\n'.format(float(self.scan['c11mean']))
 
         # line 31: Pb214
 #        if self.arch == 'gpu':
@@ -385,21 +385,21 @@ class Submission():
             if pensp in ['pileup', 'c11shift', 'pp-pep']: continue
 
             # species to scan, if given
-            iccsp = pensp
-            if pensp in self.scan:
-                mean = self.scan[pensp] 
-                sig = 0
-            else:
-                mean = ICCpenalty[pensp]['mean']   
-                sig = ICCpenalty[pensp]['sigma']
-                # species for which penalty depends on metallicity
-                if pensp in METSP:
-                    mean = mean[self.met] 
-                    sig = sig[self.met]
-                # cue to fitter to use upper limit instead of penalty
-                if self.penfix[pensp] == 'ulim':
-                    sig = - sig
-                    self.penfix[pensp] = 'penalty'
+#            iccsp = pensp
+#            if pensp in self.scan:
+#                mean = self.scan[pensp] 
+#                sig = 0
+#            else:
+            mean = ICCpenalty[pensp]['mean']   
+            sig = ICCpenalty[pensp]['sigma']
+            # species for which penalty depends on metallicity
+            if pensp in METSP:
+                mean = mean[self.met] 
+                sig = sig[self.met]
+            # cue to fitter to use upper limit instead of penalty
+            if self.penfix[pensp] == 'ulim':
+                sig = - sig
+                self.penfix[pensp] = 'penalty'
 
             if pensp in NEUTRINOS:
                 iccsp = 'nu({0})'.format(pensp)
