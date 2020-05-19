@@ -330,9 +330,9 @@ class Submission():
         print 'Species list:', self.iccname
 
         ## if file already exists, do nothing            
-        if os.path.exists(self.iccname):
-            print '\tcreator.py: iccfile : already exists'
-            return
+#        if os.path.exists(self.iccname):
+#            print '\tcreator.py: iccfile : already exists'
+#            return
             
         ## otherwise generate from a template
         
@@ -386,6 +386,7 @@ class Submission():
 
         # set penalties, fixed and upper limit if given
         for pensp in self.penfix:
+            iccsp = pensp
             # these penalties or fixed are in cfg not icc
             if pensp in ['pileup', 'c11shift', 'pp-pep']: continue
 

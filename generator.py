@@ -11,8 +11,7 @@ SCAN = {'pep': np.arange(0, 6.2, 0.2),
         'Bi210': np.arange(0,20,0.5),
 #        'c11shift': range(7,8), # fixed to 7.0
         'c11shift': np.arange(0, 16.5, 0.5),
-        'CNO': np.arange(0, 2.0, 0.5)
-#        'CNO': np.arange(0, 10.5, 0.5)
+        'CNO': np.arange(0, 10.5, 0.5)
         }       
 #----------------------------------------------------------
     
