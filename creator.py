@@ -514,7 +514,7 @@ class Submission():
 
                 # add to top submission file
                 print >> out, 'condor_submit -spool -name sn-01.cr.cnaf.infn.it ' + condorname
-                print >> out, 'sleep 60'
+                print >> out, 'sleep 10'
 
 
 
