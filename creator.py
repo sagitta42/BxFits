@@ -239,24 +239,25 @@ class Submission():
             # line 90: plot filename
             cfglines[89] = 'plot_filename = ' + self.outfolder + '/' + 'plot_' + self.outfile + '.root'
 
-        # line 91: ps: only in mv
-        bl = 'true' if self.fit == 'mv' else 'false'
+        # line 91: ps: only in mv or no RD
+        bl = 'true' if self.fit in ['mv','nord'] else 'false'
         cfglines[90] = 'multivariate_ps_fit = ' + bl
 
         # line 92, 93: PS range
         cfglines[91] = 'multivariate_ps_fit_min = ' + self.psmin
         cfglines[92] = 'multivariate_ps_fit_max = ' + self.psmax
 
-        # line 96: rdist: only in mv
-        cfglines[95] = 'multivariate_rdist_fit = ' + bl
+        # line 96: rdist: only in mv or no RD
+        rdbl = 'false' if self.fit == 'nord' else bl
+        cfglines[95] = 'multivariate_rdist_fit = ' + rdbl
 
         # line 97 and 98: RD min and max
         cfglines[96] = 'multivariate_rdist_fit_min = ' + self.rdmin
         cfglines[97] = 'multivariate_rdist_fit_max = ' + self.rdmax # cannot be larger than emax -> decided to synch
         cfglines[98] = 'multivariate_rdist_fit_bins = ' + self.rdbin
 
-        # line 101: complem.: only in mv
-        compbl = 'true' if self.fit == 'mv' else 'false'
+        # line 101: complem.: only in mv or no RD
+        compbl = 'true' if self.fit in ['mv', 'nord'] else 'false'
         cfglines[100] = 'complementary_histo_fit = ' + compbl
 
         # line 102: compl. fit variable
@@ -374,7 +375,7 @@ class Submission():
 
         # energy only fit (full spectrum): Po210_2 (l 22), C11_2 (l 26), C10_2 (l 28) and He6_2 (l 30) have to go
         # fitting the tagged spectrum: the non "_2" species should go: PO210 (l 21), C11 (l 25)
-        clines = {'tag': [20, 24], 'ene': [21, 25, 27, 28], 'mv': []}
+        clines = {'tag': [20, 24], 'ene': [21, 25, 27, 28], 'mv': [], 'nord':[]}
         for i in clines[self.fit]:
                 icclines[i] = comment(icclines[i], '//')
 
@@ -447,7 +448,7 @@ class Submission():
         ## fit file (for a single fit)
         fitname = self.outfolder + '/fit_' + self.outfile + '.sh'
         fitfile = open(fitname, 'w')
-        extra = {'mv': '_0', 'tag': '_1', 'ene': ''}
+        extra = {'mv': '_0', 'tag': '_1', 'ene': '', 'nord':'_0'}
         print >> fitfile, '#!/bin/bash'
         print >> fitfile, './borexino', inputfile,\
             'pp/final_' + self.var + '_pp' + extra[self.fit],\

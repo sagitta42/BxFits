@@ -19,7 +19,7 @@ SCAN = {'pep': np.arange(0, 6.2, 0.2),
 options = {
     'arch': ['cpu','gpu'],
     'ftype': ['full', 'cno', 'tfc'], # cno and tfc are type of gpu; 
-    'fit': ['ene', 'mv', 'tag'],
+    'fit': ['ene', 'mv', 'tag', 'nord'], # tag didn't really work; nord means no RD, mv fit without RD
 #    'fpdf': ['mc', 'ana'],
     'inputs': ['All', 'Phase2', 'Phase3', 'Phase3Strict', 'Phase3Large'] + range(2012,2020),
     'tfc': ['MI', 'MZ'],
@@ -61,7 +61,7 @@ user = options.keys() + ['pdfs', 'input_path', 'outfolder', 'nbatch'] +\
        ['emin', 'emax', 'rdmin',\
            'rdmax',\
            'rdbin', 'psmin', 'psmax', 'c11sh'] +\
-       ['scan']
+       ['scan'] 
    
 
 ## parameters that are lists in the submission
@@ -170,6 +170,7 @@ def generator(params_gen):
 
     params = copy.deepcopy(params_gen)
 
+
     # check each parameter given by user
     for par in options:
         # parameters that are lists and have only some allowed options
@@ -239,12 +240,16 @@ def setup_gen(userinput=None):
             opts[opt] = 'none'
 
     # then read what user gave
-    for opt in user:
-        for inp in userinput:
-            if opt in inp.split('=')[0]:
+    for inp in userinput:
+        parname = inp.split('=')[0]
+        if parname in user:
+#            if opt in inp.split('=')[0]:
                 # penalty, fixed and shift can be a list; inputs is a list to loop on
-                opts[opt] = inp.split('=')[1].split(',') if opt in splt_comma else inp.split('=')[1]
+            opts[parname] = inp.split('=')[1].split(',') if parname in splt_comma else inp.split('=')[1]
 #                print opt, opts[opt]
+        else:
+            print '\nParameter {0} does not exist.'.format(parname)
+            sys.exit(1)
 
     # assign defaults if nothing given
     for par in defaults:
@@ -300,6 +305,7 @@ def setup_gen(userinput=None):
     print opts
     print '######################'
     # the parameters are the same as the user gave, but some have to be looped on, and not be lists in the input e.g. fit variable
+    
 
     ## loop over the parameters that define separate submissions
 

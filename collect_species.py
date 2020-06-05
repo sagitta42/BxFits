@@ -32,7 +32,7 @@ ERRORLESS = ['chi2/ndof', 'MLV']
 #special_cols = ['Period', 'TFC', 'Var']
 #special_cols = ['TFC', 'Var'] #, 'Emin', 'Emax', 'RDmin', 'RDmax', 'RDbin']
 # special_cols = ['Period', 'TFC', 'Var', 'FV']
-special_cols = ['Period']
+special_cols = ['Period', 'TFC']
 #special_cols = []
 
 ### --------------------------------------------------------- ###
