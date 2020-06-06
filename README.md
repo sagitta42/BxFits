@@ -13,7 +13,7 @@ Part 3: Collect fit results
 Part 4: Create comparison tables
 
 
-## Part 0: Set up fitter
+## Part 0: Set up fitter (for JURECA)
 
 Two setup scripts:
 
@@ -273,4 +273,41 @@ PDFs:
 Fitter inputs:
 /storage/gpfs_data/borexino/wg/nusol/fitter_input/v4.1.3
 
+
+## How to add a fitoptions (cfg) parameter
+
+
+1. Add the line at the END of ```BxFits/templates/fitoptions.cfg``` (if does not exist yet) e.g. ```multivariate_rdist_fit_min = 500```.
+
+2. Come up with a name for the parameter that will be used in the config e.g. ```rdmin```.
+
+#### In ```generator.py```
+
+3. If there are only certain values it can take (e.g. only "MI" and "MZ" for ```tfc```), add it to the dictionary ```options```.
+
+4. Otherwise, add it to the list ```user```.
+
+5. If you would like it to have a default value (i.e. can omit it in the config), add it to the dictonary ```defaults``` (e.g. ```'rdmin' : 500```).
+
+6. If you would like to give multiple values for this parameter, so that multiple cfgs are generated, add it to the list ```par_loop```.
+
+#### In ```creator.py``` in the class ```Submission()```
+
+7. In the constructor ```__init__()```, create a class variable and assign the value of the parameter e.g. ```self.rdmin = str(params['rdmin'])```. All parameters here should be strings.
+
+8. Add it to the name of the resulting cfg file ```self.cfgname```. E.g. create a variable ```rdminname = '-rdmin' + self.rdmin```, and add it in ```self.cfgname```.
+
+9. Same applies to the output log file name ```self.outname```.
+
+10. In the method ```cfgfile()```, add a line modifying the template line. Line number starts counting from 0, so if you look at the line number opening the template with vim, subtract one. E.g. ```rdmin``` is in line 97, so the line to modify it is:
+
+```python
+cfglines[96] = 'multivariate_rdist_fit_min = ' + self.rdmin
+```
+
+I recommend adding the line modification in order of line numbers.        
+
+11. Add it in your config e.g. ```rdmin=480``` or ```rdmin=480,482``` if you enabled multuple values.
+
+12. Done
 
